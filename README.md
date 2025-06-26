@@ -1,4 +1,4 @@
-Nobody is working on this project anymore. If you’d like to pick up development, please ask about it on https://forum.syncthing.net/ 1, or feel free to fork.
+To experiment with the code...
 
 # Syncthing Lite
 
