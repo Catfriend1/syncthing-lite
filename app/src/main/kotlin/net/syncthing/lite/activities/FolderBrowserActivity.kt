@@ -41,7 +41,7 @@ class FolderBrowserActivity : SyncthingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val binding: ActivityFolderBrowserBinding = DataBindingUtil.setContentView(this, R.layout.activity_folder_browser)
+        val binding: ActivityFolderBrowserBinding = DataBindingUtil.setContentView(this@FolderBrowserActivity as Activity, R.layout.activity_folder_browser)
         val adapter = FolderContentsAdapter()
 
         binding.listView.adapter = adapter
