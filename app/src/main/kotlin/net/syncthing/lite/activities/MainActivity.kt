@@ -8,8 +8,6 @@ import androidx.app.Fragment
 import androidx.app.ActionBarDrawerToggle
 import android.view.Gravity
 import android.view.MenuItem
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R
 import net.syncthing.lite.databinding.ActivityMainBinding
