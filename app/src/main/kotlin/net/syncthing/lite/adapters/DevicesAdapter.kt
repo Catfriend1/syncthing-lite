@@ -1,6 +1,6 @@
 package net.syncthing.lite.adapters
 
-import androidx.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
