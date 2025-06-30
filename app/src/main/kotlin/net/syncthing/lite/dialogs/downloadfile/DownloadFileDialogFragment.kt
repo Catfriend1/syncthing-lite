@@ -54,7 +54,7 @@ class DownloadFileDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val fileSpec = arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
         val outputUri = if (arguments!!.containsKey(ARG_SAVE_AS_URI))
-            arguments!!.getParcelable(ARG_SAVE_AS_URI) as Uri
+            arguments!!.getParcelable(ARG_SAVE_AS_URI)
         else
             null
 
@@ -67,7 +67,7 @@ class DownloadFileDialogFragment : DialogFragment() {
         )
 
         val progressDialog = ProgressDialog(context).apply {
-            setMessage(context!!.getString(R.string.dialog_downloading_file, fileSpec.fileName))
+            setMessage(context.getString(R.string.dialog_downloading_file, fileSpec.fileName))
             setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
             isCancelable = true
             isIndeterminate = true

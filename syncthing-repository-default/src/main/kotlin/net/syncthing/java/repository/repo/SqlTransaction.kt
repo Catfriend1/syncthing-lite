@@ -346,7 +346,7 @@ class SqlTransaction(
         connection.prepareStatement("SELECT * FROM file_info WHERE LOWER(file_name) REGEXP ? AND is_deleted=FALSE").use { preparedStatement ->
             //        try (Connection connection = getConnection(); PreparedStatement prepareStatement = connection.prepareStatement("SELECT * FROM file_info LIMIT 10")) {
             //            preparedStatement.setString(1, "%" + query.trim().toLowerCase() + "%");
-            preparedStatement.setString(1, query.trim { it <= ' ' }.toLowerCase())
+            preparedStatement.setString(1, query.trim { it <= ' ' }.lowercase(Locale.getDefault()))
             //            preparedStatement.setInt(2, maxResult);
             val resultSet = preparedStatement.executeQuery()
             val list = mutableListOf<FileInfo>()
@@ -363,7 +363,7 @@ class SqlTransaction(
         assert(query.isNotBlank())
         connection.prepareStatement("SELECT COUNT(*) FROM file_info WHERE LOWER(file_name) REGEXP ? AND is_deleted=FALSE").use { preparedStatement ->
             //        try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM file_info")) {
-            preparedStatement.setString(1, query.trim { it <= ' ' }.toLowerCase())
+            preparedStatement.setString(1, query.trim { it <= ' ' }.lowercase(Locale.getDefault()))
             val resultSet = preparedStatement.executeQuery()
             assert(resultSet.first())
             resultSet.getLong(1)

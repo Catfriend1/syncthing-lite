@@ -81,8 +81,8 @@ class RelayClient(configuration: Configuration) {
     fun getSessionInvitation(relaySocketAddress: InetSocketAddress, deviceId: DeviceId): SessionInvitation {
         logger.debug("connecting to relay = {} (temporary protocol mode)", relaySocketAddress)
         keystoreHandler.createSocket(relaySocketAddress).use { socket ->
-            RelayDataInputStream(socket.getInputStream()).use { `in` ->
-                RelayDataOutputStream(socket.getOutputStream()).use { out ->
+            RelayDataInputStream(socket.inputStream).use { `in` ->
+                RelayDataOutputStream(socket.outputStream).use { out ->
                     run {
                         logger.debug("sending connect request for device = {}", deviceId)
                         val deviceIdData = deviceId.toHashData()

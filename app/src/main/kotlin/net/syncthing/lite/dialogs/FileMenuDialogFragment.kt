@@ -34,10 +34,10 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
     }
 
     val fileSpec: DownloadFileSpec by lazy {
-        arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
+        arguments!!.getSerializable(ARG_FILE_SPEC)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = DialogFileBinding.inflate(inflater, container, false)
 
         binding.filename = fileSpec.fileName

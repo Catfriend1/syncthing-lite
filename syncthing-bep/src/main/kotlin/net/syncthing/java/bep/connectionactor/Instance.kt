@@ -92,9 +92,7 @@ object ConnectionActor {
                 try {
                     launch {
                         while (isActive) {
-                            val message = receivePostAuthMessage().second
-
-                            when (message) {
+                            when (val message = receivePostAuthMessage().second) {
                                 is BlockExchangeProtos.Response -> {
                                     val listener = messageListeners.remove(message.id)
                                     listener
@@ -178,7 +176,7 @@ object ConnectionActor {
                                                         .build()
                                         )
                                     } catch (ex: Exception) {
-                                        action.completableDeferred.cancel(ex)
+                                        action.completableDeferred.cancel()
                                     }
                                 }
                             }
@@ -194,7 +192,7 @@ object ConnectionActor {
                                     try {
                                         sendPostAuthMessage(action.message)
                                     } catch (ex: Exception) {
-                                        action.completableDeferred.cancel(ex)
+                                        action.completableDeferred.cancel()
                                     }
                                 }
                             }
@@ -214,7 +212,7 @@ object ConnectionActor {
             }
         }.invokeOnCompletion { ex ->
             if (ex != null) {
-                channel.cancel(ex)
+                channel.cancel()
             } else {
                 channel.cancel()
             }

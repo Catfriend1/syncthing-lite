@@ -42,7 +42,7 @@ object Util {
 
     @Throws(IOException::class)
     fun importDeviceId(libraryManager: LibraryManager, context: Context, deviceId: String, onComplete: () -> Unit) {
-        val newDeviceId = DeviceId(deviceId.toUpperCase(Locale.US))
+        val newDeviceId = DeviceId(deviceId.uppercase(Locale.US))
 
         GlobalScope.launch (Dispatchers.Main) {
             libraryManager.withLibrary { library ->

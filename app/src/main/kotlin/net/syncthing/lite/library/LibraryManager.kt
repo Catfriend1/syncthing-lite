@@ -51,7 +51,7 @@ class LibraryManager (
             handler.post { userCounterListener(newUserCounter) }
 
             if (instanceStream.value == null) {
-                instanceStream.offer(synchronousInstanceCreator())
+                instanceStream.trySend(synchronousInstanceCreator()).isSuccess
                 handler.post { isRunningListener(true) }
             }
 
@@ -95,7 +95,7 @@ class LibraryManager (
         startStopExecutor.submit {
             if (userCounter == 0) {
                 runBlocking { instanceStream.value?.shutdown() }
-                instanceStream.offer(null)
+                instanceStream.trySend(null).isSuccess
 
                 handler.post { isRunningListener(false) }
                 handler.post { listener(true) }

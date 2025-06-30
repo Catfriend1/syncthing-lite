@@ -11,7 +11,7 @@ data class DeviceId @Throws(IOException::class) constructor(val deviceId: String
 
     init {
         val withoutDashes = this.deviceId.replace("-", "")
-        NetworkUtils.assertProtocol(DeviceId.fromHashDataToString(toHashData()) == withoutDashes)
+        NetworkUtils.assertProtocol(fromHashDataToString(toHashData()) == withoutDashes)
     }
 
     val shortId

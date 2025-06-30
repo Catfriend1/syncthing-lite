@@ -57,7 +57,7 @@ class FolderBrowserActivity : SyncthingActivity() {
         adapter.listener = object: FolderContentsListener {
             override fun onItemClicked(fileInfo: FileInfo) {
                 if (fileInfo.isDirectory()) {
-                    path.offer(fileInfo.path)
+                    path.trySend(fileInfo.path).isSuccess
                 } else {
                     DownloadFileDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
                 }
@@ -144,9 +144,7 @@ class FolderBrowserActivity : SyncthingActivity() {
     }
 
     private fun goUp(): Boolean {
-        val currentListing = listing.value
-
-        val parentPath = when (currentListing) {
+        val parentPath = when (val currentListing = listing.value) {
             is DirectoryContentListing -> currentListing.parentEntry?.path
             is DirectoryNotFoundListing -> currentListing.theoreticalParentPath
             else -> null

@@ -31,7 +31,7 @@ class DevicesFragment : SyncthingFragment() {
     private var addDeviceDialogBinding: ViewEnterDeviceIdBinding? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+                              savedInstanceState: Bundle?): View {
         binding = DataBindingUtil.inflate(layoutInflater, R.layout.fragment_devices, container, false)
         binding.addDevice.setOnClickListener { showDialog() }
 

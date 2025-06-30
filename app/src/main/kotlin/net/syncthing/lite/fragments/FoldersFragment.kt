@@ -17,7 +17,7 @@ import net.syncthing.lite.dialogs.FolderInfoDialog
 import org.jetbrains.anko.intentFor
 
 class FoldersFragment : SyncthingFragment() {
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val adapter = FoldersListAdapter()
 
         adapter.listener = object : FolderListAdapterListener {
