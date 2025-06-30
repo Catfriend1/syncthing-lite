@@ -27,6 +27,7 @@ android {
     kapt {
         arguments {
             arg("room.schemaLocation", "$projectDir/schemas".toString())
+            arg("room.skipVerification", "true")
         }
     }
 
@@ -37,6 +38,10 @@ android {
     lintOptions {
         abortOnError false
     }
+}
+
+configurations.all {
+    exclude group: 'org.xerial', module: 'sqlite-jdbc'
 }
 
 kotlin {
