@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
 
     namespace = "net.syncthing.repository.android"
 
@@ -30,9 +30,17 @@ android {
         }
     }
 
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
     lintOptions {
         abortOnError false
     }
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
