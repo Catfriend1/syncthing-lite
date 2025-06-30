@@ -25,6 +25,7 @@ allprojects {
         jcenter()
         maven {
             url "https://jitpack.io"
+            url "https://artifactory.appodeal.com/appodeal-public/"
         }
     }
 }
