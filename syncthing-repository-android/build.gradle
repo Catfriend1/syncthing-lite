@@ -5,6 +5,8 @@ apply plugin: 'kotlin-kapt'
 android {
     compileSdkVersion 28
 
+    namespace = "net.syncthing.repository.android"
+
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 28
