@@ -4,8 +4,8 @@ import android.arch.lifecycle.Observer
 import android.content.Intent
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
+import androidx.app.Fragment
+import androidx.content.ContextCompat
 import android.text.Html
 import android.view.LayoutInflater
 import android.view.View

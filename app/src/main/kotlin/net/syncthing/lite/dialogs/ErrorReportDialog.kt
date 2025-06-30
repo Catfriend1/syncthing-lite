@@ -5,9 +5,9 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v4.app.FragmentManager
-import android.support.v7.app.AlertDialog
+import androidx.app.DialogFragment
+import androidx.app.FragmentManager
+import androidx.app.AlertDialog
 import android.widget.Toast
 import net.syncthing.lite.R
 

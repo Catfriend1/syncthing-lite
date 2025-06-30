@@ -5,7 +5,7 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.content.ContentResolver
 import android.net.Uri
-import android.support.v4.os.CancellationSignal
+import androidx.os.CancellationSignal
 import android.util.Log
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

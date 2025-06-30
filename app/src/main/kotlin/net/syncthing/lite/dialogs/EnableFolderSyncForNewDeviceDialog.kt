@@ -3,7 +3,7 @@ package net.syncthing.lite.dialogs
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
-import android.support.v4.app.FragmentManager
+import androidx.app.FragmentManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceInfo
