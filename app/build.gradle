@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 30
@@ -16,13 +16,16 @@ android {
         versionName "0.3.12"
         multiDexEnabled true
     }
+
     sourceSets {
         main.java.srcDirs += "src/main/kotlin"
     }
+
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
+
     signingConfigs {
         release {
             storeFile = {
@@ -34,6 +37,7 @@ android {
             keyPassword System.getenv("SIGNING_PASSWORD") ?: ""
         }
     }
+
     buildTypes {
         debug {
             minifyEnabled false
@@ -44,12 +48,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
     packagingOptions {
         exclude 'META-INF/*'
     }
-    dataBinding {
-        enabled = true
-    }
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
