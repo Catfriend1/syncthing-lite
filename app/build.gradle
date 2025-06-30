@@ -6,6 +6,8 @@ android {
     compileSdkVersion 27
     dataBinding.enabled = true
 
+    namespace = "net.syncthing.lite"
+
     defaultConfig {
         applicationId "net.syncthing.lite"
         minSdkVersion 21
