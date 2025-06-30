@@ -3,7 +3,7 @@ package net.syncthing.repository.android.database.dao
 import android.arch.persistence.room.Dao
 import android.arch.persistence.room.Insert
 import android.arch.persistence.room.Query
-import android.arch.persistence.room.TypeConverters
+import androidx.room.TypeConverters
 import net.syncthing.repository.android.database.converters.DateConverter
 import net.syncthing.repository.android.database.item.FolderStatsItem
 import java.util.*
