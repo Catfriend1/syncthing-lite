@@ -1,6 +1,6 @@
 package net.syncthing.lite.dialogs
 
-import android.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import androidx.app.FragmentManager

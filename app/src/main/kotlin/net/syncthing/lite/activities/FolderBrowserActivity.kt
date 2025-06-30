@@ -1,6 +1,6 @@
 package net.syncthing.lite.activities
 
-import android.app.Activity
+import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
@@ -42,7 +42,7 @@ class FolderBrowserActivity : SyncthingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val binding: ActivityFolderBrowserBinding = DataBindingUtil.setContentView(this@FolderBrowserActivity as Activity, R.layout.activity_folder_browser)
+        val binding: ActivityFolderBrowserBinding = DataBindingUtil.setContentView(this@FolderBrowserActivity as AppCompatActivity, R.layout.activity_folder_browser)
         val adapter = FolderContentsAdapter()
 
         binding.listView.adapter = adapter
@@ -167,7 +167,7 @@ class FolderBrowserActivity : SyncthingActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-        if (requestCode == REQUEST_SELECT_UPLOAD_FILE && resultCode == Activity.RESULT_OK) {
+        if (requestCode == REQUEST_SELECT_UPLOAD_FILE && resultCode == AppCompatActivity.RESULT_OK) {
             libraryHandler.syncthingClient { syncthingClient ->
                 GlobalScope.launch (Dispatchers.Main) {
                     // FIXME: it would be better if the dialog would use the library handler

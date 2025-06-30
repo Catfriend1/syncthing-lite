@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
@@ -29,7 +30,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             tools:src="@drawable/ic_laptop_green_24dp"
-            android:src="@{safeUnbox(isConnected) ? @drawable/ic_laptop_green_24dp : @drawable/ic_laptop_red_24dp}" />
+            app:srcCompat="@{safeUnbox(isConnected) ? @drawable/ic_laptop_green_24dp : @drawable/ic_laptop_red_24dp}" />
 
         <View
             android:layout_width="16dp"

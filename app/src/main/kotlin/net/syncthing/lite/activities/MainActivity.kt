@@ -1,6 +1,6 @@
 package net.syncthing.lite.activities
 
-import android.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import android.content.res.Configuration
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
