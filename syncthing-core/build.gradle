@@ -1,6 +1,17 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 dependencies {
     implementation "org.apache.commons:commons-lang3:3.7"
     implementation 'commons-codec:commons-codec:1.11'
