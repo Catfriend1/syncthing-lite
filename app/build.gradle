@@ -71,7 +71,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-android:1.7.36'
     implementation 'com.google.zxing:android-integration:3.3.0'
     implementation 'com.google.zxing:core:3.3.0'
-    implementation 'com.github.apl-devs:appintro:v4.2.3'
+    implementation 'com.github.AppIntro:AppIntro:6.1.0'
 
     implementation project(':syncthing-repository-android')
     implementation project(':syncthing-temp-repository-encryption')
