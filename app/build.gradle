@@ -1,18 +1,10 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'com.github.ben-manes.versions'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.github.triplet.play'
 
 android {
     compileSdkVersion 27
     dataBinding.enabled = true
-
-    playAccountConfigs {
-        defaultAccountConfig {
-            jsonFile = file(System.getenv("SYNCTHING_RELEASE_PLAY_ACCOUNT_CONFIG_FILE") ?: 'keys.json')
-        }
-    }
 
     defaultConfig {
         applicationId "net.syncthing.lite"
@@ -21,23 +13,22 @@ android {
         versionCode 22
         versionName "0.3.12"
         multiDexEnabled true
-        playAccountConfig = playAccountConfigs.defaultAccountConfig
     }
     sourceSets {
         main.java.srcDirs += "src/main/kotlin"
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     signingConfigs {
         release {
             storeFile = {
-                def path = System.getenv("SYNCTHING_LITE_RELEASE_STORE_FILE")
+                def path = System.getenv("SYNCTHING_RELEASE_STORE_FILE")
                 return (path) ? file(path) : null
             }()
             storePassword System.getenv("SIGNING_PASSWORD") ?: ""
-            keyAlias System.getenv("SYNCTHING_LITE_RELEASE_KEY_ALIAS") ?: ""
+            keyAlias System.getenv("SYNCTHING_RELEASE_KEY_ALIAS") ?: ""
             keyPassword System.getenv("SIGNING_PASSWORD") ?: ""
         }
     }
@@ -57,13 +48,6 @@ android {
     dataBinding {
         enabled = true
     }
-}
-
-
-play {
-    jsonFile = file(System.getenv("SYNCTHING_RELEASE_PLAY_ACCOUNT_CONFIG_FILE") ?: 'keys.json')
-    uploadImages = true
-    track = 'production'
 }
 
 dependencies {
