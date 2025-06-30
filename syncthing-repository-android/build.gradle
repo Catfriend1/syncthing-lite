@@ -57,6 +57,7 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
 
+    implementation project(':syncthing-core')
     implementation (project(':syncthing-client')) {
         exclude group: 'commons-logging', module:'commons-logging'
         exclude group: 'org.slf4j'
