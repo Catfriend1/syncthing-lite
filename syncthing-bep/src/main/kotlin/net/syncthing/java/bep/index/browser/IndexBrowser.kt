@@ -36,11 +36,11 @@ class IndexBrowser internal constructor(
     companion object {
         val sortAlphabeticallyDirectoriesFirst: Comparator<FileInfo> =
                 compareBy<FileInfo>({!isParent(it) }, {!it.isDirectory()})
-                        .thenBy { it.fileName.toLowerCase() }
+                        .thenBy { it.fileName.lowercase() }
 
         val sortByLastModification: Comparator<FileInfo> =
                 compareBy<FileInfo>({!isParent(it) }, {it.lastModified})
-                        .thenBy { it.fileName.toLowerCase() }
+                        .thenBy { it.fileName.lowercase() }
 
         private fun isParent(fileInfo: FileInfo) = PathUtils.isParent(fileInfo.path)
 
