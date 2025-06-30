@@ -2,7 +2,7 @@ package net.syncthing.lite.activities
 
 import android.app.AlertDialog
 import android.content.res.Configuration
-import android.databinding.DataBindingUtil
+import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.ActionBarDrawerToggle
