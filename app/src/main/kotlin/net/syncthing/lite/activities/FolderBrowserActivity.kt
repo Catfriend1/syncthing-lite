@@ -6,6 +6,7 @@ import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.consumeEach
