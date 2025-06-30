@@ -87,18 +87,19 @@ class FolderBrowserActivity : SyncthingActivity() {
         launch {
             var job = Job()
 
+            val safeFolder = folder ?: return@launch
+
             path.consumeEach { path ->
                 job.cancel()
                 job = Job()
 
                 binding.listView.scrollToPosition(0)
-
                 listing.send(null)
 
                 async(job) {
-                    libraryHandler.libraryManager.streamDirectoryListing(folder, path).consumeEach {
-                        listing.send(it)
-                    }
+                    libraryHandler.libraryManager
+                        .streamDirectoryListing(safeFolder, path)
+                        .consumeEach { listing.send(it) }
                 }
             }
         }
