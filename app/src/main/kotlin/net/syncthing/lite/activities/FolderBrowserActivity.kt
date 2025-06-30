@@ -77,7 +77,12 @@ class FolderBrowserActivity : SyncthingActivity() {
         ReconnectIssueDialogFragment.showIfNeeded(this)
 
         val folder: String? = intent.getStringExtra(EXTRA_FOLDER_NAME)
-        path.trySend(if (savedInstanceState == null) IndexBrowser.ROOT_PATH else savedInstanceState.getString(STATUS_PATH))
+        path.trySend(
+            if (savedInstanceState == null)
+                IndexBrowser.ROOT_PATH
+            else
+                savedInstanceState.getString(STATUS_PATH) ?: IndexBrowser.ROOT_PATH
+        )
 
         launch {
             var job = Job()
