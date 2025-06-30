@@ -2,6 +2,12 @@ apply plugin: 'java-library'
 apply plugin: 'kotlin'
 apply plugin: 'com.google.protobuf'
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':syncthing-core')

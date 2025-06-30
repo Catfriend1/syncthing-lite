@@ -1,6 +1,12 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 dependencies {
     implementation project(':syncthing-core')
     implementation 'commons-io:commons-io:2.15.1'
