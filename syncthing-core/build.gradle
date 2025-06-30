@@ -7,7 +7,7 @@ dependencies {
     // Can't upgrade to 2.6 because it crashes on Android
     implementation "commons-io:commons-io:2.5"
     implementation "org.slf4j:slf4j-api:1.7.25"
-    implementation "ch.qos.logback:logback-classic:1.2.3"
+    implementation "org.slf4j:slf4j-android:1.7.36"
     implementation "com.google.code.gson:gson:2.8.2"
     implementation "org.bouncycastle:bcmail-jdk15on:1.59"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
