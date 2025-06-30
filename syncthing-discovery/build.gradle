@@ -4,8 +4,8 @@ apply plugin: 'com.google.protobuf'
 mainClassName = 'net.syncthing.java.discovery.Main'
 
 dependencies {
-    compile project(':syncthing-core')
-    compile "commons-cli:commons-cli:1.4"
+    implementation project(':syncthing-core')
+    implementation "commons-cli:commons-cli:1.4"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "com.google.protobuf:protobuf-lite:$protobuf_lite_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.0'
