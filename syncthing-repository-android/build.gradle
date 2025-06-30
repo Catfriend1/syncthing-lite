@@ -57,6 +57,7 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.5.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
+    implementation "org.bouncycastle:bcmail-jdk15on:1.59"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     implementation "androidx.room:room-runtime:$room_version"
