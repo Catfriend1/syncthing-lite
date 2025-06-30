@@ -1,7 +1,7 @@
 package net.syncthing.repository.android.database.item
 
-import android.arch.persistence.room.ColumnInfo
-import android.arch.persistence.room.Entity
+import androidx.room.ColumnInfo
+import androidx.room.Entity
 import net.syncthing.java.core.beans.IndexInfo
 
 @Entity(
