@@ -2,7 +2,6 @@ apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
 dependencies {
-    compile "org.apache.commons:commons-lang3:3.7"
     compile 'commons-codec:commons-codec:1.11'
     // Can't upgrade to 2.6 because it crashes on Android
     compile "commons-io:commons-io:2.5"
@@ -12,4 +11,5 @@ dependencies {
     compile "org.bouncycastle:bcmail-jdk15on:1.59"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.0'
+    implementation "org.apache.logging.log4j:log4j-api:$log4JVersion"
 }
