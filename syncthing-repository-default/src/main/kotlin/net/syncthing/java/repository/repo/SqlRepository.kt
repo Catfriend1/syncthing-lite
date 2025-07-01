@@ -63,7 +63,7 @@ class SqlRepository(databaseFolder: File) : Closeable, IndexRepository, TempRepo
         //                }
         //            }
         //        }, 15, 30, TimeUnit.SECONDS);
-        Log.d("TAG", "database ready")
+        logger.debug("database ready")
     }
 
     private fun checkDb() {
@@ -74,11 +74,11 @@ class SqlRepository(databaseFolder: File) : Closeable, IndexRepository, TempRepo
                     assert(resultSet.first())
                     val version = resultSet.getInt(1)
                     assert(version == VERSION, {"database version mismatch, expected $VERSION, found $version"})
-                    Log.i("TAG", "Database check successful, version = {}", version)
+                    logger.info("Database check successful, version = {}", version)
                 }
             }
         } catch (ex: SQLException) {
-            Log.w("TAG", "Invalid database, resetting db", ex)
+            logger.warn("Invalid database, resetting db", ex)
             getConnection().use {
                 initDb(it)
             }
@@ -87,7 +87,7 @@ class SqlRepository(databaseFolder: File) : Closeable, IndexRepository, TempRepo
 
     @Throws(SQLException::class)
     private fun initDb(connection: Connection) {
-        Log.i("TAG", "init db")
+        logger.info("init db")
         connection.prepareStatement("DROP ALL OBJECTS").use { prepareStatement -> prepareStatement.execute() }
 
             connection.prepareStatement("CREATE TABLE index_sequence (index_id BIGINT NOT NULL PRIMARY KEY, current_sequence BIGINT NOT NULL)").use { prepareStatement -> prepareStatement.execute() }
@@ -136,7 +136,7 @@ class SqlRepository(databaseFolder: File) : Closeable, IndexRepository, TempRepo
                 assert(prepareStatement.executeUpdate() == 1)
             }
 
-        Log.i("TAG", "database initialized")
+        logger.info("database initialized")
     }
 
     @Throws(SQLException::class)
@@ -171,7 +171,7 @@ class SqlRepository(databaseFolder: File) : Closeable, IndexRepository, TempRepo
     }
 
     override fun close() {
-        Log.i("TAG", "closing index repository (sql)")
+        logger.info("closing index repository (sql)")
         //        scheduledExecutorService.shutdown();
         if (!dataSource.isClosed) {
             dataSource.close()

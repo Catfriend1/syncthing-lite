@@ -121,9 +121,9 @@ class Main(private val commandLine: CommandLine) {
                     FileUtils.copyInputStreamToFile(inputStream, file)
                     System.out.println("saved file to = $file.absolutePath")
                 } catch (e: InterruptedException) {
-                    Log.w("TAG", "", e)
+                    logger.warn("", e)
                 } catch (e: IOException) {
-                    Log.w("TAG", "", e)
+                    logger.warn("", e)
                 }
             }
             "P" -> {
@@ -142,7 +142,7 @@ class Main(private val commandLine: CommandLine) {
                     try {
                         observer.waitForProgressUpdate()
                     } catch (e: InterruptedException) {
-                        Log.w("TAG", "", e)
+                        logger.warn("", e)
                     }
 
                     System.out.println("upload progress ${observer.progressPercentage()}%")
@@ -161,7 +161,7 @@ class Main(private val commandLine: CommandLine) {
                         blockPusher.pushDelete(folder, path)
                     }
                 } catch (e: InterruptedException) {
-                    Log.w("TAG", "", e)
+                    logger.warn("", e)
                     System.out.println("Failed to delete path")
                 }
                 System.out.println("deleted path")
@@ -179,7 +179,7 @@ class Main(private val commandLine: CommandLine) {
                     }
                 } catch (e: InterruptedException) {
                     System.out.println("Failed to push directory")
-                    Log.w("TAG", "", e)
+                    logger.warn("", e)
                 }
                 System.out.println("uploaded dir to network")
             }
