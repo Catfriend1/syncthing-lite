@@ -37,7 +37,7 @@ class DiscoveryHandler(
             configuration,
             exceptionReportHandler,
             { message ->
-                LOGGER.atInfo().log("Received device address list from local discovery.")
+                Log.i("TAG", "Received device address list from local discovery.")
 
                 GlobalScope.launch {
                     processDeviceAddressBg(message.addresses)
@@ -76,7 +76,7 @@ class DiscoveryHandler(
 
     private suspend fun processDeviceAddressBg(deviceAddresses: Iterable<DeviceAddress>) {
         if (isClosed) {
-            LOGGER.atDebug().log("Discarding device addresses because discovery handler already closed.")
+            Log.d("TAG", "Discarding device addresses because discovery handler already closed.")
         } else {
             val list = deviceAddresses.toList()
             val peers = configuration.peerIds

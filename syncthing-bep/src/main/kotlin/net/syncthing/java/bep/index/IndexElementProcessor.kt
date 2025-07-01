@@ -91,7 +91,7 @@ object IndexElementProcessor {
             }
             BlockExchangeProtos.FileInfoType.DIRECTORY -> builder.setTypeDir()
             else -> {
-                LOGGER.atWarn().log("Discarding file information due to an unsupported file type: {}.", bepFileInfo.type)
+                Log.w("TAG", "Discarding file information due to an unsupported file type: {}.", bepFileInfo.type)
                 return null
             }
         }

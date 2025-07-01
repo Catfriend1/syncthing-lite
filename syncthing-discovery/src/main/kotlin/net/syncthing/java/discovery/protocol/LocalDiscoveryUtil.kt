@@ -120,7 +120,7 @@ object LocalDiscoveryUtil {
                 LOGGER.atTrace().log("Interface: {}, Address: {}, Broadcast: {}.", networkInterface, interfaceAddress, broadcastAddress)
 
                 if (broadcastAddress != null) {
-                    LOGGER.atDebug().log("Sending broadcast announcement on {}.", broadcastAddress)
+                    Log.d("TAG", "Sending broadcast announcement on {}.", broadcastAddress)
 
                     try {
                         DatagramSocket().use { broadcastSocket ->

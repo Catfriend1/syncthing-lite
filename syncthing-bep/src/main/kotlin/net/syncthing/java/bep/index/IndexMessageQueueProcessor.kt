@@ -61,7 +61,7 @@ class IndexMessageQueueProcessor (
 
     suspend fun handleIndexMessageReceivedEventWithoutChunking(folderId: String, filesList: List<BlockExchangeProtos.FileInfo>, clusterConfigInfo: ClusterConfigInfo, peerDeviceId: DeviceId) {
         indexUpdateIncomingLock.withLock {
-            LOGGER.atInfo().log("Received index message event, preparing to process message.")
+            Log.i("TAG", "Received index message event, preparing to process message.")
 
             val data = BlockExchangeProtos.IndexUpdate.newBuilder()
                     .addAllFiles(filesList)
@@ -73,7 +73,7 @@ class IndexMessageQueueProcessor (
             } else {
                 val key = tempRepository.pushTempData(data.toByteArray())
 
-                LOGGER.atDebug().log("Received index message event and queued for processing, stored to temporary record {}.", key)
+                Log.d("TAG", "Received index message event and queued for processing, stored to temporary record {}.", key)
                 indexUpdateProcessStoredQueue.send(StoredIndexUpdateAction(key, clusterConfigInfo, peerDeviceId))
             }
         }
@@ -88,14 +88,14 @@ class IndexMessageQueueProcessor (
                     // ignored
                     // this is expected when the data is deleted but some index updates are still in the queue
 
-                    LOGGER.atWarn().log("Could not find the index information for the index update.")
+                    Log.w("TAG", "Could not find the index information for the index update.")
                 }
             }
         }.reportExceptions("IndexMessageQueueProcessor.indexUpdateProcessingQueue", exceptionReportHandler)
 
         GlobalScope.async(Dispatchers.IO + job) {
             indexUpdateProcessStoredQueue.consumeEach { action ->
-                LOGGER.atDebug().log("Processing the index message event from the temporary record {}.", action.updateId)
+                Log.d("TAG", "Processing the index message event from the temporary record {}.", action.updateId)
 
                 val data = tempRepository.popTempData(action.updateId)
                 val message = BlockExchangeProtos.IndexUpdate.parseFrom(data)
@@ -119,7 +119,7 @@ class IndexMessageQueueProcessor (
             throw IllegalStateException("Received index update for a folder which is not shared.")
         }
 
-        LOGGER.atInfo().log("Processing an index message with {} records.", box(message.filesCount))
+        Log.i("TAG", "Processing an index message with {} records.", box(message.filesCount))
 
         val (indexResult, wasIndexAcquired) = indexRepository.runInTransaction { indexTransaction ->
             val wasIndexAcquiredBefore = isRemoteIndexAcquired(clusterConfigInfo, peerDeviceId, indexTransaction)
@@ -139,7 +139,7 @@ class IndexMessageQueueProcessor (
                     box(indexResult.updatedFiles.size),
                     box(endTime - startTime))
 
-            LOGGER.atDebug().log("New Index Information: {}.", indexResult.newIndexInfo)
+            Log.d("TAG", "New Index Information: {}.", indexResult.newIndexInfo)
 
             indexResult to ((!wasIndexAcquiredBefore) && isRemoteIndexAcquired(clusterConfigInfo, peerDeviceId, indexTransaction))
         }
@@ -151,13 +151,13 @@ class IndexMessageQueueProcessor (
         onFolderStatsUpdatedEvents.send(FolderStatsUpdatedEvent(indexResult.newFolderStats))
 
         if (wasIndexAcquired) {
-            LOGGER.atDebug().log("Index acquired successfully.")
+            Log.d("TAG", "Index acquired successfully.")
             onFullIndexAcquiredEvents.send(message.folder)
         }
     }
 
     fun stop() {
-        LOGGER.atInfo().log("Stopping index record processor.")
+        Log.i("TAG", "Stopping index record processor.")
         job.cancel()
     }
 }

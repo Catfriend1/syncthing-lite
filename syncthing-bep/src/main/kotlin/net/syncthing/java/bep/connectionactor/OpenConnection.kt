@@ -31,16 +31,16 @@ object OpenConnection {
 
         return when (address.type) {
             DeviceAddress.AddressType.TCP -> {
-                LOGGER.atDebug().log("Opening TCP SSL connection at address {}.", address)
+                Log.d("TAG", "Opening TCP SSL connection at address {}.", address)
                 keystoreHandler.createSocket(address.getSocketAddress())
             }
             DeviceAddress.AddressType.RELAY -> {
-                LOGGER.atDebug().log("Opening relay connection at relay {}.", address)
+                Log.d("TAG", "Opening relay connection at relay {}.", address)
                 keystoreHandler.wrapSocket(RelayClient(configuration).openRelayConnection(address))
             }
             else -> {
                 val message = "Unsupported address type: ${address.type}."
-                LOGGER.atWarn().log(message)
+                Log.w("TAG", message)
                 throw UnsupportedOperationException(message)
             }
         }

@@ -168,13 +168,13 @@ object ConnectionActorGenerator {
             var connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {handleCancel(); false}
 
             if (connection.second.newSharedFolders.isNotEmpty()) {
-                LOGGER.atDebug().log("Connected to device {} with new folders --> Reconnect.", deviceAddress)
+                Log.d("TAG", "Connected to device {} with new folders --> Reconnect.", deviceAddress)
                 // reconnect to send new cluster config
                 connection.first.close()
                 connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {handleCancel(); false}
             }
 
-            LOGGER.atDebug().log("Connected to device {}.", deviceAddress)
+            Log.d("TAG", "Connected to device {}.", deviceAddress)
 
             currentStatus = currentStatus.copy(
                     status = ConnectionStatus.Connected,

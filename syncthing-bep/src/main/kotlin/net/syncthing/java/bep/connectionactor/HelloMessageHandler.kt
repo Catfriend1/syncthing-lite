@@ -46,7 +46,7 @@ internal fun newHelloInstance(configuration: Configuration) = BlockExchangeProto
  */
 @Throws(IOException::class)
 internal fun sendPreAuthenticationMessage(message: BlockExchangeProtos.Hello, outputStream: DataOutputStream) {
-    LOGGER.atDebug().log("Sending pre-authentication message.")
+    Log.d("TAG", "Sending pre-authentication message.")
 
     outputStream.apply {
         writeInt(MAGIC)
@@ -82,7 +82,7 @@ suspend fun processHelloMessage(
         configuration: Configuration,
         deviceId: DeviceId
 ) {
-    LOGGER.atInfo().log("Received hello message: containing device name ({}), client name ({}), and client version ({}).",
+    Log.i("TAG", "Received hello message: containing device name ({}), client name ({}), and client version ({}).",
             hello.deviceName,
             hello.clientName,
             hello.clientVersion)

@@ -53,7 +53,7 @@ internal class LocalDiscoveryHandler(
 
                         onMessageFromUnknownDeviceListener(message.deviceId)
                     } else {
-                        LOGGER.atDebug().log("Received local announcement from device ID: {}.", message.deviceId)
+                        Log.d("TAG", "Received local announcement from device ID: {}.", message.deviceId)
 
                         onMessageReceivedListener(message)
                     }
