@@ -20,6 +20,7 @@ import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.utils.NetworkUtils
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayInputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -71,10 +72,13 @@ fun receivePreAuthenticationMessage(inputStream: DataInputStream): BlockExchange
     val magic = inputStream.readInt()
     NetworkUtils.assertProtocol(magic == MAGIC) {"magic mismatch, got $magic"}
 
-    val length = inputStream.readShort()
-    NetworkUtils.assertProtocol(length > 0) {"invalid length, must be > 0, got $length"}
+    val length = inputStream.readUnsignedShort()
+    NetworkUtils.assertProtocol(length > 0) { "invalid length, must be > 0, got $length" }
 
-    return BlockExchangeProtos.Hello.parseFrom(inputStream)
+    val buffer = ByteArray(length)
+    inputStream.readFully(buffer) // Lies exakt `length` Bytes in das Array
+
+    return BlockExchangeProtos.Hello.parseFrom(ByteArrayInputStream(buffer))
 }
 
 suspend fun processHelloMessage(
