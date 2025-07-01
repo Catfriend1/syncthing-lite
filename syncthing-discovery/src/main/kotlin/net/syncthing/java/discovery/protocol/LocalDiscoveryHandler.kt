@@ -21,7 +21,6 @@ import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.core.exception.reportExceptions
 import org.slf4j.LoggerFactory
-import org.apache.logging.log4j.spi.AbstractLogger.CATCHING_MARKER
 import java.io.Closeable
 import java.io.IOException
 

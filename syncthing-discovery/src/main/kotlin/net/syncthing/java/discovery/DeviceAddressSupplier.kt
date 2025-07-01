@@ -21,7 +21,6 @@ import kotlinx.coroutines.withTimeout
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.beans.DeviceId
 import org.slf4j.LoggerFactory
-import org.apache.logging.log4j.spi.AbstractLogger.CATCHING_MARKER
 import java.io.Closeable
 
 class DeviceAddressSupplier(private val peerDevices: Set<DeviceId>, private val devicesAddressesManager: DevicesAddressesManager) : Iterable<DeviceAddress?>, Closeable {

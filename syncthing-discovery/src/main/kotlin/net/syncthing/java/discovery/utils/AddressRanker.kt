@@ -20,7 +20,6 @@ import kotlinx.coroutines.channels.toList
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.beans.DeviceAddress.AddressType
 import org.slf4j.LoggerFactory
-import org.apache.logging.log4j.spi.AbstractLogger.CATCHING_MARKER
 import java.io.IOException
 import java.net.Socket
 

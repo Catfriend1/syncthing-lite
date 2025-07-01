@@ -23,7 +23,6 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.configuration.DiscoveryServer
 import org.slf4j.LoggerFactory
-import org.apache.logging.log4j.spi.AbstractLogger.CATCHING_MARKER
 import java.io.IOException
 
 internal class GlobalDiscoveryHandler(private val configuration: Configuration) {
