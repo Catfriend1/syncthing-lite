@@ -11,24 +11,30 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.lite.R
 import net.syncthing.lite.library.LibraryManager
-import org.apache.commons.lang3.StringUtils.capitalize
 import org.jetbrains.anko.toast
 import java.io.IOException
 import java.security.InvalidParameterException
-import java.util.*
+import java.util.Locale
 
 object Util {
+
+    private fun capitalizeCompat(input: String): String {
+        return if (input.isNotEmpty()) {
+            input.substring(0, 1).toUpperCase(Locale.getDefault()) + input.substring(1)
+        } else {
+            input
+        }
+    }
 
     fun getDeviceName(): String {
         val manufacturer = Build.MANUFACTURER ?: ""
         val model = Build.MODEL ?: ""
-        val deviceName =
-                if (model.startsWith(manufacturer)) {
-                    capitalize(model)
-                } else {
-                    capitalize(manufacturer) + " " + model
-                }
-        return deviceName ?: "android"
+        val deviceName = if (model.startsWith(manufacturer, ignoreCase = true)) {
+            capitalizeCompat(model)
+        } else {
+            capitalizeCompat(manufacturer) + " " + model
+        }
+        return if (deviceName.isBlank()) "android" else deviceName
     }
 
     fun getContentFileName(context: Context, uri: Uri): String {
@@ -41,15 +47,18 @@ object Util {
     }
 
     @Throws(IOException::class)
-    fun importDeviceId(libraryManager: LibraryManager, context: Context, deviceId: String, onComplete: () -> Unit) {
+    fun importDeviceId(
+            libraryManager: LibraryManager,
+            context: Context,
+            deviceId: String,
+            onComplete: () -> Unit
+    ) {
         val newDeviceId = DeviceId(deviceId.toUpperCase(Locale.US))
 
-        GlobalScope.launch (Dispatchers.Main) {
+        GlobalScope.launch(Dispatchers.Main) {
             libraryManager.withLibrary { library ->
                 val didAddDevice = library.configuration.update { oldConfig ->
-                    if (oldConfig.peers.find { it.deviceId == newDeviceId } != null) {
-                        // already known
-
+                    if (oldConfig.peers.any { it.deviceId == newDeviceId }) {
                         oldConfig
                     } else {
                         oldConfig.copy(
@@ -61,7 +70,6 @@ object Util {
                 if (didAddDevice) {
                     library.configuration.persistLater()
                     library.syncthingClient.connectToNewlyAddedDevices()
-
                     context.toast(context.getString(R.string.device_import_success, newDeviceId.shortId))
                     onComplete()
                 } else {
