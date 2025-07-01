@@ -7,14 +7,13 @@ import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.java.core.exception.ExceptionDetailException
 import net.syncthing.java.core.exception.ExceptionDetails
 import net.syncthing.java.core.interfaces.IndexTransaction
+import org.apache.logging.log4j.LogManager
 import org.bouncycastle.util.encoders.Hex
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.*
 
 object IndexElementProcessor {
-    private val logger = LoggerFactory.getLogger(IndexElementProcessor::class.java)
-
+    private val LOGGER = LogManager.getLogger(IndexElementProcessor::class.java)
     fun pushRecords(
             transaction: IndexTransaction,
             folder: String,
@@ -92,7 +91,7 @@ object IndexElementProcessor {
             }
             BlockExchangeProtos.FileInfoType.DIRECTORY -> builder.setTypeDir()
             else -> {
-                logger.warn("unsupported file type = {}, discarding file info", bepFileInfo.type)
+                LOGGER.atWarn().log("Discarding file information due to an unsupported file type: {}.", bepFileInfo.type)
                 return null
             }
         }
@@ -113,10 +112,10 @@ object IndexElementProcessor {
             folderStatsUpdateCollector: FolderStatsUpdateCollector
     ): FileInfo? {
         return if (shouldUpdateRecord(oldRecord, newRecord)) {
-            logger.trace("discarding record = {}, modified before local record", newRecord)
+            LOGGER.atTrace().log("Local record contains newer update, thus discarding the old record ({})", newRecord)
             null
         } else {
-            logger.trace("loaded new record = {}", newRecord)
+            LOGGER.atTrace().log("Loaded new record: {}.", newRecord)
 
             transaction.updateFileInfo(newRecord, fileBlocks)
             updateFolderStatsCollector(oldRecord, newRecord, folderStatsUpdateCollector)

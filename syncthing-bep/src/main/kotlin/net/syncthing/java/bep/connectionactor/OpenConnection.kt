@@ -18,12 +18,11 @@ import net.syncthing.java.client.protocol.rp.RelayClient
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.security.KeystoreHandler
-import org.slf4j.LoggerFactory
+import org.apache.logging.log4j.LogManager
 import javax.net.ssl.SSLSocket
 
 object OpenConnection {
-    private val logger = LoggerFactory.getLogger(OpenConnection::class.java)
-
+    private val LOGGER = LogManager.getLogger(OpenConnection::class.java)
     fun openSocketConnection(
             address: DeviceAddress,
             configuration: Configuration
@@ -32,14 +31,18 @@ object OpenConnection {
 
         return when (address.type) {
             DeviceAddress.AddressType.TCP -> {
-                logger.debug("opening tcp ssl connection")
+                LOGGER.atDebug().log("Opening TCP SSL connection at address {}.", address)
                 keystoreHandler.createSocket(address.getSocketAddress())
             }
             DeviceAddress.AddressType.RELAY -> {
-                logger.debug("opening relay connection")
+                LOGGER.atDebug().log("Opening relay connection at relay {}.", address)
                 keystoreHandler.wrapSocket(RelayClient(configuration).openRelayConnection(address))
             }
-            else -> throw UnsupportedOperationException("unsupported address type ${address.type}")
+            else -> {
+                val message = "Unsupported address type: ${address.type}."
+                LOGGER.atWarn().log(message)
+                throw UnsupportedOperationException(message)
+            }
         }
     }
 }

@@ -46,15 +46,15 @@ object ConnectionActor {
                 val outputStream = DataOutputStream(socket.outputStream)
 
                 val helloMessage = coroutineScope {
-                    async { HelloMessageHandler.sendHelloMessage(configuration, outputStream) }
-                    async { HelloMessageHandler.receiveHelloMessage(inputStream) }.await()
+                    async { sendPreAuthenticationMessage(newHelloInstance(configuration), outputStream) }
+                    async { receivePreAuthenticationMessage(inputStream) }.await()
                 }
 
                 // the hello message exchange should happen before the certificate validation
                 KeystoreHandler.assertSocketCertificateValid(socket, address.deviceId)
 
                 // now (after the validation) use the content of the hello message
-                HelloMessageHandler.processHelloMessage(helloMessage, configuration, address.deviceId)
+                processHelloMessage(helloMessage, configuration, address.deviceId)
 
                 // helpers for messages
                 val sendPostAuthMessageLock = Mutex()

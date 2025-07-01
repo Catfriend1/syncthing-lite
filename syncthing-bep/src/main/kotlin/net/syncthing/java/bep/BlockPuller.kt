@@ -24,15 +24,16 @@ import net.syncthing.java.core.beans.BlockInfo
 import net.syncthing.java.core.beans.FileBlocks
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.java.core.interfaces.TempRepository
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.util.Unbox.box
 import org.bouncycastle.util.encoders.Hex
-import org.slf4j.LoggerFactory
 import java.io.*
 import java.security.MessageDigest
 import java.util.*
 import kotlin.collections.HashMap
 
 object BlockPuller {
-    private val logger = LoggerFactory.getLogger(javaClass)
+    private val LOGGER = LogManager.getLogger(BlockPuller::class.java)
 
     suspend fun pullFile(
             fileInfo: FileInfo,
@@ -51,10 +52,12 @@ object BlockPuller {
         val (newFileInfo, fileBlocks) = indexHandler.getFileInfoAndBlocksByPath(fileInfo.folder, fileInfo.path) ?: throw FileNotFoundException()
 
         if (fileBlocks.hash != fileInfo.hash) {
-            throw IllegalStateException("the current file entry hash does not match the hash of the provided one")
+            val message = "The current file entry hash (${fileInfo.hash}) does not match the provided one (${fileBlocks.hash})."
+            LOGGER.atWarn().log(message)
+            throw IllegalStateException(message)
         }
 
-        logger.info("pulling file = {}", fileBlocks)
+        LOGGER.atInfo().log("Pulling File: {}, File Blocks: {}.", fileBlocks.path, fileBlocks.blocks)
 
         val blockTempIdByHash = Collections.synchronizedMap(HashMap<String, String>())
 
@@ -65,7 +68,7 @@ object BlockPuller {
         )
 
         suspend fun pullBlock(fileBlocks: FileBlocks, block: BlockInfo, timeoutInMillis: Long, connectionActorWrapper: ConnectionActorWrapper): ByteArray {
-            logger.debug("sent message for block, hash = {}", block.hash)
+            LOGGER.atDebug().log("Request sent for the block {}.", block.hash)
 
             val response =
                     withTimeout(timeoutInMillis) {
@@ -84,22 +87,24 @@ object BlockPuller {
                             // is handled differently so that the timeout is ignored.
                             // Due to that, it's converted to an IOException.
 
-                            throw IOException("timeout during requesting block")
+                            LOGGER.atWarn().log("Timeout limit exceeded ({} millis).", box(timeoutInMillis))
+                            throw IOException("Time limit exceeded while requesting block.")
                         }
                     }
 
             if (response.code != BlockExchangeProtos.ErrorCode.NO_ERROR) {
                 // the server does not have/ want to provide this file -> don't ask him again
                 connectionHelper.disableConnection(connectionActorWrapper)
-
-                throw IOException("received error response ${response.code}")
+                LOGGER.atWarn().log("Server does not have or is not able to provide the requested file (Error response: {}).", response.code)
+                throw IOException("Server does not have or is not able to provide the requested file.")
             }
 
             val data = response.data.toByteArray()
             val hash = Hex.toHexString(MessageDigest.getInstance("SHA-256").digest(data))
 
             if (hash != block.hash) {
-                throw IllegalStateException("expected block with hash ${block.hash}, but got block with hash $hash")
+                LOGGER.atWarn().log("Expected hash: ({}), Provided hash: ({}).", block.hash, hash)
+                throw IllegalStateException("The hash of the received block does not match the expected hash.")
             }
 
             return data
@@ -124,7 +129,7 @@ object BlockPuller {
                 repeat(4 /* 4 blocks per time */) { workerNumber ->
                     async {
                         for (block in pipe) {
-                            logger.debug("message block with hash = {} from worker {}", block.hash, workerNumber)
+                            LOGGER.atDebug().log("Message block with hash ({}) from worker: {}.", block.hash, box(workerNumber))
 
                             lateinit var blockContent: ByteArray
 

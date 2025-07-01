@@ -1,16 +1,17 @@
+syntax = "proto3";
 package net.syncthing.java.bep;
 
 option optimize_for = LITE_RUNTIME;
 
 message Hello {
-    optional string device_name    = 1;
-    optional string client_name    = 2;
-    optional string client_version = 3;
+    string device_name    = 1;
+    string client_name    = 2;
+    string client_version = 3;
 }
 
 message Header {
-    optional MessageType        type        = 1;
-    optional MessageCompression compression = 2;
+    MessageType        type        = 1;
+    MessageCompression compression = 2;
 }
 
 enum MessageType {
@@ -34,25 +35,25 @@ message ClusterConfig {
 }
 
 message Folder {
-    optional string id                   = 1;
-    optional string label                = 2;
-    optional bool   read_only            = 3;
-    optional bool   ignore_permissions   = 4;
-    optional bool   ignore_delete        = 5;
-    optional bool   disable_temp_indexes = 6;
+    string id                   = 1;
+    string label                = 2;
+    bool   read_only            = 3;
+    bool   ignore_permissions   = 4;
+    bool   ignore_delete        = 5;
+    bool   disable_temp_indexes = 6;
 
     repeated Device devices = 16;
 }
 
 message Device {
-    optional bytes       id           = 1;
-    optional string      name         = 2;
+    bytes       id           = 1;
+    string      name         = 2;
     repeated string      addresses    = 3;
-    optional Compression compression  = 4;
-    optional string      cert_name    = 5;
-    optional int64       max_sequence = 6;
-    optional bool        introducer   = 7;
-    optional uint64      index_id     = 8;
+    Compression compression  = 4;
+    string      cert_name    = 5;
+    int64       max_sequence = 6;
+    bool        introducer   = 7;
+    uint64      index_id     = 8;
 }
 
 enum Compression {
@@ -62,31 +63,42 @@ enum Compression {
 }
 
 message Index {
-    optional string   folder = 1;
+    string   folder = 1;
     repeated FileInfo files  = 2;
 }
 
 message IndexUpdate {
-    optional string   folder = 1;
+    string   folder = 1;
     repeated FileInfo files  = 2;
 }
 
 message FileInfo {
-    optional string       name           = 1;
-    optional FileInfoType type           = 2;
-    optional int64        size           = 3;
-    optional uint32       permissions    = 4;
-    optional int64        modified_s     = 5;
-    optional int32        modified_ns    = 11;
-    optional uint64       modified_by    = 12;
-    optional bool         deleted        = 6;
-    optional bool         invalid        = 7;
-    optional bool         no_permissions = 8;
-    optional Vector       version        = 9;
-    optional int64        sequence       = 10;
+    // The field ordering here optimizes for struct size / alignment --
+    // large types come before smaller ones.
 
-    repeated BlockInfo Blocks         = 16;
-    optional string    symlink_target = 17;
+    string             name           = 1;
+    int64              size           = 3;
+    int64              modified_s     = 5;
+    uint64             modified_by    = 12;
+    Vector             version        = 9;
+    int64              sequence       = 10;
+    repeated BlockInfo blocks         = 16;
+    string             symlink_target = 17;
+    bytes              blocks_hash    = 18;
+    FileInfoType       type           = 2;
+    uint32             permissions    = 4;
+    int32              modified_ns    = 11;
+    int32              block_size     = 13;
+
+    // The local_flags fields stores flags that are relevant to the local
+    // host only. It is not part of the protocol, doesn't get sent or
+    // received (we make sure to zero it), nonetheless we need it on our
+    // struct and to be able to serialize it to/from the database.
+    uint32 local_flags = 1000;
+
+    bool deleted        = 6;
+    bool invalid        = 7;
+    bool no_permissions = 8;
 }
 
 enum FileInfoType {
@@ -98,10 +110,10 @@ enum FileInfoType {
 }
 
 message BlockInfo {
-    optional  int64  offset    = 1;
-    optional  int32  size      = 2;
-    optional  bytes  hash      = 3;
-    optional  uint32 weak_hash = 4;
+     int64  offset    = 1;
+     int32  size      = 2;
+     bytes  hash      = 3;
+     uint32 weak_hash = 4;
 }
 
 message Vector {
@@ -109,24 +121,24 @@ message Vector {
 }
 
 message Counter {
-    optional uint64 id    = 1;
-    optional uint64 value = 2;
+    uint64 id    = 1;
+    uint64 value = 2;
 }
 
 message Request {
-    optional int32  id             = 1;
-    optional string folder         = 2;
-    optional string name           = 3;
-    optional int64  offset         = 4;
-    optional int32  size           = 5;
-    optional bytes  hash           = 6;
-    optional bool   from_temporary = 7;
+    int32  id             = 1;
+    string folder         = 2;
+    string name           = 3;
+    int64  offset         = 4;
+    int32  size           = 5;
+    bytes  hash           = 6;
+    bool   from_temporary = 7;
 }
 
 message Response {
-    optional int32     id   = 1;
-    optional bytes     data = 2;
-    optional ErrorCode code = 3;
+    int32     id   = 1;
+    bytes     data = 2;
+    ErrorCode code = 3;
 }
 
 enum ErrorCode {
@@ -137,15 +149,15 @@ enum ErrorCode {
 }
 
 message DownloadProgress {
-    optional string                     folder  = 1;
+    string                     folder  = 1;
     repeated FileDownloadProgressUpdate updates = 2;
 }
 
 message FileDownloadProgressUpdate {
-    optional FileDownloadProgressUpdateType update_type   = 1;
-    optional string                         name          = 2;
-    optional Vector                         version       = 3;
-    repeated int32                          block_indexes = 4;
+    FileDownloadProgressUpdateType update_type   = 1;
+    string                         name          = 2;
+    Vector                         version       = 3;
+    repeated int32                 block_indexes = 4 [packed=false];
 }
 
 enum FileDownloadProgressUpdateType {
@@ -157,5 +169,5 @@ message Ping {
 }
 
 message Close {
-    optional string reason = 1;
+    string reason = 1;
 }

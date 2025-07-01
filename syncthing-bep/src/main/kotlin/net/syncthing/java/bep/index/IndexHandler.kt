@@ -30,8 +30,7 @@ import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.core.interfaces.IndexRepository
 import net.syncthing.java.core.interfaces.IndexTransaction
 import net.syncthing.java.core.interfaces.TempRepository
-import org.apache.commons.lang3.tuple.Pair
-import org.slf4j.LoggerFactory
+import org.apache.logging.log4j.LogManager
 import java.io.Closeable
 import java.io.IOException
 
@@ -41,7 +40,6 @@ class IndexHandler(
         tempRepository: TempRepository,
         exceptionReportHandler: (ExceptionReport) -> Unit
 ) : Closeable {
-    private val logger = LoggerFactory.getLogger(javaClass)
     private val indexInfoUpdateEvents = BroadcastChannel<IndexInfoUpdateEvent>(capacity = 16)
     private val onFullIndexAcquiredEvents = BroadcastChannel<String>(capacity = 16)
     private val onFolderStatsUpdatedEvents = BroadcastChannel<FolderStatsChangedEvent>(capacity = 16)
@@ -125,12 +123,12 @@ class IndexHandler(
 
             for (folderRecord in clusterConfig.foldersList) {
                 val folder = folderRecord.id
-                logger.debug("acquired folder info from cluster config = {}", folder)
+                LOGGER.atDebug().log("Acquired folder information from the cluster configuration: {}.", folder)
                 for (deviceRecord in folderRecord.devicesList) {
                     val deviceId = DeviceId.fromHashData(deviceRecord.id.toByteArray())
-                    if (deviceRecord.hasIndexId() && deviceRecord.hasMaxSequence()) {
+                    if (deviceRecord.indexId > 0L && deviceRecord.maxSequence > 0L) {
                         val folderIndexInfo = UpdateIndexInfo.updateIndexInfoFromClusterConfig(transaction, folder, deviceId, deviceRecord.indexId, deviceRecord.maxSequence)
-                        logger.debug("acquired folder index info from cluster config = {}", folderIndexInfo)
+                        LOGGER.atDebug().log("Acquired folder index information from the cluster configuration: {}.", folderIndexInfo)
                         updatedIndexInfos.add(folderIndexInfo)
                     }
                 }
@@ -172,7 +170,7 @@ class IndexHandler(
 
                 FileInfo.checkBlocks(fileInfo, fileBlocks)
 
-                Pair.of(fileInfo, fileBlocks)
+                Pair(fileInfo, fileBlocks)
             }
         }
     }
@@ -191,7 +189,7 @@ class IndexHandler(
     }
 
     companion object {
-
+        private val LOGGER = LogManager.getLogger(IndexHandler::class.java)
         private const val DEFAULT_INDEX_TIMEOUT: Long = 30
     }
 }
