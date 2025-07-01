@@ -10,6 +10,7 @@ import net.syncthing.lite.R
 import net.syncthing.lite.async.CoroutineActivity
 import net.syncthing.lite.databinding.DialogLoadingBinding
 import net.syncthing.lite.library.LibraryHandler
+import org.slf4j.impl.HandroidLoggerAdapter
 
 abstract class SyncthingActivity : CoroutineActivity() {
     val libraryHandler: LibraryHandler by lazy {
@@ -22,6 +23,7 @@ abstract class SyncthingActivity : CoroutineActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        HandroidLoggerAdapter.DEBUG = BuildConfig.DEBUG
     }
 
     override fun onStart() {
