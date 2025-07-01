@@ -20,7 +20,8 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.core.exception.reportExceptions
-import org.slf4j.LoggerFactory
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.spi.AbstractLogger.CATCHING_MARKER
 import java.io.Closeable
 import java.io.IOException
 
@@ -30,8 +31,6 @@ internal class LocalDiscoveryHandler(
         private val onMessageReceivedListener: (LocalDiscoveryMessage) -> Unit,
         private val onMessageFromUnknownDeviceListener: (DeviceId) -> Unit = {}
 ) : Closeable {
-
-    private val logger = LoggerFactory.getLogger(javaClass)
     private val job = Job()
 
     fun sendAnnounceMessage() {
@@ -50,22 +49,27 @@ internal class LocalDiscoveryHandler(
                     if (message.deviceId == configuration.localDeviceId) {
                         // ignore announcement received from ourselves.
                     } else if (!configuration.peerIds.contains(message.deviceId)) {
-                        logger.trace("Received local announce from ${message.deviceId} which is not a peer, ignoring")
+                        LOGGER.atTrace().log("Received local announcement from {}, which is not a peer, therefore ignoring.", message.deviceId)
 
                         onMessageFromUnknownDeviceListener(message.deviceId)
                     } else {
-                        logger.debug("received local announce from device id = {}", message.deviceId)
+                        LOGGER.atDebug().log("Received local announcement from device ID: {}.", message.deviceId)
 
                         onMessageReceivedListener(message)
                     }
                 }
             } catch (ex: IOException) {
-                logger.warn("Failed to listen for announcement messages", ex)
+                LOGGER.atWarn().withThrowable(ex).withMarker(CATCHING_MARKER)
+                    .log("Failed to listen for announcement messages.")
             }
         }.reportExceptions("LocalDiscoveryHandler.startListener", exceptionReportHandler)
     }
 
     override fun close() {
         job.cancel()
+    }
+
+    companion object {
+        private val LOGGER = LogManager.getLogger(LocalDiscoveryHandler::class.java)
     }
 }

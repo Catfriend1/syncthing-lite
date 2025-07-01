@@ -19,7 +19,8 @@ import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.channels.toList
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.beans.DeviceAddress.AddressType
-import org.slf4j.LoggerFactory
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.spi.AbstractLogger.CATCHING_MARKER
 import java.io.IOException
 import java.net.Socket
 
@@ -31,7 +32,7 @@ object AddressRanker {
             AddressType.RELAY to 2000
     )
     private val ACCEPTED_ADDRESS_TYPES = BASE_SCORE_MAP.keys
-    private val logger = LoggerFactory.getLogger(javaClass)
+    private val LOGGER = LogManager.getLogger(AddressRanker::class.java)
 
     fun pingAddressesChannel(sourceAddresses: List<DeviceAddress>) = GlobalScope.produce<DeviceAddress> {
         sourceAddresses
@@ -51,7 +52,7 @@ object AddressRanker {
                                 send(addressWithScore)
                             }
                         } catch (ex: Exception) {
-                            logger.warn("Failed to ping device", ex)
+                            LOGGER.atWarn().withThrowable(ex).withMarker(CATCHING_MARKER).log("Failed to ping device.")
                         }
 
                         null
@@ -79,7 +80,7 @@ object AddressRanker {
                 socket.connect(deviceAddress.getSocketAddress(), TCP_CONNECTION_TIMEOUT)
             }
         } catch (ex: IOException) {
-            logger.debug("address unreacheable = $deviceAddress, ${ex.message}")
+            LOGGER.atInfo().withThrowable(ex).withMarker(CATCHING_MARKER).log("Device address {} is unreachable.", deviceAddress)
             return null
         }
 

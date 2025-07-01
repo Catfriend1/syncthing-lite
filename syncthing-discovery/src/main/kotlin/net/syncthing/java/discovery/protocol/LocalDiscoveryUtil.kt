@@ -25,7 +25,8 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.exception.ExceptionDetailException
 import net.syncthing.java.core.exception.ExceptionDetails
 import net.syncthing.java.core.utils.NetworkUtils
-import org.slf4j.LoggerFactory
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.spi.AbstractLogger.CATCHING_MARKER
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -38,7 +39,7 @@ object LocalDiscoveryUtil {
     private const val MAGIC = 0x2EA7D90B
     private const val INCOMING_BUFFER_SIZE = 1024
 
-    private val logger = LoggerFactory.getLogger(javaClass)
+    private val LOGGER = LogManager.getLogger(LocalDiscoveryUtil::class.java)
 
     suspend fun listenForAnnounceMessages(): ReceiveChannel<LocalDiscoveryMessage> = GlobalScope.produce {
         DatagramSocket(LISTENING_PORT, InetAddress.getByName("0.0.0.0")).use { datagramSocket ->
@@ -93,7 +94,8 @@ object LocalDiscoveryUtil {
 
                         send(message)
                     } catch (ex: IOException) {
-                        logger.warn("error during handling received package", ex)
+                        LOGGER.atWarn().withThrowable(ex).withMarker(CATCHING_MARKER)
+                            .log("Error occurred while handling received package.")
                     }
                 }
             }
@@ -115,10 +117,10 @@ object LocalDiscoveryUtil {
             for (interfaceAddress in networkInterface.interfaceAddresses) {
                 val broadcastAddress = interfaceAddress.broadcast
 
-                logger.trace("interface = {} address = {} broadcast = {}", networkInterface, interfaceAddress, broadcastAddress)
+                LOGGER.atTrace().log("Interface: {}, Address: {}, Broadcast: {}.", networkInterface, interfaceAddress, broadcastAddress)
 
                 if (broadcastAddress != null) {
-                    logger.debug("sending broadcast announce on {}", broadcastAddress)
+                    LOGGER.atDebug().log("Sending broadcast announcement on {}.", broadcastAddress)
 
                     try {
                         DatagramSocket().use { broadcastSocket ->

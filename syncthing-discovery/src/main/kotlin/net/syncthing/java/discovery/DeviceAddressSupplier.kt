@@ -20,15 +20,14 @@ import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withTimeout
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.beans.DeviceId
-import org.slf4j.LoggerFactory
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.spi.AbstractLogger.CATCHING_MARKER
 import java.io.Closeable
 
 class DeviceAddressSupplier(private val peerDevices: Set<DeviceId>, private val devicesAddressesManager: DevicesAddressesManager) : Iterable<DeviceAddress?>, Closeable {
     private val deviceAddressListStreams = peerDevices.map { deviceId ->
         devicesAddressesManager.getDeviceAddressManager(deviceId).streamCurrentDeviceAddresses()
     }
-
-    private val logger = LoggerFactory.getLogger(javaClass)
 
     private suspend fun getDeviceAddress(): DeviceAddress? {
         return select {
@@ -61,7 +60,8 @@ class DeviceAddressSupplier(private val peerDevices: Set<DeviceId>, private val 
                             getDeviceAddressOrWait()
                         }
                     } catch (ex: CancellationException) {
-                        logger.warn("", ex)
+                        LOGGER.atWarn().withThrowable(ex).withMarker(CATCHING_MARKER)
+                            .log("Cancellation exception occurred because no device address was found.")
                     }
 
                     hasNext = next != null
@@ -82,5 +82,9 @@ class DeviceAddressSupplier(private val peerDevices: Set<DeviceId>, private val 
                 return res
             }
         }
+    }
+
+    companion object {
+        private val LOGGER = LogManager.getLogger(DeviceAddressSupplier::class.java)
     }
 }
