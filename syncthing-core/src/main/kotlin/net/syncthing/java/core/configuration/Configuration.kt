@@ -60,7 +60,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
                     Config.parse(JsonReader(StringReader(configFile.readText())))
             )
         }
-        Log.d("TAG", "Loaded Configuration: {}.", configChannel.value)
+        LOGGER.atDebug().log("Loaded Configuration: {}.", configChannel.value)
     }
 
     companion object {
@@ -134,7 +134,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
                 return
             }
 
-            Log.i("TAG", "Writing config to {}.", configFile)
+            LOGGER.atInfo().log("Writing config to {}.", configFile)
 
             configFile.writeText(
                     StringWriter().apply {

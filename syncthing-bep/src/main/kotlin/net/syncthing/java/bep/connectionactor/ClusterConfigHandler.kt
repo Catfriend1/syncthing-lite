@@ -60,7 +60,7 @@ object ClusterConfigHandler {
                                                 indexId = indexSequenceInfo.indexId
                                                 maxSequence = indexSequenceInfo.localSequence
 
-                                                Log.i("TAG", "Send delta index information: Device = {}, Index = {}, Max (Local) Sequence = {}.",
+                                                LOGGER.atInfo().log("Send delta index information: Device = {}, Index = {}, Max (Local) Sequence = {}.",
                                                         indexSequenceInfo.deviceId,
                                                         box(indexSequenceInfo.indexId),
                                                         box(indexSequenceInfo.localSequence))
@@ -103,7 +103,7 @@ object ClusterConfigHandler {
                 }
                 if (ourDevice != null) {
                     folderInfo = folderInfo.copy(isShared = true)
-                    Log.i("TAG", "Folder {} shared from device {}.", folderInfo, otherDeviceId)
+                    LOGGER.atInfo().log("Folder {} shared from device {}.", folderInfo, otherDeviceId)
 
                     val oldFolderEntry = configFolders.find { it.folderId == folderInfo.folderId }
 
@@ -120,7 +120,7 @@ object ClusterConfigHandler {
 
                         configFolders.add(newFolderInfo)
                         newSharedFolders.add(newFolderInfo)
-                        Log.i("TAG", "New folder shared: {}.", folderInfo)
+                        LOGGER.atInfo().log("New folder shared: {}.", folderInfo)
                     } else {
                         if (oldFolderEntry.deviceIdWhitelist.contains(otherDeviceId)) {
                             folderInfo = folderInfo.copy(isDeviceInSharedFolderWhitelist = true)
@@ -141,7 +141,7 @@ object ClusterConfigHandler {
                         }
                     }
                 } else {
-                    Log.i("TAG", "Folder {} not shared from device {}.", folderInfo, otherDeviceId)
+                    LOGGER.atInfo().log("Folder {} not shared from device {}.", folderInfo, otherDeviceId)
                 }
 
                 folderInfoList.add(folderInfo)

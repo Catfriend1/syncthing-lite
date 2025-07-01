@@ -40,7 +40,7 @@ object PostAuthenticationMessageHandler {
         val headerData = header.toByteArray()
         val messageData = message.toByteArray() //TODO support compression
 
-        Log.d("TAG", "Sending message type: {} {}.", header.type, MessageTypes.getIdForMessage(message))
+        LOGGER.atDebug().log("Sending message type: {} {}.", header.type, MessageTypes.getIdForMessage(message))
         markActivityOnSocket()
 
         outputStream.apply {
@@ -99,7 +99,7 @@ object PostAuthenticationMessageHandler {
         // TODO: what is this good for?
         if (retryReadingLength) {
             while (headerLength == 0) {
-                Log.w("TAG", "Received headerLength == 0, skipping short.")
+                LOGGER.atWarn().log("Received headerLength == 0, skipping short.")
                 headerLength = inputStream.readShort().toInt()
             }
         }
@@ -123,7 +123,7 @@ object PostAuthenticationMessageHandler {
         // TODO: what is this good for?
         if (retryReadingLength) {
             while (messageLength == 0) {
-                Log.w("TAG", "Received message of length zero (0), expecting 'bep message header length' (int >0), ignoring (keepalive?).")
+                LOGGER.atWarn().log("Received message of length zero (0), expecting 'bep message header length' (int >0), ignoring (keepalive?).")
                 messageLength = inputStream.readInt()
             }
         }

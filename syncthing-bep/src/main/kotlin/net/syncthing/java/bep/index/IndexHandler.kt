@@ -123,12 +123,12 @@ class IndexHandler(
 
             for (folderRecord in clusterConfig.foldersList) {
                 val folder = folderRecord.id
-                Log.d("TAG", "Acquired folder information from the cluster configuration: {}.", folder)
+                LOGGER.atDebug().log("Acquired folder information from the cluster configuration: {}.", folder)
                 for (deviceRecord in folderRecord.devicesList) {
                     val deviceId = DeviceId.fromHashData(deviceRecord.id.toByteArray())
                     if (deviceRecord.indexId > 0L && deviceRecord.maxSequence > 0L) {
                         val folderIndexInfo = UpdateIndexInfo.updateIndexInfoFromClusterConfig(transaction, folder, deviceId, deviceRecord.indexId, deviceRecord.maxSequence)
-                        Log.d("TAG", "Acquired folder index information from the cluster configuration: {}.", folderIndexInfo)
+                        LOGGER.atDebug().log("Acquired folder index information from the cluster configuration: {}.", folderIndexInfo)
                         updatedIndexInfos.add(folderIndexInfo)
                     }
                 }
