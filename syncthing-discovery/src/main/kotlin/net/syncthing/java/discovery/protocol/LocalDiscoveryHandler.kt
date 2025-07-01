@@ -20,7 +20,7 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.core.exception.reportExceptions
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 import org.apache.logging.log4j.spi.AbstractLogger.CATCHING_MARKER
 import java.io.Closeable
 import java.io.IOException
@@ -49,18 +49,17 @@ internal class LocalDiscoveryHandler(
                     if (message.deviceId == configuration.localDeviceId) {
                         // ignore announcement received from ourselves.
                     } else if (!configuration.peerIds.contains(message.deviceId)) {
-                        LOGGER.atTrace().log("Received local announcement from {}, which is not a peer, therefore ignoring.", message.deviceId)
+                        logger.trace("Received local announcement from {}, which is not a peer, therefore ignoring.", message.deviceId)
 
                         onMessageFromUnknownDeviceListener(message.deviceId)
                     } else {
-                        LOGGER.atDebug().log("Received local announcement from device ID: {}.", message.deviceId)
+                        logger.debug("Received local announcement from device ID: {}.", message.deviceId)
 
                         onMessageReceivedListener(message)
                     }
                 }
             } catch (ex: IOException) {
-                LOGGER.atWarn().withThrowable(ex).withMarker(CATCHING_MARKER)
-                    .log("Failed to listen for announcement messages.")
+                logger.warn("Failed to listen for announcement messages", ex)
             }
         }.reportExceptions("LocalDiscoveryHandler.startListener", exceptionReportHandler)
     }
@@ -70,6 +69,6 @@ internal class LocalDiscoveryHandler(
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(LocalDiscoveryHandler::class.java)
+        private val logger = LoggerFactory.getLogger(LocalDiscoveryHandler::class.java)
     }
 }

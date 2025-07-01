@@ -14,7 +14,7 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.java.core.beans.FolderInfo
 import net.syncthing.java.core.security.KeystoreHandler
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 import org.bouncycastle.util.encoders.Base64
 import java.io.File
 import java.io.StringReader
@@ -60,11 +60,11 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
                     Config.parse(JsonReader(StringReader(configFile.readText())))
             )
         }
-        LOGGER.atDebug().log("Loaded Configuration: {}.", configChannel.value)
+        logger.debug("Loaded Configuration: {}.", configChannel.value)
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(Configuration::class.java)
+        private val logger = LoggerFactory.getLogger(Configuration::class.java)
         private val DefaultConfigFolder = File(System.getProperty("user.home"), ".config/syncthing-java/")
         private const val ConfigFileName = "config.json"
         private const val DatabaseFolderName = "database"
@@ -134,7 +134,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
                 return
             }
 
-            LOGGER.atInfo().log("Writing config to {}.", configFile)
+            logger.info("Writing config to {}.", configFile)
 
             configFile.writeText(
                     StringWriter().apply {

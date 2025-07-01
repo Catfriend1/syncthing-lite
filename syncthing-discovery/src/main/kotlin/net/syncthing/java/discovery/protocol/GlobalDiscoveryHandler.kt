@@ -22,7 +22,7 @@ import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.configuration.DiscoveryServer
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 import org.apache.logging.log4j.spi.AbstractLogger.CATCHING_MARKER
 import java.io.IOException
 
@@ -70,8 +70,7 @@ internal class GlobalDiscoveryHandler(private val configuration: Configuration) 
                         try {
                             queryAnnounceServer(server, deviceId)
                         } catch (ex: Exception) {
-                            LOGGER.atWarn().withThrowable(ex).withMarker(CATCHING_MARKER)
-                                .log("Failed to query server {} for device ID: {}.", server, deviceId)
+                            logger.warn("Failed to query $server for $deviceId", ex)
 
                             when (ex) {
                                 is IOException -> { /* ignore */ }
@@ -90,7 +89,7 @@ internal class GlobalDiscoveryHandler(private val configuration: Configuration) 
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(GlobalDiscoveryHandler::class.java)
+        private val logger = LoggerFactory.getLogger(GlobalDiscoveryHandler::class.java)
         suspend fun queryAnnounceServer(server: DiscoveryServer, deviceId: DeviceId) =
                 GlobalDiscoveryUtil
                         .queryAnnounceServer(

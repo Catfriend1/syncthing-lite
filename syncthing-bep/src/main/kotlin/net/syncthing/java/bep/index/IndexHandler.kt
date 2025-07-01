@@ -30,7 +30,7 @@ import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.core.interfaces.IndexRepository
 import net.syncthing.java.core.interfaces.IndexTransaction
 import net.syncthing.java.core.interfaces.TempRepository
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 
@@ -123,12 +123,12 @@ class IndexHandler(
 
             for (folderRecord in clusterConfig.foldersList) {
                 val folder = folderRecord.id
-                LOGGER.atDebug().log("Acquired folder information from the cluster configuration: {}.", folder)
+                logger.debug("Acquired folder information from the cluster configuration: {}.", folder)
                 for (deviceRecord in folderRecord.devicesList) {
                     val deviceId = DeviceId.fromHashData(deviceRecord.id.toByteArray())
                     if (deviceRecord.indexId > 0L && deviceRecord.maxSequence > 0L) {
                         val folderIndexInfo = UpdateIndexInfo.updateIndexInfoFromClusterConfig(transaction, folder, deviceId, deviceRecord.indexId, deviceRecord.maxSequence)
-                        LOGGER.atDebug().log("Acquired folder index information from the cluster configuration: {}.", folderIndexInfo)
+                        logger.debug("Acquired folder index information from the cluster configuration: {}.", folderIndexInfo)
                         updatedIndexInfos.add(folderIndexInfo)
                     }
                 }
@@ -189,7 +189,7 @@ class IndexHandler(
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(IndexHandler::class.java)
+        private val logger = LoggerFactory.getLogger(IndexHandler::class.java)
         private const val DEFAULT_INDEX_TIMEOUT: Long = 30
     }
 }

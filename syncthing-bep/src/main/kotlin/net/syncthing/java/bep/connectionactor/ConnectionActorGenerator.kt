@@ -20,7 +20,7 @@ import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.bep.index.IndexHandler
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.configuration.Configuration
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 import org.apache.logging.log4j.spi.AbstractLogger
 import java.io.IOException
 
@@ -31,7 +31,7 @@ data class Connection (
 
 object ConnectionActorGenerator {
     private val closed = Channel<ConnectionAction>().apply { cancel() }
-    private val LOGGER = LogManager.getLogger(ConnectionActorGenerator::class.java)
+    private val logger = LoggerFactory.getLogger(ConnectionActorGenerator::class.java)
 
     private fun deviceAddressesGenerator(deviceAddress: ReceiveChannel<DeviceAddress>) = GlobalScope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
         val addresses = mutableMapOf<String, DeviceAddress>()
@@ -137,8 +137,7 @@ object ConnectionActorGenerator {
 
             newActor to clusterConfig
         } catch (ex: Exception) {
-            LOGGER.atWarn().withThrowable(ex).withMarker(AbstractLogger.CATCHING_MARKER)
-                .log("Failed to connect to device address {}.", deviceAddress)
+            logger.warn("failed to connect to $deviceAddress", ex)
 
             when (ex) {
                 is IOException -> {/* expected -> ignore */}
@@ -168,13 +167,13 @@ object ConnectionActorGenerator {
             var connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {handleCancel(); false}
 
             if (connection.second.newSharedFolders.isNotEmpty()) {
-                LOGGER.atDebug().log("Connected to device {} with new folders --> Reconnect.", deviceAddress)
+                logger.debug("Connected to device {} with new folders --> Reconnect.", deviceAddress)
                 // reconnect to send new cluster config
                 connection.first.close()
                 connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {handleCancel(); false}
             }
 
-            LOGGER.atDebug().log("Connected to device {}.", deviceAddress)
+            logger.debug("Connected to device {}.", deviceAddress)
 
             currentStatus = currentStatus.copy(
                     status = ConnectionStatus.Connected,

@@ -24,7 +24,7 @@ import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.discovery.protocol.GlobalDiscoveryHandler
 import net.syncthing.java.discovery.protocol.LocalDiscoveryHandler
 import net.syncthing.java.discovery.utils.AddressRanker
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.util.*
 
@@ -37,7 +37,7 @@ class DiscoveryHandler(
             configuration,
             exceptionReportHandler,
             { message ->
-                LOGGER.atInfo().log("Received device address list from local discovery.")
+                logger.info("Received device address list from local discovery.")
 
                 GlobalScope.launch {
                     processDeviceAddressBg(message.addresses)
@@ -76,7 +76,7 @@ class DiscoveryHandler(
 
     private suspend fun processDeviceAddressBg(deviceAddresses: Iterable<DeviceAddress>) {
         if (isClosed) {
-            LOGGER.atDebug().log("Discarding device addresses because discovery handler already closed.")
+            logger.debug("Discarding device addresses because discovery handler already closed.")
         } else {
             val list = deviceAddresses.toList()
             val peers = configuration.peerIds
@@ -127,6 +127,6 @@ class DiscoveryHandler(
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(DiscoveryHandler::class.java)
+        private val logger = LoggerFactory.getLogger(DiscoveryHandler::class.java)
     }
 }

@@ -18,7 +18,7 @@ import com.google.protobuf.MessageLite
 import net.jpountz.lz4.LZ4Factory
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.core.utils.NetworkUtils
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -26,7 +26,7 @@ import java.lang.reflect.InvocationTargetException
 import java.nio.ByteBuffer
 
 object PostAuthenticationMessageHandler {
-    private val LOGGER = LogManager.getLogger(PostAuthenticationMessageHandler::class.java)
+    private val logger = LoggerFactory.getLogger(PostAuthenticationMessageHandler::class.java)
     fun sendMessage(
             outputStream: DataOutputStream,
             message: MessageLite,
@@ -40,7 +40,7 @@ object PostAuthenticationMessageHandler {
         val headerData = header.toByteArray()
         val messageData = message.toByteArray() //TODO support compression
 
-        LOGGER.atDebug().log("Sending message type: {} {}.", header.type, MessageTypes.getIdForMessage(message))
+        logger.debug("Sending message type: {} {}.", header.type, MessageTypes.getIdForMessage(message))
         markActivityOnSocket()
 
         outputStream.apply {
@@ -99,7 +99,7 @@ object PostAuthenticationMessageHandler {
         // TODO: what is this good for?
         if (retryReadingLength) {
             while (headerLength == 0) {
-                LOGGER.atWarn().log("Received headerLength == 0, skipping short.")
+                logger.warn("Received headerLength == 0, skipping short.")
                 headerLength = inputStream.readShort().toInt()
             }
         }
@@ -123,7 +123,7 @@ object PostAuthenticationMessageHandler {
         // TODO: what is this good for?
         if (retryReadingLength) {
             while (messageLength == 0) {
-                LOGGER.atWarn().log("Received message of length zero (0), expecting 'bep message header length' (int >0), ignoring (keepalive?).")
+                logger.warn("Received message of length zero (0), expecting 'bep message header length' (int >0), ignoring (keepalive?).")
                 messageLength = inputStream.readInt()
             }
         }

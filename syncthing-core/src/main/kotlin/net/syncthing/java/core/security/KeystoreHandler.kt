@@ -18,7 +18,7 @@ import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.interfaces.RelayConnection
 import net.syncthing.java.core.utils.NetworkUtils
 import org.apache.commons.codec.binary.Base32
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.cert.jcajce.JcaX509v1CertificateBuilder
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -78,7 +78,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     @Throws(CryptoException::class, IOException::class)
     private fun wrapSocket(socket: Socket, isServerSocket: Boolean): SSLSocket {
         try {
-            LOGGER.atDebug().log("Wrapping plain socket, server mode: {}.", isServerSocket)
+            logger.debug("Wrapping plain socket, server mode: {}.", isServerSocket)
             val sslSocket = socketFactory.createSocket(socket, null, socket.port, true) as SSLSocket
             if (isServerSocket) {
                 sslSocket.useClientMode = false
@@ -125,7 +125,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 if (!algo.isBlank()) algo else null
             } ?: {
                 val defaultAlgo = KeyStore.getDefaultType()!!
-                LOGGER.atDebug().log("Keystore algorithm set to {}.", defaultAlgo)
+                logger.debug("Keystore algorithm set to {}.", defaultAlgo)
                 defaultAlgo
             }()
         }
@@ -138,7 +138,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             val keystoreData = keystoreHandler.exportKeystoreToData()
             val hash = MessageDigest.getInstance("SHA-256").digest(keystoreData)
             keystoreHandlersCacheByHash[Base32().encodeAsString(hash)] = keystoreHandler
-            LOGGER.atInfo().log("Keystore is ready for device ID: {}.", keystore.second)
+            logger.info("Keystore is ready for device ID: {}.", keystore.second)
             return Triple(keystore.second, keystoreData, keystoreAlgorithm)
         }
 
@@ -152,14 +152,14 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             val keystore = importKeystore(configuration.keystoreData, keystoreAlgo)
             val keystoreHandler = KeystoreHandler(keystore.first)
             keystoreHandlersCacheByHash[Base32().encodeAsString(hash)] = keystoreHandler
-            LOGGER.atInfo().log("Keystore is ready for device ID: {}.", keystore.second)
+            logger.info("Keystore is ready for device ID: {}.", keystore.second)
             return keystoreHandler
         }
 
         @Throws(CryptoException::class, IOException::class)
         private fun generateKeystore(keystoreAlgorithm: String): Pair<KeyStore, DeviceId> {
             try {
-                LOGGER.atTrace().log("Generating key.")
+                logger.trace("Generating key.")
                 val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO)
                 keyPairGenerator.initialize(KEY_SIZE)
                 val keyPair = keyPairGenerator.genKeyPair()
@@ -175,9 +175,9 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val certificateHolder = certificateBuilder.build(contentSigner)
 
                 val certificateDerData = certificateHolder.encoded
-                LOGGER.atInfo().log("Generated certificate: {}.", derToPem(certificateDerData))
+                logger.info("Generated certificate: {}.", derToPem(certificateDerData))
                 val deviceId = derDataToDeviceId(certificateDerData)
-                LOGGER.atInfo().log("Device ID from certificate: {}.", deviceId)
+                logger.info("Device ID from certificate: {}.", deviceId)
 
                 val keyStore = KeyStore.getInstance(keystoreAlgorithm)
                 keyStore.load(null, null)
@@ -207,7 +207,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 NetworkUtils.assertProtocol(certificate is X509Certificate)
                 val derData = certificate.encoded
                 val deviceId = derDataToDeviceId(derData)
-                LOGGER.atDebug().log("Loaded device ID from certificate: {}.", deviceId)
+                logger.debug("Loaded device ID from certificate: {}.", deviceId)
                 return Pair(keyStore, deviceId)
             } catch (e: NoSuchAlgorithmException) {
                 throw CryptoException(e)
@@ -220,7 +220,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         }
 
         companion object {
-            private val LOGGER = LogManager.getLogger(Loader::class.java)
+            private val logger = LoggerFactory.getLogger(Loader::class.java)
             private val keystoreHandlersCacheByHash = mutableMapOf<String, KeystoreHandler>()
         }
     }
@@ -251,7 +251,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         const val BEP = "bep/1.0"
         const val RELAY = "bep-relay"
 
-        private val LOGGER = LogManager.getLogger(KeystoreHandler::class.java)
+        private val logger = LoggerFactory.getLogger(KeystoreHandler::class.java)
 
         @Throws(SSLPeerUnverifiedException::class, CertificateException::class)
         fun assertSocketCertificateValid(socket: SSLSocket, deviceId: DeviceId) {
@@ -270,12 +270,12 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
             val derData = certificate.encoded
             val deviceIdFromCertificate = derDataToDeviceId(derData)
-            LOGGER.atTrace().log("Remote PEM Certificate: {}.", derToPem(derData))
+            logger.trace("Remote PEM Certificate: {}.", derToPem(derData))
 
             NetworkUtils.assertProtocol(deviceIdFromCertificate == deviceId) {
                 "Device ID mismatch! Expected = $deviceId, Received = $deviceIdFromCertificate."
             }
-            LOGGER.atDebug().log("Remote SSL certificate match deviceId: {}.", deviceId)
+            logger.debug("Remote SSL certificate match deviceId: {}.", deviceId)
         }
     }
 }

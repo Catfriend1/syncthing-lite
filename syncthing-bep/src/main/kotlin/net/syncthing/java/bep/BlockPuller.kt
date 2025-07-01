@@ -24,7 +24,7 @@ import net.syncthing.java.core.beans.BlockInfo
 import net.syncthing.java.core.beans.FileBlocks
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.java.core.interfaces.TempRepository
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 import org.apache.logging.log4j.util.Unbox.box
 import org.bouncycastle.util.encoders.Hex
 import java.io.*
@@ -33,7 +33,7 @@ import java.util.*
 import kotlin.collections.HashMap
 
 object BlockPuller {
-    private val LOGGER = LogManager.getLogger(BlockPuller::class.java)
+    private val logger = LoggerFactory.getLogger(BlockPuller::class.java)
 
     suspend fun pullFile(
             fileInfo: FileInfo,
@@ -53,11 +53,11 @@ object BlockPuller {
 
         if (fileBlocks.hash != fileInfo.hash) {
             val message = "The current file entry hash (${fileInfo.hash}) does not match the provided one (${fileBlocks.hash})."
-            LOGGER.atWarn().log(message)
+            logger.warn(message)
             throw IllegalStateException(message)
         }
 
-        LOGGER.atInfo().log("Pulling File: {}, File Blocks: {}.", fileBlocks.path, fileBlocks.blocks)
+        logger.info("Pulling File: {}, File Blocks: {}.", fileBlocks.path, fileBlocks.blocks)
 
         val blockTempIdByHash = Collections.synchronizedMap(HashMap<String, String>())
 
@@ -68,7 +68,7 @@ object BlockPuller {
         )
 
         suspend fun pullBlock(fileBlocks: FileBlocks, block: BlockInfo, timeoutInMillis: Long, connectionActorWrapper: ConnectionActorWrapper): ByteArray {
-            LOGGER.atDebug().log("Request sent for the block {}.", block.hash)
+            logger.debug("Request sent for the block {}.", block.hash)
 
             val response =
                     withTimeout(timeoutInMillis) {
@@ -87,7 +87,7 @@ object BlockPuller {
                             // is handled differently so that the timeout is ignored.
                             // Due to that, it's converted to an IOException.
 
-                            LOGGER.atWarn().log("Timeout limit exceeded ({} millis).", box(timeoutInMillis))
+                            logger.warn("Timeout limit exceeded ({} millis).", box(timeoutInMillis))
                             throw IOException("Time limit exceeded while requesting block.")
                         }
                     }
@@ -95,7 +95,7 @@ object BlockPuller {
             if (response.code != BlockExchangeProtos.ErrorCode.NO_ERROR) {
                 // the server does not have/ want to provide this file -> don't ask him again
                 connectionHelper.disableConnection(connectionActorWrapper)
-                LOGGER.atWarn().log("Server does not have or is not able to provide the requested file (Error response: {}).", response.code)
+                logger.warn("Server does not have or is not able to provide the requested file (Error response: {}).", response.code)
                 throw IOException("Server does not have or is not able to provide the requested file.")
             }
 
@@ -103,7 +103,7 @@ object BlockPuller {
             val hash = Hex.toHexString(MessageDigest.getInstance("SHA-256").digest(data))
 
             if (hash != block.hash) {
-                LOGGER.atWarn().log("Expected hash: ({}), Provided hash: ({}).", block.hash, hash)
+                logger.warn("Expected hash: ({}), Provided hash: ({}).", block.hash, hash)
                 throw IllegalStateException("The hash of the received block does not match the expected hash.")
             }
 
@@ -129,7 +129,7 @@ object BlockPuller {
                 repeat(4 /* 4 blocks per time */) { workerNumber ->
                     async {
                         for (block in pipe) {
-                            LOGGER.atDebug().log("Message block with hash ({}) from worker: {}.", block.hash, box(workerNumber))
+                            logger.debug("Message block with hash ({}) from worker: {}.", block.hash, box(workerNumber))
 
                             lateinit var blockContent: ByteArray
 

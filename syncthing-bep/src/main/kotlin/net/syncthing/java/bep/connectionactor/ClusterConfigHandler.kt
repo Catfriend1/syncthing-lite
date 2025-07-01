@@ -20,11 +20,11 @@ import net.syncthing.java.bep.index.IndexHandler
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.FolderInfo
 import net.syncthing.java.core.configuration.Configuration
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 import org.apache.logging.log4j.util.Unbox.box
 
 object ClusterConfigHandler {
-    private val LOGGER = LogManager.getLogger(ClusterConfigHandler::class.java)
+    private val logger = LoggerFactory.getLogger(ClusterConfigHandler::class.java)
 
     fun buildClusterConfig(
             configuration: Configuration,
@@ -60,7 +60,7 @@ object ClusterConfigHandler {
                                                 indexId = indexSequenceInfo.indexId
                                                 maxSequence = indexSequenceInfo.localSequence
 
-                                                LOGGER.atInfo().log("Send delta index information: Device = {}, Index = {}, Max (Local) Sequence = {}.",
+                                                logger.info("Send delta index information: Device = {}, Index = {}, Max (Local) Sequence = {}.",
                                                         indexSequenceInfo.deviceId,
                                                         box(indexSequenceInfo.indexId),
                                                         box(indexSequenceInfo.localSequence))
@@ -103,7 +103,7 @@ object ClusterConfigHandler {
                 }
                 if (ourDevice != null) {
                     folderInfo = folderInfo.copy(isShared = true)
-                    LOGGER.atInfo().log("Folder {} shared from device {}.", folderInfo, otherDeviceId)
+                    logger.info("Folder {} shared from device {}.", folderInfo, otherDeviceId)
 
                     val oldFolderEntry = configFolders.find { it.folderId == folderInfo.folderId }
 
@@ -120,7 +120,7 @@ object ClusterConfigHandler {
 
                         configFolders.add(newFolderInfo)
                         newSharedFolders.add(newFolderInfo)
-                        LOGGER.atInfo().log("New folder shared: {}.", folderInfo)
+                        logger.info("New folder shared: {}.", folderInfo)
                     } else {
                         if (oldFolderEntry.deviceIdWhitelist.contains(otherDeviceId)) {
                             folderInfo = folderInfo.copy(isDeviceInSharedFolderWhitelist = true)
@@ -141,7 +141,7 @@ object ClusterConfigHandler {
                         }
                     }
                 } else {
-                    LOGGER.atInfo().log("Folder {} not shared from device {}.", folderInfo, otherDeviceId)
+                    logger.info("Folder {} not shared from device {}.", folderInfo, otherDeviceId)
                 }
 
                 folderInfoList.add(folderInfo)

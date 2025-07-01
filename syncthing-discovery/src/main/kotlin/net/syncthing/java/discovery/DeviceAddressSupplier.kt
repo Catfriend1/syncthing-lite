@@ -20,7 +20,7 @@ import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withTimeout
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.beans.DeviceId
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 import org.apache.logging.log4j.spi.AbstractLogger.CATCHING_MARKER
 import java.io.Closeable
 
@@ -60,8 +60,7 @@ class DeviceAddressSupplier(private val peerDevices: Set<DeviceId>, private val 
                             getDeviceAddressOrWait()
                         }
                     } catch (ex: CancellationException) {
-                        LOGGER.atWarn().withThrowable(ex).withMarker(CATCHING_MARKER)
-                            .log("Cancellation exception occurred because no device address was found.")
+                        logger.warn("Cancellation exception occurred because no device address was found.", ex)
                     }
 
                     hasNext = next != null
@@ -85,6 +84,6 @@ class DeviceAddressSupplier(private val peerDevices: Set<DeviceId>, private val 
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(DeviceAddressSupplier::class.java)
+        private val logger = LoggerFactory.getLogger(DeviceAddressSupplier::class.java)
     }
 }
