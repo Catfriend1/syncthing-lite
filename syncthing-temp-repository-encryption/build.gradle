@@ -7,4 +7,5 @@ dependencies {
         exclude group: 'org.slf4j'
         exclude group: 'ch.qos.logback'
     }
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
