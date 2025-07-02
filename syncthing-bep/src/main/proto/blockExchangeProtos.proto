@@ -66,53 +66,57 @@ enum Compression {
 }
 
 message Index {
-    string            folder = 1;
+    string   folder = 1;
     repeated FileInfo files  = 2;
 }
 
 message IndexUpdate {
-    string            folder = 1;
+    string   folder = 1;
     repeated FileInfo files  = 2;
 }
 
 message FileInfo {
-    string       name           = 1;
-    FileInfoType type           = 2;
-    int64        size           = 3;
-    uint32       permissions    = 4;
-    int64        modified_s     = 5;
-    int32        modified_ns    = 11;
-    uint64       modified_by    = 12;
-    bool         deleted        = 6;
-    bool         invalid        = 7;
-    bool         no_permissions = 8;
-    Vector       version        = 9;
-    int64        sequence       = 10;
-    int32        block_size     = 13;
+    // The field ordering here optimizes for struct size / alignment --
+    // large types come before smaller ones.
 
-    repeated BlockInfo Blocks         = 16;
+    string             name           = 1;
+    int64              size           = 3;
+    int64              modified_s     = 5;
+    uint64             modified_by    = 12;
+    Vector             version        = 9;
+    int64              sequence       = 10;
+    repeated BlockInfo blocks         = 16;
     string             symlink_target = 17;
+    bytes              blocks_hash    = 18;
+    FileInfoType       type           = 2;
+    uint32             permissions    = 4;
+    int32              modified_ns    = 11;
+    int32              block_size     = 13;
 
     // The local_flags fields stores flags that are relevant to the local
     // host only. It is not part of the protocol, doesn't get sent or
     // received (we make sure to zero it), nonetheless we need it on our
     // struct and to be able to serialize it to/from the database.
     uint32 local_flags = 1000;
+
+    bool deleted        = 6;
+    bool invalid        = 7;
+    bool no_permissions = 8;
 }
 
 enum FileInfoType {
     FILE              = 0;
     DIRECTORY         = 1;
-    SYMLINK_FILE      = 2 [deprecated = true];
-    SYMLINK_DIRECTORY = 3 [deprecated = true];
+    SYMLINK_FILE      = 2;
+    SYMLINK_DIRECTORY = 3;
     SYMLINK           = 4;
 }
 
 message BlockInfo {
-    int64 offset     = 1;
-    int32 size       = 2;
-    bytes hash       = 3;
-    uint32 weak_hash = 4;
+     int64  offset    = 1;
+     int32  size      = 2;
+     bytes  hash      = 3;
+     uint32 weak_hash = 4;
 }
 
 message Vector {
