@@ -10,28 +10,20 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.0'
     implementation "org.apache.logging.log4j:log4j-api:$log4JVersion"
-    api "com.google.protobuf:protobuf-lite:$protobuf_lite_version"
+    api "com.google.protobuf:protobuf-javalite:$protobuf_lite_version"
 }
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.11.1"
+        artifact = "com.google.protobuf:protoc:$protobuf_lite_version"
     }
-    plugins {
-        javalite {
-            // The codegen for lite comes as a separate artifact
-            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
-        }
-    }
+
     generateProtoTasks {
         all().each { task ->
             task.builtins {
-                // In most cases you don't need the full Java output
-                // if you use the lite output.
-                remove java
-            }
-            task.plugins {
-                javalite { }
+                java {
+                    option 'lite'
+                }
             }
         }
     }
@@ -39,4 +31,3 @@ protobuf {
 
 // Workaround for https://github.com/google/protobuf-gradle-plugin/issues/100
 compileKotlin.dependsOn('generateProto')
-sourceSets.main.kotlin.srcDirs += file("${protobuf.generatedFilesBaseDir}/main/javalite")

@@ -53,5 +53,5 @@ dependencies {
         exclude group: 'ch.qos.logback'
     }
 
-    implementation "com.google.protobuf:protobuf-lite:$protobuf_lite_version"
+    implementation "com.google.protobuf:protobuf-javalite:$protobuf_lite_version"
 }
