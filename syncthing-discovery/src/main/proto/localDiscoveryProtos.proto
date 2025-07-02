@@ -1,9 +1,11 @@
+syntax = "proto3";
+
 package net.syncthing.java.discovery.protocol;
 
 option optimize_for = LITE_RUNTIME;
 
 message Announce {
-    optional bytes           id          = 1;
+    bytes           id          = 1;
     repeated string addresses   = 2;
-    optional int64           instance_id = 3;
+    int64           instance_id = 3;
 }

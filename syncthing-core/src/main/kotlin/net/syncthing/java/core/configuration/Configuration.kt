@@ -23,8 +23,6 @@ import java.net.InetAddress
 import java.util.*
 
 class Configuration(configFolder: File = DefaultConfigFolder) {
-
-    private val logger = LoggerFactory.getLogger(javaClass)
     private val modifyLock = Mutex()
     private val saveLock = Mutex()
     private val configChannel = ConflatedBroadcastChannel<Config>()
@@ -62,10 +60,11 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
                     Config.parse(JsonReader(StringReader(configFile.readText())))
             )
         }
-        logger.debug("Loaded config = ${configChannel.value}")
+        logger.debug("Loaded Configuration: {}.", configChannel.value)
     }
 
     companion object {
+        private val logger = LoggerFactory.getLogger(Configuration::class.java)
         private val DefaultConfigFolder = File(System.getProperty("user.home"), ".config/syncthing-java/")
         private const val ConfigFileName = "config.json"
         private const val DatabaseFolderName = "database"
@@ -135,7 +134,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
                 return
             }
 
-            System.out.println("writing config to $configFile")
+            logger.info("Writing config to {}.", configFile)
 
             configFile.writeText(
                     StringWriter().apply {

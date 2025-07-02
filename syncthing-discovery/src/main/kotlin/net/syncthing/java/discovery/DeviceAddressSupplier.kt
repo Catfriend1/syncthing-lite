@@ -28,8 +28,6 @@ class DeviceAddressSupplier(private val peerDevices: Set<DeviceId>, private val 
         devicesAddressesManager.getDeviceAddressManager(deviceId).streamCurrentDeviceAddresses()
     }
 
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     private suspend fun getDeviceAddress(): DeviceAddress? {
         return select {
             deviceAddressListStreams.forEach { stream ->
@@ -61,7 +59,7 @@ class DeviceAddressSupplier(private val peerDevices: Set<DeviceId>, private val 
                             getDeviceAddressOrWait()
                         }
                     } catch (ex: CancellationException) {
-                        logger.warn("", ex)
+                        logger.warn("Cancellation exception occurred because no device address was found.", ex)
                     }
 
                     hasNext = next != null
@@ -82,5 +80,9 @@ class DeviceAddressSupplier(private val peerDevices: Set<DeviceId>, private val 
                 return res
             }
         }
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(DeviceAddressSupplier::class.java)
     }
 }

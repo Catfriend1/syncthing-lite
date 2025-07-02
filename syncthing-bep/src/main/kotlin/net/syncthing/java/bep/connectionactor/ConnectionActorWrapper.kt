@@ -42,22 +42,22 @@ class ConnectionActorWrapper (
                 this@ConnectionActorWrapper.connection = connection
                 this@ConnectionActorWrapper.connectionInfo.send(connectionInfo)
             }
-        }.reportExceptions("ConnectionActorWrapper(${deviceId.deviceId})", exceptionReportHandler)
+        }.reportExceptions("ConnectionActorWrapper(${deviceId.deviceId}).", exceptionReportHandler)
     }
 
     suspend fun sendRequest(request: BlockExchangeProtos.Request) = ConnectionActorUtil.sendRequest(
             request,
-            connection?.actor ?: throw IOException("not connected")
+            connection?.actor ?: throw IOException("Not connected.")
     )
 
     suspend fun sendIndexUpdate(update: BlockExchangeProtos.IndexUpdate) = ConnectionActorUtil.sendIndexUpdate(
             update,
-            connection?.actor ?: throw IOException("not connected")
+            connection?.actor ?: throw IOException("Not connected.")
     )
 
     fun hasFolder(folderId: String) = connection?.clusterConfigInfo?.sharedFolderIds?.contains(folderId) ?: false
 
-    fun getClusterConfig() = connection?.clusterConfigInfo ?: throw IOException("not connected")
+    fun getClusterConfig() = connection?.clusterConfigInfo ?: throw IOException("Not connected.")
 
     fun shutdown() {
         job.cancel()

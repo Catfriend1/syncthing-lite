@@ -20,79 +20,89 @@ import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.utils.NetworkUtils
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayInputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
-import java.nio.ByteBuffer
+import java.io.IOException
 
-object HelloMessageHandler {
-    private val logger = LoggerFactory.getLogger(HelloMessageHandler::class.java)
+private val logger = LoggerFactory.getLogger("net.syncthing.java.bep.connectionactor.HelloMessageHandler")
+private const val MAGIC = 0x2EA7D90B
 
-    fun sendHelloMessage(configuration: Configuration, outputStream: DataOutputStream) {
-        sendHelloMessage(
-                BlockExchangeProtos.Hello.newBuilder()
-                        .setClientName(configuration.clientName)
-                        .setClientVersion(configuration.clientVersion)
-                        .setDeviceName(configuration.localDeviceName)
-                        .build(),
-                outputStream
+/**
+ * Creates a new [BlockExchangeProtos.Hello] instance populated with data from the [configuration].
+ */
+internal fun newHelloInstance(configuration: Configuration) = BlockExchangeProtos.Hello.newBuilder()
+    .setClientName(configuration.clientName)
+    .setClientVersion(configuration.clientVersion)
+    .setDeviceName(configuration.localDeviceName)
+    .build()
+
+/**
+ * Sends the
+ * [pre-authentication message](https://docs.syncthing.net/specs/bep-v1.html#pre-authentication-messages) containing
+ * the [message] to the remote client.
+ *
+ * @param outputStream will be flushed, but not closed.
+ * @throws IOException if there is a problem writing to the [outputStream].
+ */
+@Throws(IOException::class)
+internal fun sendPreAuthenticationMessage(message: BlockExchangeProtos.Hello, outputStream: DataOutputStream) {
+    logger.debug("Sending pre-authentication message.")
+
+    outputStream.apply {
+        writeInt(MAGIC)
+        writeShort(message.serializedSize)
+        message.writeTo(this)
+        flush()
+    }
+}
+
+/**
+ * Receives the
+ * [pre-authentication message](https://docs.syncthing.net/specs/bep-v1.html#pre-authentication-messages) from the
+ * remote party.
+ *
+ * @param inputStream is not closed by this function.
+ *
+ * @throws IOException if the [inputStream] does not begin with [MAGIC], or if the indicated
+ * size of the [BlockExchangeProtos.Hello] is `0`, or if the [BlockExchangeProtos.Hello] cannot be parsed.
+ */
+@Throws(IOException::class)
+fun receivePreAuthenticationMessage(inputStream: DataInputStream): BlockExchangeProtos.Hello {
+    val magic = inputStream.readInt()
+    NetworkUtils.assertProtocol(magic == MAGIC) {"magic mismatch, got $magic"}
+
+    val length = inputStream.readUnsignedShort()
+    NetworkUtils.assertProtocol(length > 0) { "invalid length, must be > 0, got $length" }
+
+    val buffer = ByteArray(length)
+    inputStream.readFully(buffer) // Lies exakt `length` Bytes in das Array
+
+    return BlockExchangeProtos.Hello.parseFrom(ByteArrayInputStream(buffer))
+}
+
+suspend fun processHelloMessage(
+        hello: BlockExchangeProtos.Hello,
+        configuration: Configuration,
+        deviceId: DeviceId
+) {
+    logger.info("Received hello message: containing device name ({}), client name ({}), and client version ({}).",
+            hello.deviceName,
+            hello.clientName,
+            hello.clientVersion)
+
+    // update the local device name
+    configuration.update { oldConfig ->
+        oldConfig.copy(
+                peers = oldConfig.peers.map { peer ->
+                    if (peer.deviceId == deviceId) {
+                        DeviceInfo(deviceId, hello.deviceName)
+                    } else {
+                        peer
+                    }
+                }.toSet()
         )
     }
 
-    private fun sendHelloMessage(message: BlockExchangeProtos.Hello, outputStream: DataOutputStream) {
-        sendHelloMessage(message.toByteArray(), outputStream)
-    }
-
-    private fun sendHelloMessage(payload: ByteArray, outputStream: DataOutputStream) {
-        logger.debug("Sending hello message")
-
-        outputStream.apply {
-            write(
-                    ByteBuffer.allocate(6).apply {
-                        putInt(ConnectionConstants.MAGIC)
-                        putShort(payload.size.toShort())
-                    }.array()
-            )
-            write(payload)
-            flush()
-        }
-    }
-
-    fun receiveHelloMessage(
-            inputStream: DataInputStream
-    ): BlockExchangeProtos.Hello {
-        val magic = inputStream.readInt()
-        NetworkUtils.assertProtocol(magic == ConnectionConstants.MAGIC) {"magic mismatch, got $magic"}
-
-        val length = inputStream.readShort().toInt()
-        NetworkUtils.assertProtocol(length > 0) {"invalid length, must be > 0, got $length"}
-
-        return BlockExchangeProtos.Hello.parseFrom(
-                ByteArray(length).apply {
-                    inputStream.readFully(this)
-                }
-        )
-    }
-
-    suspend fun processHelloMessage(
-            hello: BlockExchangeProtos.Hello,
-            configuration: Configuration,
-            deviceId: DeviceId
-    ) {
-        logger.info("Received hello message, deviceName=${hello.deviceName}, clientName=${hello.clientName}, clientVersion=${hello.clientVersion}")
-
-        // update the local device name
-        configuration.update { oldConfig ->
-            oldConfig.copy(
-                    peers = oldConfig.peers.map { peer ->
-                        if (peer.deviceId == deviceId) {
-                            DeviceInfo(deviceId, hello.deviceName)
-                        } else {
-                            peer
-                        }
-                    }.toSet()
-            )
-        }
-
-        configuration.persistLater()
-    }
+    configuration.persistLater()
 }

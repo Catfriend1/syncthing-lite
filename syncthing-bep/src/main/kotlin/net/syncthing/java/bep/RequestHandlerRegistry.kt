@@ -33,7 +33,7 @@ class RequestHandlerRegistry {
             val oldListener = listeners[filter]
 
             if (oldListener != null) {
-                throw IOException("there is already an listener for this filter")
+                throw IOException("A listener for this filter already exists.")
             }
 
             listeners[filter] = listener

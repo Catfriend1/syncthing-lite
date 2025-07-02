@@ -42,14 +42,13 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import org.apache.logging.log4j.util.Unbox.box
 
 // TODO: refactor this
 class BlockPusher(private val localDeviceId: DeviceId,
                   private val connectionHandler: ConnectionActorWrapper,
                   private val indexHandler: IndexHandler,
                   private val requestHandlerRegistry: RequestHandlerRegistry) {
-
-    private val logger = LoggerFactory.getLogger(javaClass)
 
     suspend fun pushDelete(folderId: String, targetPath: String): BlockExchangeProtos.IndexUpdate {
         val fileInfo = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoByPath(folderId, targetPath)!!
@@ -88,7 +87,11 @@ class BlockPusher(private val localDeviceId: DeviceId,
         requestHandlerRegistry.registerListener(requestFilter) { request ->
             GlobalScope.async {
                 val hash = Hex.toHexString(request.hash.toByteArray())
-                logger.debug("handling block request = {}:{}-{} ({})", request.name, request.offset, request.size, hash)
+                logger.debug("Handling block request: {}:{}-{} ({}).",
+                        request.name,
+                        box(request.offset),
+                        box(request.size),
+                        hash)
                 val data = dataSource.getBlock(request.offset, request.size, hash)
 
                 sentBlocks.add(hash)
@@ -104,7 +107,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
             }
         }
 
-        logger.debug("send index update for file = {}", targetPath)
+        logger.debug("Send index update for this file: {}.", targetPath)
         val indexListenerStream = indexHandler.subscribeToOnIndexUpdateEvents()
         GlobalScope.launch {
             indexListenerStream.consumeEach { event ->
@@ -112,6 +115,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
                     val (indexFolderId, newRecords, _) = event
 
                     if (indexFolderId == folderId) {
+                        //TODO Rename fileInfo2 (there's also a fileInfo and fileInfo1)
                         for (fileInfo2 in newRecords) {
                             if (fileInfo2.path == targetPath && fileInfo2.hash == dataSource.getHash()) { //TODO check not invalid
                                 //                                sentBlocks.addAll(dataSource.getHashes());
@@ -138,10 +142,11 @@ class BlockPusher(private val localDeviceId: DeviceId,
             override fun isCompleted() = isCompleted.get()
 
             override fun close() {
-                logger.debug("closing upload process")
+                logger.debug("Closing the upload process.")
                 monitoringProcessExecutorService.shutdown()
                 indexListenerStream.cancel()
                 requestHandlerRegistry.unregisterListener(requestFilter)
+                //TODO: Rename fileInfo1 and fileInfo
                 val (fileInfo1, folderStatsUpdate) = indexHandler.indexRepository.runInTransaction {
                     val folderStatsUpdateCollector = FolderStatsUpdateCollector(folderId)
 
@@ -161,7 +166,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 }
 
                 runBlocking { indexHandler.sendFolderStatsUpdate(folderStatsUpdate) }
-                logger.info("sent file info record = {}", fileInfo1)
+                logger.info("Sent file information record = {}.", fileInfo1)
             }
 
             @Throws(InterruptedException::class, IOException::class)
@@ -182,20 +187,20 @@ class BlockPusher(private val localDeviceId: DeviceId,
                                         oldVersions: Iterable<Version>?): BlockExchangeProtos.IndexUpdate {
         run {
             val nextSequence = indexHandler.getNextSequenceNumber()
-            val list = oldVersions ?: emptyList()
-            logger.debug("version list = {}", list)
+            val oldVersionsList = oldVersions ?: emptyList()
+            logger.debug("File Version List: {}.", oldVersionsList)
             val id = ByteBuffer.wrap(localDeviceId.toHashData()).long
-            val version = BlockExchangeProtos.Counter.newBuilder()
+            val newVersion = BlockExchangeProtos.Counter.newBuilder()
                     .setId(id)
                     .setValue(nextSequence)
                     .build()
-            logger.debug("append new version = {}", version)
+            logger.debug("Append new version to index. New version: {}.", newVersion)
             fileInfoBuilder
                     .setSequence(nextSequence)
-                    .setVersion(Vector.newBuilder().addAllCounters(list.map { record ->
+                    .setVersion(Vector.newBuilder().addAllCounters(oldVersionsList.map { record ->
                         BlockExchangeProtos.Counter.newBuilder().setId(record.id).setValue(record.value).build()
                     })
-                            .addCounters(version))
+                            .addCounters(newVersion))
         }
         val lastModified = Date()
         val fileInfo = fileInfoBuilder
@@ -207,7 +212,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 .setFolder(folderId)
                 .addFiles(fileInfo)
                 .build()
-        logger.debug("index update = {}", fileInfo)
+        logger.debug("Update index with file information. File info: {}.", fileInfo)
 
         connectionHandler.sendIndexUpdate(indexUpdate)
 
@@ -302,7 +307,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
     }
 
     companion object {
-
+        private val logger = LoggerFactory.getLogger(BlockPusher::class.java)
         const val BLOCK_SIZE = 128 * 1024
     }
 

@@ -1,11 +1,10 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 34
-    dataBinding.enabled = true
-
     namespace = "net.syncthing.lite"
 
     defaultConfig {
@@ -26,18 +25,6 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    signingConfigs {
-        release {
-            storeFile = {
-                def path = System.getenv("SYNCTHING_RELEASE_STORE_FILE")
-                return (path) ? file(path) : null
-            }()
-            storePassword System.getenv("SIGNING_PASSWORD") ?: ""
-            keyAlias System.getenv("SYNCTHING_RELEASE_KEY_ALIAS") ?: ""
-            keyPassword System.getenv("SIGNING_PASSWORD") ?: ""
-        }
-    }
-
     buildFeatures {
         dataBinding true
     }
@@ -45,11 +32,6 @@ android {
     buildTypes {
         debug {
             minifyEnabled false
-        }
-        release {
-            signingConfig signingConfigs.release
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 

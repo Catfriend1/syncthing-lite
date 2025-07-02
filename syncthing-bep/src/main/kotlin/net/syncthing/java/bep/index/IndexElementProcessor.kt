@@ -92,7 +92,7 @@ object IndexElementProcessor {
             }
             BlockExchangeProtos.FileInfoType.DIRECTORY -> builder.setTypeDir()
             else -> {
-                logger.warn("unsupported file type = {}, discarding file info", bepFileInfo.type)
+                logger.warn("Discarding file information due to an unsupported file type: {}.", bepFileInfo.type)
                 return null
             }
         }
@@ -113,10 +113,10 @@ object IndexElementProcessor {
             folderStatsUpdateCollector: FolderStatsUpdateCollector
     ): FileInfo? {
         return if (shouldUpdateRecord(oldRecord, newRecord)) {
-            logger.trace("discarding record = {}, modified before local record", newRecord)
+            logger.trace("Local record contains newer update, thus discarding the old record ({})", newRecord)
             null
         } else {
-            logger.trace("loaded new record = {}", newRecord)
+            logger.trace("Loaded new record: {}.", newRecord)
 
             transaction.updateFileInfo(newRecord, fileBlocks)
             updateFolderStatsCollector(oldRecord, newRecord, folderStatsUpdateCollector)

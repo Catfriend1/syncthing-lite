@@ -31,7 +31,7 @@ object AddressRanker {
             AddressType.RELAY to 2000
     )
     private val ACCEPTED_ADDRESS_TYPES = BASE_SCORE_MAP.keys
-    private val logger = LoggerFactory.getLogger(javaClass)
+    private val logger = LoggerFactory.getLogger(AddressRanker::class.java)
 
     fun pingAddressesChannel(sourceAddresses: List<DeviceAddress>) = GlobalScope.produce<DeviceAddress> {
         sourceAddresses

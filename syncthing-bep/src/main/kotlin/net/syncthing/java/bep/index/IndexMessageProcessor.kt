@@ -7,6 +7,7 @@ import net.syncthing.java.core.beans.FolderStats
 import net.syncthing.java.core.beans.IndexInfo
 import net.syncthing.java.core.interfaces.IndexTransaction
 import org.slf4j.LoggerFactory
+import org.apache.logging.log4j.util.Unbox.box
 import java.lang.RuntimeException
 
 object IndexMessageProcessor {
@@ -21,7 +22,9 @@ object IndexMessageProcessor {
         val oldIndexInfo = transaction.findIndexInfoByDeviceAndFolder(peerDeviceId, folderId)
                 ?: throw IndexInfoNotFoundException()
 
-        logger.debug("processing {} index records for folder {}", message.filesList.size, folderId)
+        logger.debug("Processing {} index records for folder ID {}.",
+                box(message.filesList.size),
+                folderId)
 
         val oldRecords = transaction.findFileInfo(folderId, message.filesList.map { it.name })
         val folderStatsUpdateCollector = FolderStatsUpdateCollector(message.folder)

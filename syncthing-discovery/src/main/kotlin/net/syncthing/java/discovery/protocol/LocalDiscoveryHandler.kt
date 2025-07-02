@@ -30,8 +30,6 @@ internal class LocalDiscoveryHandler(
         private val onMessageReceivedListener: (LocalDiscoveryMessage) -> Unit,
         private val onMessageFromUnknownDeviceListener: (DeviceId) -> Unit = {}
 ) : Closeable {
-
-    private val logger = LoggerFactory.getLogger(javaClass)
     private val job = Job()
 
     fun sendAnnounceMessage() {
@@ -50,11 +48,11 @@ internal class LocalDiscoveryHandler(
                     if (message.deviceId == configuration.localDeviceId) {
                         // ignore announcement received from ourselves.
                     } else if (!configuration.peerIds.contains(message.deviceId)) {
-                        logger.trace("Received local announce from ${message.deviceId} which is not a peer, ignoring")
+                        logger.trace("Received local announcement from {}, which is not a peer, therefore ignoring.", message.deviceId)
 
                         onMessageFromUnknownDeviceListener(message.deviceId)
                     } else {
-                        logger.debug("received local announce from device id = {}", message.deviceId)
+                        logger.debug("Received local announcement from device ID: {}.", message.deviceId)
 
                         onMessageReceivedListener(message)
                     }
@@ -67,5 +65,9 @@ internal class LocalDiscoveryHandler(
 
     override fun close() {
         job.cancel()
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(LocalDiscoveryHandler::class.java)
     }
 }

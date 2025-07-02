@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 
 internal class GlobalDiscoveryHandler(private val configuration: Configuration) {
-    private val logger = LoggerFactory.getLogger(javaClass)
 
     @Deprecated(message = "coroutine version should be used instead of callback")
     fun query(deviceId: DeviceId, callback: (List<DeviceAddress>) -> Unit) = GlobalScope.launch {
@@ -89,6 +88,7 @@ internal class GlobalDiscoveryHandler(private val configuration: Configuration) 
     }
 
     companion object {
+        private val logger = LoggerFactory.getLogger(GlobalDiscoveryHandler::class.java)
         suspend fun queryAnnounceServer(server: DiscoveryServer, deviceId: DeviceId) =
                 GlobalDiscoveryUtil
                         .queryAnnounceServer(

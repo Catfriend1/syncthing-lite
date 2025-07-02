@@ -32,14 +32,12 @@ class DiscoveryHandler(
         private val configuration: Configuration,
         exceptionReportHandler: (ExceptionReport) -> Unit
 ) : Closeable {
-
-    private val logger = LoggerFactory.getLogger(javaClass)
     private val globalDiscoveryHandler = GlobalDiscoveryHandler(configuration)
     private val localDiscoveryHandler = LocalDiscoveryHandler(
             configuration,
             exceptionReportHandler,
             { message ->
-                logger.info("received device address list from local discovery")
+                logger.info("Received device address list from local discovery.")
 
                 GlobalScope.launch {
                     processDeviceAddressBg(message.addresses)
@@ -78,7 +76,7 @@ class DiscoveryHandler(
 
     private suspend fun processDeviceAddressBg(deviceAddresses: Iterable<DeviceAddress>) {
         if (isClosed) {
-            logger.debug("discarding device addresses, discovery handler already closed")
+            logger.debug("Discarding device addresses because discovery handler already closed.")
         } else {
             val list = deviceAddresses.toList()
             val peers = configuration.peerIds
@@ -126,5 +124,9 @@ class DiscoveryHandler(
 
     fun unregisterMessageFromUnknownDeviceListener(listener: (DeviceId) -> Unit) {
         onMessageFromUnknownDeviceListeners.remove(listener)
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(DiscoveryHandler::class.java)
     }
 }

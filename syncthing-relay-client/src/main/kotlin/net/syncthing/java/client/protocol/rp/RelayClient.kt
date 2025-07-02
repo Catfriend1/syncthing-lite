@@ -22,8 +22,9 @@ import net.syncthing.java.core.interfaces.RelayConnection
 import net.syncthing.java.core.security.KeystoreHandler
 import net.syncthing.java.core.utils.NetworkUtils
 import org.apache.commons.io.IOUtils
-import org.bouncycastle.util.encoders.Hex
 import org.slf4j.LoggerFactory
+import org.apache.logging.log4j.util.Unbox.box
+import org.bouncycastle.util.encoders.Hex
 import java.io.*
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -31,7 +32,6 @@ import java.net.Socket
 import java.nio.ByteBuffer
 
 class RelayClient(configuration: Configuration) {
-    private val logger = LoggerFactory.getLogger(javaClass)
     private val keystoreHandler: KeystoreHandler = KeystoreHandler.Loader().loadKeystore(configuration)
 
     @Throws(IOException::class, KeystoreHandler.CryptoException::class)
@@ -43,12 +43,12 @@ class RelayClient(configuration: Configuration) {
 
     @Throws(IOException::class)
     private fun openConnectionSessionMode(sessionInvitation: SessionInvitation): RelayConnection {
-        logger.debug("connecting to relay = {}:{} (session mode)", sessionInvitation.address, sessionInvitation.port)
+        logger.debug("Connecting to relay (Session Mode): Address {}, Port {}.", sessionInvitation.address, box(sessionInvitation.port))
         val socket = Socket(sessionInvitation.address, sessionInvitation.port)
         val inputStream = RelayDataInputStream(socket.getInputStream())
         val outputStream = RelayDataOutputStream(socket.getOutputStream())
         run {
-            logger.debug("sending join session request, session key = {}", sessionInvitation.key)
+            logger.debug("Sending join session request with session key: {}.", sessionInvitation.key)
             val key = Hex.decode(sessionInvitation.key)
             val lengthOfKey = key.size
             outputStream.writeHeader(JOIN_SESSION_REQUEST, 4 + lengthOfKey)
@@ -57,13 +57,13 @@ class RelayClient(configuration: Configuration) {
             outputStream.flush()
         }
         run {
-            logger.debug("reading relay response")
+            logger.debug("Reading relay response.")
             val messageReader = inputStream.readMessage()
             NetworkUtils.assertProtocol(messageReader.type == RESPONSE)
             val response = messageReader.readResponse()
-            logger.debug("response = {}", response)
+            logger.debug("Response from relay: {}.", response)
             NetworkUtils.assertProtocol(response.code == ResponseSuccess, {"response code = ${response.code} (${response.message}) expected $ResponseSuccess"})
-            logger.debug("relay connection ready")
+            logger.debug("Relay connection ready.")
         }
         return object : RelayConnection {
             override fun getSocket(): Socket {
@@ -79,12 +79,12 @@ class RelayClient(configuration: Configuration) {
 
     @Throws(IOException::class, KeystoreHandler.CryptoException::class)
     fun getSessionInvitation(relaySocketAddress: InetSocketAddress, deviceId: DeviceId): SessionInvitation {
-        logger.debug("connecting to relay = {} (temporary protocol mode)", relaySocketAddress)
+        logger.debug("Connecting to relay (temporary protocol mode) at address: {}.", relaySocketAddress)
         keystoreHandler.createSocket(relaySocketAddress).use { socket ->
             RelayDataInputStream(socket.inputStream).use { `in` ->
                 RelayDataOutputStream(socket.outputStream).use { out ->
                     run {
-                        logger.debug("sending connect request for device = {}", deviceId)
+                        logger.debug("Sending connect request for device ID: {}.", deviceId)
                         val deviceIdData = deviceId.toHashData()
                         val lengthOfId = deviceIdData.size
                         out.writeHeader(CONNECT_REQUEST, 4 + lengthOfId)
@@ -94,37 +94,35 @@ class RelayClient(configuration: Configuration) {
                     }
 
                     run {
-                        logger.debug("receiving session invitation")
+                        logger.debug("Receiving session invitation.")
                         val messageReader = `in`.readMessage()
-                        logger.debug("received message = {}", messageReader.dumpMessageForDebug())
+                        logger.debug("Received message: {}.", messageReader.dumpMessageForDebug())
                         if (messageReader.type == RESPONSE) {
                             val response = messageReader.readResponse()
                             throw IOException(response.message)
                         }
                         NetworkUtils.assertProtocol(messageReader.type == SESSION_INVITATION, {"message type mismatch, expected $SESSION_INVITATION, got ${messageReader.type}"})
-                        val builder = SessionInvitation.Builder()
-                                .setFrom(DeviceId.fromHashData(messageReader.readLengthAndData()).deviceId)
-                                .setKey(Hex.toHexString(messageReader.readLengthAndData()))
-                            val address = messageReader.readLengthAndData()
-                        if (address.isEmpty()) {
-                            builder.setAddress(socket.inetAddress)
+                        val from = DeviceId.fromHashData(messageReader.readLengthAndData()).deviceId
+                        val key = Hex.toHexString(messageReader.readLengthAndData())
+                        val address = messageReader.readLengthAndData()
+                        val invitationAddress =  if (address.isEmpty()) {
+                            socket.inetAddress
                         } else {
                             val inetAddress = InetAddress.getByAddress(address)
                             if (inetAddress == InetAddress.getByName("0.0.0.0")) {
-                                builder.setAddress(socket.inetAddress)
+                                socket.inetAddress
                             } else {
-                                builder.setAddress(inetAddress)
+                                inetAddress
                             }
                         }
                         val zero = messageReader.buffer.short.toInt()
                         NetworkUtils.assertProtocol(zero == 0, {"expected 0, found $zero"})
                         val port = messageReader.buffer.short.toInt()
                         NetworkUtils.assertProtocol(port > 0, {"got invalid port value = $port"})
-                        builder.setPort(port)
                         val serverSocket = messageReader.buffer.int and 1
-                        builder.setServerSocket(serverSocket == 1)
-                        logger.debug("closing connection (temporary protocol mode)")
-                        return builder.build()
+                        val isServerSocket = serverSocket == 1
+                        logger.debug("Closing connection (temporary protocol mode).")
+                        return SessionInvitation(from, key, invitationAddress, port, isServerSocket)
                     }
                 }
             }
@@ -197,7 +195,7 @@ class RelayClient(configuration: Configuration) {
     }
 
     companion object {
-
+        private val logger = LoggerFactory.getLogger(RelayClient::class.java)
         private const val MAGIC = -0x618643c0
         private const val JOIN_SESSION_REQUEST = 3
         private const val RESPONSE = 4
@@ -207,5 +205,4 @@ class RelayClient(configuration: Configuration) {
         private const val ResponseNotFound = 1
         private const val ResponseAlreadyConnected = 2
     }
-
 }

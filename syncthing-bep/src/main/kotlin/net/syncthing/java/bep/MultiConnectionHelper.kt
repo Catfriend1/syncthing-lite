@@ -33,7 +33,7 @@ class MultiConnectionHelper (
         }
 
         if (possibleConnections.isEmpty()) {
-            throw IOException("no matching connection is available")
+            throw IOException("No matching connection is available.")
         } else if (possibleConnections.size == 1) {
             return possibleConnections.first()
         } else {

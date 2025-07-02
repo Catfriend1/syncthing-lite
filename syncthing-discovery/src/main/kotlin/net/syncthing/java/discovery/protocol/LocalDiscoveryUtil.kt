@@ -38,7 +38,7 @@ object LocalDiscoveryUtil {
     private const val MAGIC = 0x2EA7D90B
     private const val INCOMING_BUFFER_SIZE = 1024
 
-    private val logger = LoggerFactory.getLogger(javaClass)
+    private val logger = LoggerFactory.getLogger(LocalDiscoveryUtil::class.java)
 
     suspend fun listenForAnnounceMessages(): ReceiveChannel<LocalDiscoveryMessage> = GlobalScope.produce {
         DatagramSocket(LISTENING_PORT, InetAddress.getByName("0.0.0.0")).use { datagramSocket ->
@@ -115,10 +115,10 @@ object LocalDiscoveryUtil {
             for (interfaceAddress in networkInterface.interfaceAddresses) {
                 val broadcastAddress = interfaceAddress.broadcast
 
-                logger.trace("interface = {} address = {} broadcast = {}", networkInterface, interfaceAddress, broadcastAddress)
+                logger.trace("Interface: {}, Address: {}, Broadcast: {}.", networkInterface, interfaceAddress, broadcastAddress)
 
                 if (broadcastAddress != null) {
-                    logger.debug("sending broadcast announce on {}", broadcastAddress)
+                    logger.debug("Sending broadcast announcement on {}.", broadcastAddress)
 
                     try {
                         DatagramSocket().use { broadcastSocket ->
