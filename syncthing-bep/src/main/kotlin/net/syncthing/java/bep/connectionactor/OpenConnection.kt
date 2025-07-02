@@ -23,6 +23,7 @@ import javax.net.ssl.SSLSocket
 
 object OpenConnection {
     private val logger = LoggerFactory.getLogger(OpenConnection::class.java)
+
     fun openSocketConnection(
             address: DeviceAddress,
             configuration: Configuration

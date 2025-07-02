@@ -7,13 +7,14 @@ import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.java.core.exception.ExceptionDetailException
 import net.syncthing.java.core.exception.ExceptionDetails
 import net.syncthing.java.core.interfaces.IndexTransaction
-import org.slf4j.LoggerFactory
 import org.bouncycastle.util.encoders.Hex
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.*
 
 object IndexElementProcessor {
     private val logger = LoggerFactory.getLogger(IndexElementProcessor::class.java)
+
     fun pushRecords(
             transaction: IndexTransaction,
             folder: String,

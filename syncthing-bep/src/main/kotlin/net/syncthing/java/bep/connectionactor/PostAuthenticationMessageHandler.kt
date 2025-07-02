@@ -27,6 +27,7 @@ import java.nio.ByteBuffer
 
 object PostAuthenticationMessageHandler {
     private val logger = LoggerFactory.getLogger(PostAuthenticationMessageHandler::class.java)
+
     fun sendMessage(
             outputStream: DataOutputStream,
             message: MessageLite,

@@ -70,6 +70,7 @@ object Util {
                 if (didAddDevice) {
                     library.configuration.persistLater()
                     library.syncthingClient.connectToNewlyAddedDevices()
+
                     context.toast(context.getString(R.string.device_import_success, newDeviceId.shortId))
                     onComplete()
                 } else {
