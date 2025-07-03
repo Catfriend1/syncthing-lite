@@ -90,18 +90,12 @@ object ConnectionActor {
                     }
                 }
 
-                val clusterConfigPair = withContext(coroutineExceptionHandler) {
-                    coroutineScope {
-                        launch {
-                            logger.debug("📤 sendPostAuthMessage() sending CLUSTER_CONFIG")
-                            sendPostAuthMessage(
-                                ClusterConfigHandler.buildClusterConfig(configuration, indexHandler, address.deviceId)
-                            )
-                        }
-                        receivePostAuthMessage() // ← liefert das Pair zurück
-                    }
-                }
+                logger.debug("📤 sendPostAuthMessage() sending CLUSTER_CONFIG")
+                sendPostAuthMessage(
+                    ClusterConfigHandler.buildClusterConfig(configuration, indexHandler, address.deviceId)
+                )
 
+                val clusterConfigPair = receivePostAuthMessage()
                 logger.debug("📬 Received post-auth message type: ${clusterConfigPair.first}, class: ${clusterConfigPair.second.javaClass.name}")
 
                 val clusterConfig = clusterConfigPair.second
