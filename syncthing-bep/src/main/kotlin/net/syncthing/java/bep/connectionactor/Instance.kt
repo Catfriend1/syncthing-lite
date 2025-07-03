@@ -93,13 +93,12 @@ object ConnectionActor {
                 val clusterConfigPair = withContext(coroutineExceptionHandler) {
                     coroutineScope {
                         launch {
+                            logger.debug("📤 sendPostAuthMessage() sending CLUSTER_CONFIG")
                             sendPostAuthMessage(
                                 ClusterConfigHandler.buildClusterConfig(configuration, indexHandler, address.deviceId)
                             )
                         }
-                        async {
-                            receivePostAuthMessage()
-                        }.await()
+                        receivePostAuthMessage() // ← liefert das Pair zurück
                     }
                 }
 
