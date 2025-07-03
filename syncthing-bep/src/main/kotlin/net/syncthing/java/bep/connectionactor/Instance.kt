@@ -67,8 +67,13 @@ object ConnectionActor {
                     PostAuthenticationMessageHandler.sendMessage(outputStream, message, markActivityOnSocket = {})
                 }
 
-                suspend fun receivePostAuthMessage() = receivePostAuthMessageLock.withLock {
-                    PostAuthenticationMessageHandler.receiveMessage(inputStream, markActivityOnSocket = {})
+                suspend fun receivePostAuthMessage(): Pair<BlockExchangeProtos.MessageType, MessageLite> {
+                    val result = PostAuthenticationMessageHandler.receiveMessage(
+                        inputStream = inputStream,
+                        markActivityOnSocket = {}
+                    )
+                    logger.debug("📡 receivePostAuthMessage() delivered: ${result.first}, class=${result.second.javaClass.name}")
+                    return result
                 }
 
                  val clusterConfigPair = try {

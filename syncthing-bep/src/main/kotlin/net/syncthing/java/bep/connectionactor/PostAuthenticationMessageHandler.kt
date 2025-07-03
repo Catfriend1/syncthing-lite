@@ -105,7 +105,7 @@ object PostAuthenticationMessageHandler {
             logger.debug("✅ Successfully parsed message of type ${header.type}")
             return header.type to parsed
         } catch (e: Exception) {
-            logger.error("❌ Error parsing ${header.type}: ${e.message}", e)
+            logger.error("🔥 Parsing exception for ${header.type}: ${e.message}", e)
             throw when (e) {
                 is IllegalAccessException, is IllegalArgumentException,
                 is InvocationTargetException, is NoSuchMethodException,
