@@ -140,12 +140,6 @@ object PostAuthenticationMessageHandler {
             markActivityOnSocket: () -> Unit,
             retryReadingLength: Boolean
     ): ByteArray {
-        val peek = ByteArray(16)
-        inputStream.mark(16)
-        inputStream.read(peek)
-        inputStream.reset()
-        logger.debug("👀 Peek before reading messageLength: ${peek.joinToString(" ") { "%02x".format(it) }}")
-
         var messageLength = inputStream.readInt()
 
         logger.debug("📏 Raw messageLength read: $messageLength")
