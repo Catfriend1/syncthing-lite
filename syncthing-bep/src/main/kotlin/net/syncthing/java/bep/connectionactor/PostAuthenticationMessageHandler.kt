@@ -71,7 +71,12 @@ object PostAuthenticationMessageHandler {
         )
 
         logger.debug("🔹 Raw header bytes: ${headerBytes.toHexString()}")
-        val header = BlockExchangeProtos.Header.parseFrom(headerBytes)
+        val header: BlockExchangeProtos.Header = if (headerBytes.isEmpty()) {
+            logger.warn("📭 Header bytes were empty — using default Header")
+            BlockExchangeProtos.Header.getDefaultInstance()
+        } else {
+            BlockExchangeProtos.Header.parseFrom(headerBytes)
+        }
         logger.debug("📦 Message compression: ${header.compression}, type: ${header.type}")
 
         var messageBuffer = readMessage(
@@ -116,22 +121,22 @@ object PostAuthenticationMessageHandler {
         markActivityOnSocket: () -> Unit,
         retryReadingLength: Boolean
     ): ByteArray {
-        var headerLength = inputStream.readShort().toInt()
+        val headerLength = inputStream.readShort().toInt() and 0xffff // Ensure unsigned
         logger.debug("🔍 [readHeader] Raw headerLength read: $headerLength")
 
-        if (retryReadingLength) {
-            while (headerLength == 0) {
-                logger.warn("⚠️ Received headerLength == 0, skipping short.")
-                headerLength = inputStream.readShort().toInt()
-                logger.debug("🔁 Retried headerLength: $headerLength")
-            }
+        if (headerLength == 0) {
+            logger.debug("📭 Header length == 0 → vermutlich Keepalive oder Nachricht ohne Header")
+            return ByteArray(0)
         }
 
         markActivityOnSocket()
-        NetworkUtils.assertProtocol(headerLength > 0) { "invalid length, must be > 0, got $headerLength" }
 
-        return ByteArray(headerLength).apply {
-            inputStream.readFully(this)
+        NetworkUtils.assertProtocol(headerLength > 0) {
+            "invalid header length, must be > 0, got $headerLength"
+        }
+
+        return ByteArray(headerLength).also {
+            inputStream.readFully(it)
         }
     }
 
