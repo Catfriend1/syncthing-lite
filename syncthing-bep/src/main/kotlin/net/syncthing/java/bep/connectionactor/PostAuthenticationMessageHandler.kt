@@ -101,12 +101,16 @@ object PostAuthenticationMessageHandler {
         logger.debug("📨 Received #${++messageCounter}: ${header.type} (${messageBuffer.size} bytes)")
 
         try {
-            return header.type to messageTypeInfo!!.parseFrom(messageBuffer)
+            val parsed = messageTypeInfo!!.parseFrom(messageBuffer)
+            logger.debug("✅ Successfully parsed message of type ${header.type}")
+            return header.type to parsed
         } catch (e: Exception) {
-            when (e) {
-                is IllegalAccessException, is IllegalArgumentException, is InvocationTargetException, is NoSuchMethodException, is SecurityException ->
-                    throw IOException(e)
-                else -> throw e
+            logger.error("❌ Error parsing ${header.type}: ${e.message}", e)
+            throw when (e) {
+                is IllegalAccessException, is IllegalArgumentException,
+                is InvocationTargetException, is NoSuchMethodException,
+                is SecurityException -> IOException(e)
+                else -> e
             }
         }
     }
