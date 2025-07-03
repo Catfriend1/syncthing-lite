@@ -90,10 +90,6 @@ object PostAuthenticationMessageHandler {
             logger.debug("✅ Successfully decompressed. First 64 bytes: ${messageBuffer.take(64).toByteArray().toHexString()}")
         }
 
-    
-    
-
-
         val messageTypeInfo = MessageTypes.messageTypesByProtoMessageType[header.type]
         NetworkUtils.assertProtocol(messageTypeInfo != null) {"unsupported message type = ${header.type}"}
 
@@ -146,6 +142,13 @@ object PostAuthenticationMessageHandler {
     ): ByteArray {
         var messageLength = inputStream.readInt()
 
+        logger.debug("📏 Raw messageLength read: $messageLength")
+
+        if (messageLength == 0) {
+            logger.warn("⚠️ Message length is zero — skipping readFully, maybe keepalive?")
+            return ByteArray(0)
+        }
+
         // TODO: what is this good for?
         if (retryReadingLength) {
             while (messageLength == 0) {
@@ -157,7 +160,9 @@ object PostAuthenticationMessageHandler {
         NetworkUtils.assertProtocol(messageLength >= 0) {"invalid length, must be >= 0, got $messageLength"}
 
         val messageBuffer = ByteArray(messageLength)
+        logger.debug("📥 Reading full messageBuffer ($messageLength bytes)...")
         inputStream.readFully(messageBuffer)
+        logger.debug("📥 Successfully read messageBuffer")
         markActivityOnSocket()
 
         return messageBuffer
