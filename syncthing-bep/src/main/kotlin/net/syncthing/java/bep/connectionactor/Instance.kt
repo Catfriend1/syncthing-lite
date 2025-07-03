@@ -43,7 +43,16 @@ object ConnectionActor {
     ): SendChannel<ConnectionAction> {
         val channel = Channel<ConnectionAction>(Channel.RENDEZVOUS)
 
+        val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+            logger.error("⚠️ Uncaught coroutine exception: ${throwable.message}", throwable)
+        }
+
         GlobalScope.async (Dispatchers.IO) {
+            Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+                println("💣 Uncaught exception in thread ${thread.name}: ${throwable.message}")
+                throwable.printStackTrace()
+            }
+
             OpenConnection.openSocketConnection(address, configuration).use { socket ->
                 val inputStream = DataInputStream(socket.inputStream)
                 val outputStream = DataOutputStream(socket.outputStream)
@@ -68,15 +77,20 @@ object ConnectionActor {
                 }
 
                 suspend fun receivePostAuthMessage(): Pair<BlockExchangeProtos.MessageType, MessageLite> {
-                    val result = PostAuthenticationMessageHandler.receiveMessage(
-                        inputStream = inputStream,
-                        markActivityOnSocket = {}
-                    )
-                    logger.debug("📡 receivePostAuthMessage() delivered: ${result.first}, class=${result.second.javaClass.name}")
-                    return result
+                    try {
+                        val result = PostAuthenticationMessageHandler.receiveMessage(
+                            inputStream = inputStream,
+                            markActivityOnSocket = {}
+                        )
+                        logger.debug("📡 receivePostAuthMessage() delivered: ${result.first}, class=${result.second.javaClass.name}")
+                        return result
+                    } catch (e: Exception) {
+                        logger.error("🚨 receivePostAuthMessage failed: ${e.message}", e)
+                        throw e
+                    }
                 }
 
-                 val clusterConfigPair = try {
+                val clusterConfigPair = withContext(coroutineExceptionHandler) {
                     coroutineScope {
                         launch {
                             sendPostAuthMessage(
@@ -87,9 +101,6 @@ object ConnectionActor {
                             receivePostAuthMessage()
                         }.await()
                     }
-                } catch (e: Exception) {
-                    logger.error("💥 Exception while receiving post-auth message: ${e.message}", e)
-                    throw e
                 }
 
                 logger.debug("📬 Received post-auth message type: ${clusterConfigPair.first}, class: ${clusterConfigPair.second.javaClass.name}")
