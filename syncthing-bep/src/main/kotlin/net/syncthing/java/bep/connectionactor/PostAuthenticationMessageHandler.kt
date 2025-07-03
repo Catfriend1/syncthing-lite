@@ -159,9 +159,18 @@ object PostAuthenticationMessageHandler {
 
         NetworkUtils.assertProtocol(messageLength >= 0) {"invalid length, must be >= 0, got $messageLength"}
 
-        val messageBuffer = ByteArray(messageLength)
         logger.debug("📥 Reading full messageBuffer ($messageLength bytes)...")
-        inputStream.readFully(messageBuffer)
+        val messageBuffer = ByteArray(messageLength)
+        var bytesRead = 0
+        while (bytesRead < messageLength) {
+            val result = inputStream.read(messageBuffer, bytesRead, messageLength - bytesRead)
+            if (result == -1) {
+                logger.warn("🛑 Stream ended unexpectedly after $bytesRead bytes (expected $messageLength)")
+                break
+            }
+            bytesRead += result
+            logger.debug("📶 Read $result bytes (total: $bytesRead/$messageLength)")
+        }
         logger.debug("📥 Successfully read messageBuffer")
         markActivityOnSocket()
 
