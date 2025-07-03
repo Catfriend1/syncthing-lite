@@ -27,6 +27,8 @@ import java.nio.ByteBuffer
 
 object PostAuthenticationMessageHandler {
     private val logger = LoggerFactory.getLogger(PostAuthenticationMessageHandler::class.java)
+    
+    private var messageCounter = 0
 
     fun sendMessage(
             outputStream: DataOutputStream,
@@ -95,6 +97,9 @@ object PostAuthenticationMessageHandler {
         val messageTypeInfo = MessageTypes.messageTypesByProtoMessageType[header.type]
         NetworkUtils.assertProtocol(messageTypeInfo != null) {"unsupported message type = ${header.type}"}
 
+        // 👇 Hier kommt dein Zähler ins Spiel:
+        logger.debug("📨 Received #${++messageCounter}: ${header.type} (${messageBuffer.size} bytes)")
+
         try {
             return header.type to messageTypeInfo!!.parseFrom(messageBuffer)
         } catch (e: Exception) {
@@ -107,23 +112,23 @@ object PostAuthenticationMessageHandler {
     }
 
     private fun readHeader(
-            inputStream: DataInputStream,
-            markActivityOnSocket: () -> Unit,
-            retryReadingLength: Boolean
+        inputStream: DataInputStream,
+        markActivityOnSocket: () -> Unit,
+        retryReadingLength: Boolean
     ): ByteArray {
         var headerLength = inputStream.readShort().toInt()
+        logger.debug("🔍 [readHeader] Raw headerLength read: $headerLength")
 
-        // TODO: what is this good for?
         if (retryReadingLength) {
             while (headerLength == 0) {
-                logger.warn("Received headerLength == 0, skipping short.")
+                logger.warn("⚠️ Received headerLength == 0, skipping short.")
                 headerLength = inputStream.readShort().toInt()
+                logger.debug("🔁 Retried headerLength: $headerLength")
             }
         }
 
         markActivityOnSocket()
-
-        NetworkUtils.assertProtocol(headerLength > 0) {"invalid length, must be > 0, got $headerLength"}
+        NetworkUtils.assertProtocol(headerLength > 0) { "invalid length, must be > 0, got $headerLength" }
 
         return ByteArray(headerLength).apply {
             inputStream.readFully(this)
