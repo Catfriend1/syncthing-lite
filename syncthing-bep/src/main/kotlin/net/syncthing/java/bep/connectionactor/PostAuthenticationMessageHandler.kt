@@ -55,26 +55,42 @@ object PostAuthenticationMessageHandler {
         markActivityOnSocket()
     }
 
+    fun ByteArray.toHexString(): String =
+        joinToString(" ") { "%02x".format(it) }
+
     fun receiveMessage(
             inputStream: DataInputStream,
             markActivityOnSocket: () -> Unit
     ): Pair<BlockExchangeProtos.MessageType, MessageLite> {
-        val header = BlockExchangeProtos.Header.parseFrom(readHeader(
-                inputStream = inputStream,
-                retryReadingLength = true,
-                markActivityOnSocket = markActivityOnSocket
-        ))
+        val headerBytes = readHeader(
+            inputStream = inputStream,
+            retryReadingLength = true,
+            markActivityOnSocket = markActivityOnSocket
+        )
+
+        logger.debug("🔹 Raw header bytes: ${headerBytes.toHexString()}")
+        val header = BlockExchangeProtos.Header.parseFrom(headerBytes)
+        logger.debug("📦 Message compression: ${header.compression}, type: ${header.type}")
 
         var messageBuffer = readMessage(
-                inputStream = inputStream,
-                retryReadingLength = true,
-                markActivityOnSocket = markActivityOnSocket
+            inputStream = inputStream,
+            retryReadingLength = true,
+            markActivityOnSocket = markActivityOnSocket
         )
+
+        logger.debug("🔸 Raw message buffer (${messageBuffer.size} bytes): ${messageBuffer.take(64).toByteArray().toHexString()}")
 
         if (header.compression == BlockExchangeProtos.MessageCompression.LZ4) {
             val uncompressedLength = ByteBuffer.wrap(messageBuffer).int
-            messageBuffer = LZ4Factory.fastestInstance().fastDecompressor().decompress(messageBuffer, 4, uncompressedLength)
+            logger.debug("💨 LZ4 compression detected. Uncompressed length: $uncompressedLength")
+            messageBuffer = LZ4Factory.fastestInstance().fastDecompressor()
+                .decompress(messageBuffer, 4, uncompressedLength)
+            logger.debug("✅ Successfully decompressed. First 64 bytes: ${messageBuffer.take(64).toByteArray().toHexString()}")
         }
+
+    
+    
+
 
         val messageTypeInfo = MessageTypes.messageTypesByProtoMessageType[header.type]
         NetworkUtils.assertProtocol(messageTypeInfo != null) {"unsupported message type = ${header.type}"}
