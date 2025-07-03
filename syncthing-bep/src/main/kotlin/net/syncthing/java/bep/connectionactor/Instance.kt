@@ -71,10 +71,20 @@ object ConnectionActor {
                     PostAuthenticationMessageHandler.receiveMessage(inputStream, markActivityOnSocket = {})
                 }
 
-                // cluster config exchange
-                val clusterConfigPair = coroutineScope {
-                    launch { sendPostAuthMessage(ClusterConfigHandler.buildClusterConfig(configuration, indexHandler, address.deviceId)) }
-                    async { receivePostAuthMessage() }.await()
+                 val clusterConfigPair = try {
+                    coroutineScope {
+                        launch {
+                            sendPostAuthMessage(
+                                ClusterConfigHandler.buildClusterConfig(configuration, indexHandler, address.deviceId)
+                            )
+                        }
+                        async {
+                            receivePostAuthMessage()
+                        }.await()
+                    }
+                } catch (e: Exception) {
+                    logger.error("💥 Exception while receiving post-auth message: ${e.message}", e)
+                    throw e
                 }
 
                 logger.debug("📬 Received post-auth message type: ${clusterConfigPair.first}, class: ${clusterConfigPair.second.javaClass.name}")
