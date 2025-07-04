@@ -89,6 +89,8 @@ class IndexMessageQueueProcessor (
                     // this is expected when the data is deleted but some index updates are still in the queue
 
                     logger.warn("Could not find the index information for the index update.")
+                } catch (ex: Exception) {
+                    logger.error("💥 Unexpected exception while processing index message: ${ex.message}", ex)
                 }
             }
         }.reportExceptions("IndexMessageQueueProcessor.indexUpdateProcessingQueue", exceptionReportHandler)
@@ -112,7 +114,10 @@ class IndexMessageQueueProcessor (
     private suspend fun doHandleIndexMessageReceivedEvent(action: IndexUpdateAction) {
         val (message, clusterConfigInfo, peerDeviceId) = action
 
-        val folderInfo = clusterConfigInfo.folderInfoById[message.folder]
+        val folderId = message.folder
+        logger.debug("🔎 Checking folder info for folderId=$folderId")
+    
+        val folderInfo = clusterConfigInfo.folderInfoById[folderId]
                 ?: throw IllegalStateException("Received folder information for folder without known folder information.")
 
         if (!folderInfo.isDeviceInSharedFolderWhitelist) {
