@@ -20,7 +20,10 @@ object IndexMessageProcessor {
     ): Result {
         val folderId = message.folder
         val oldIndexInfo = transaction.findIndexInfoByDeviceAndFolder(peerDeviceId, folderId)
-                ?: throw IndexInfoNotFoundException()
+        if (oldIndexInfo == null) {
+            logger.warn("⚠️ No IndexInfo found for $peerDeviceId / folder=$folderId")
+            throw IndexInfoNotFoundException()
+        }
 
         logger.debug("Processing {} index records for folder ID {}.",
                 box(message.filesList.size),
