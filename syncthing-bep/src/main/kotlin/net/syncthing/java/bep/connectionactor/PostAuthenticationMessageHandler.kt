@@ -89,10 +89,10 @@ object PostAuthenticationMessageHandler {
 
         if (header.compression == BlockExchangeProtos.MessageCompression.LZ4) {
             val uncompressedLength = ByteBuffer.wrap(messageBuffer).int
-            logger.debug("💨 LZ4 compression detected. Uncompressed length: $uncompressedLength")
+            // logger.debug("💨 LZ4 compression detected. Uncompressed length: $uncompressedLength")
             messageBuffer = LZ4Factory.fastestInstance().fastDecompressor()
                 .decompress(messageBuffer, 4, uncompressedLength)
-            logger.debug("✅ Successfully decompressed. First 64 bytes: ${messageBuffer.take(64).toByteArray().toHexString()}")
+            // logger.debug("✅ Successfully decompressed. First 64 bytes: ${messageBuffer.take(64).toByteArray().toHexString()}")
         }
 
         val messageTypeInfo = MessageTypes.messageTypesByProtoMessageType[header.type]
@@ -121,10 +121,10 @@ object PostAuthenticationMessageHandler {
         retryReadingLength: Boolean
     ): ByteArray {
         val headerLength = inputStream.readShort().toInt() and 0xffff // Ensure unsigned
-        logger.debug("🔍 [readHeader] Raw headerLength read: $headerLength")
+        // logger.debug("🔍 [readHeader] Raw headerLength read: $headerLength")
 
         if (headerLength == 0) {
-            logger.debug("📭 Header length == 0 → vermutlich Keepalive oder Nachricht ohne Header")
+            logger.debug("📭 headerLength == 0, message may be keepalive or without header")
             return ByteArray(0)
         }
 
@@ -146,7 +146,7 @@ object PostAuthenticationMessageHandler {
     ): ByteArray {
         var messageLength = inputStream.readInt()
 
-        logger.debug("📏 Raw messageLength read: $messageLength")
+        // logger.debug("📏 Raw messageLength read: $messageLength")
 
         if (messageLength == 0) {
             logger.warn("⚠️ Message length is zero — skipping readFully, maybe keepalive?")
@@ -163,7 +163,7 @@ object PostAuthenticationMessageHandler {
 
         NetworkUtils.assertProtocol(messageLength >= 0) {"invalid length, must be >= 0, got $messageLength"}
 
-        logger.debug("📥 Reading full messageBuffer ($messageLength bytes)...")
+        // logger.debug("📥 Reading full messageBuffer ($messageLength bytes)...")
         val messageBuffer = ByteArray(messageLength)
         var bytesRead = 0
         while (bytesRead < messageLength) {
@@ -173,9 +173,9 @@ object PostAuthenticationMessageHandler {
                 break
             }
             bytesRead += result
-            logger.debug("📶 Read $result bytes (total: $bytesRead/$messageLength)")
+            // logger.debug("📶 Read $result bytes (total: $bytesRead/$messageLength)")
         }
-        logger.debug("📥 Successfully read messageBuffer")
+        // logger.debug("📥 Successfully read messageBuffer")
         markActivityOnSocket()
 
         return messageBuffer
