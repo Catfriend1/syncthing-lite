@@ -91,13 +91,22 @@ object ConnectionActor {
                 }
 
                 logger.debug("📤 sendPostAuthMessage() sending CLUSTER_CONFIG")
-                sendPostAuthMessage(
-                    ClusterConfigHandler.buildClusterConfig(configuration, indexHandler, address.deviceId)
-                )
-
-                val clusterConfigPair = receivePostAuthMessage()
+                val clusterConfigPair = try {
+                    coroutineScope {
+                        launch {
+                            sendPostAuthMessage(
+                                ClusterConfigHandler.buildClusterConfig(configuration, indexHandler, address.deviceId)
+                            )
+                        }
+                        async {
+                            receivePostAuthMessage()
+                        }.await()
+                    }
+                } catch (e: Exception) {
+                    logger.error("💥 Exception while receiving post-auth message: ${e.message}", e)
+                    throw e
+                }
                 logger.debug("📬 Received post-auth message type: ${clusterConfigPair.first}, class: ${clusterConfigPair.second.javaClass.name}")
-
                 val clusterConfig = clusterConfigPair.second
 
                 if (clusterConfig !is BlockExchangeProtos.ClusterConfig) {
