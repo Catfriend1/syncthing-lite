@@ -70,14 +70,14 @@ object PostAuthenticationMessageHandler {
             markActivityOnSocket = markActivityOnSocket
         )
 
-        logger.debug("🔹 Raw header bytes: ${headerBytes.toHexString()}")
+        // logger.debug("🔹 Raw header bytes: ${headerBytes.toHexString()}")
         val header: BlockExchangeProtos.Header = if (headerBytes.isEmpty()) {
             logger.warn("📭 Header bytes were empty — using default Header")
             BlockExchangeProtos.Header.getDefaultInstance()
         } else {
             BlockExchangeProtos.Header.parseFrom(headerBytes)
         }
-        logger.debug("📦 Message compression: ${header.compression}, type: ${header.type}")
+        // logger.debug("📦 Message compression: ${header.compression}, type: ${header.type}")
 
         var messageBuffer = readMessage(
             inputStream = inputStream,
@@ -85,7 +85,7 @@ object PostAuthenticationMessageHandler {
             markActivityOnSocket = markActivityOnSocket
         )
 
-        logger.debug("🔸 Raw message buffer (${messageBuffer.size} bytes): ${messageBuffer.take(64).toByteArray().toHexString()}")
+        // logger.debug("🔸 Raw message buffer (${messageBuffer.size} bytes): ${messageBuffer.take(64).toByteArray().toHexString()}")
 
         if (header.compression == BlockExchangeProtos.MessageCompression.LZ4) {
             val uncompressedLength = ByteBuffer.wrap(messageBuffer).int
@@ -98,8 +98,7 @@ object PostAuthenticationMessageHandler {
         val messageTypeInfo = MessageTypes.messageTypesByProtoMessageType[header.type]
         NetworkUtils.assertProtocol(messageTypeInfo != null) {"unsupported message type = ${header.type}"}
 
-        // 👇 Hier kommt dein Zähler ins Spiel:
-        logger.debug("📨 Received #${++messageCounter}: ${header.type} (${messageBuffer.size} bytes)")
+        // logger.debug("📨 Received #${++messageCounter}: ${header.type} (${messageBuffer.size} bytes)")
 
         try {
             val parsed = messageTypeInfo!!.parseFrom(messageBuffer)
