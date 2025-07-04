@@ -93,51 +93,54 @@ object ClusterConfigHandler {
             for (folder in clusterConfig.foldersList ?: emptyList()) {
                 var folderInfo = ClusterConfigFolderInfo(folder.id, folder.label, isDeviceInSharedFolderWhitelist = false)
                 val devicesById = (folder.devicesList ?: emptyList())
-                        .associateBy { input ->
-                            DeviceId.fromHashData(input.id!!.toByteArray())
-                        }
+                    .associateBy { input -> DeviceId.fromHashData(input.id!!.toByteArray()) }
+
                 val otherDevice = devicesById[otherDeviceId]
                 val ourDevice = devicesById[configuration.localDeviceId]
+
                 if (otherDevice != null) {
                     folderInfo = folderInfo.copy(isAnnounced = true)
                 }
+
+                val oldFolderEntry = configFolders.find { it.folderId == folderInfo.folderId }
+
+                // 📌 Whitelist-Prüfung immer durchführen, auch wenn `ourDevice == null`
+                if (oldFolderEntry?.deviceIdWhitelist?.contains(otherDeviceId) == true) {
+                    folderInfo = folderInfo.copy(isDeviceInSharedFolderWhitelist = true)
+                }
+
                 if (ourDevice != null) {
                     folderInfo = folderInfo.copy(isShared = true)
                     logger.info("Folder {} shared from device {}.", folderInfo, otherDeviceId)
 
-                    val oldFolderEntry = configFolders.find { it.folderId == folderInfo.folderId }
-
                     if (oldFolderEntry == null) {
-                        folderInfo = folderInfo.copy(isDeviceInSharedFolderWhitelist = true)
-
                         val newFolderInfo = FolderInfo(
-                                folderId = folderInfo.folderId,
-                                label = folderInfo.label,
-                                deviceIdWhitelist = setOf(otherDeviceId),
-                                deviceIdBlacklist = emptySet(),
-                                ignoredDeviceIdList = emptySet()
+                            folderId = folderInfo.folderId,
+                            label = folderInfo.label,
+                            deviceIdWhitelist = setOf(otherDeviceId),
+                            deviceIdBlacklist = emptySet(),
+                            ignoredDeviceIdList = emptySet()
                         )
 
                         configFolders.add(newFolderInfo)
                         newSharedFolders.add(newFolderInfo)
                         logger.info("New folder shared: {}.", folderInfo)
                     } else {
-                        if (oldFolderEntry.deviceIdWhitelist.contains(otherDeviceId)) {
-                            folderInfo = folderInfo.copy(isDeviceInSharedFolderWhitelist = true)
+                        if (oldFolderEntry.label != folderInfo.label) {
+                            configFolders.remove(oldFolderEntry)
+                            configFolders.add(oldFolderEntry.copy(label = folderInfo.label))
+                        }
 
-                            if (oldFolderEntry.label != folderInfo.label) {
-                                configFolders.remove(oldFolderEntry)
-                                configFolders.add(oldFolderEntry.copy(label = folderInfo.label))
-                            }
-                        } else {
-                            if (!oldFolderEntry.deviceIdBlacklist.contains(otherDeviceId)) {
-                                configFolders.remove(oldFolderEntry)
-                                configFolders.add(
-                                        oldFolderEntry.copy(
-                                                deviceIdBlacklist = oldFolderEntry.deviceIdBlacklist + setOf(otherDeviceId)
-                                        )
+                        // optional: Blacklist-Pflege wie bisher
+                        if (!oldFolderEntry.deviceIdWhitelist.contains(otherDeviceId) &&
+                            !oldFolderEntry.deviceIdBlacklist.contains(otherDeviceId)
+                        ) {
+                            configFolders.remove(oldFolderEntry)
+                            configFolders.add(
+                                oldFolderEntry.copy(
+                                    deviceIdBlacklist = oldFolderEntry.deviceIdBlacklist + setOf(otherDeviceId)
                                 )
-                            }
+                            )
                         }
                     }
                 } else {
