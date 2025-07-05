@@ -49,7 +49,7 @@ object BlockPuller {
         // fail early if there is no matching connection
         connectionHelper.pickConnection()
 
-        val (newFileInfo, fileBlocks) = indexHandler.getFileInfoAndBlocksByPath(fileInfo.folder, fileInfo.path) ?: throw FileNotFoundException()
+        val fileBlocks = indexHandler.getFileInfoAndBlocksByPath(fileInfo.folder, fileInfo.path) ?: throw FileNotFoundException()
 
         if (fileBlocks.hash != fileInfo.hash) {
             val message = "The current file entry hash (${fileInfo.hash}) does not match the provided one (${fileBlocks.hash})."
