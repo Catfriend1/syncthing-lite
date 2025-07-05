@@ -116,10 +116,12 @@ class IndexMessageQueueProcessor (
 
         logger.debug("📦 IndexUpdate folderId: ${message.folder}")
         logger.debug("📦 IndexUpdate filesCount: ${message.filesCount}")
+        /*
         message.filesList.forEachIndexed { i, file ->
             val versionInfo = file.version.countersList.joinToString { "id=${it.id}, value=${it.value}" }
             logger.debug("📄 File[$i]: name=${file.name}, size=${file.size}, type=${file.type}, deleted=${file.deleted}, version=[$versionInfo]")
         }
+        */
 
         val folderId = message.folder
         logger.debug("🔎 Checking folder info for folderId=$folderId")
