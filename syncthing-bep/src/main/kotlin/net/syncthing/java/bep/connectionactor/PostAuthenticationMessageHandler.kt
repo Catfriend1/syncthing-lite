@@ -66,7 +66,6 @@ object PostAuthenticationMessageHandler {
     ): Pair<BlockExchangeProtos.MessageType, MessageLite> {
         val headerBytes = readHeader(
             inputStream = inputStream,
-            retryReadingLength = true,
             markActivityOnSocket = markActivityOnSocket
         )
 
@@ -117,8 +116,7 @@ object PostAuthenticationMessageHandler {
 
     private fun readHeader(
             inputStream: DataInputStream,
-            markActivityOnSocket: () -> Unit,
-            retryReadingLength: Boolean
+            markActivityOnSocket: () -> Unit
     ): ByteArray {
         val headerLength = inputStream.readShort().toInt() and 0xffff // Ensure unsigned
         // logger.debug("🔍 [readHeader] Raw headerLength read: $headerLength")
