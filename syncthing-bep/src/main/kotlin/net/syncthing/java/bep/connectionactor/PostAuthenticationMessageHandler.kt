@@ -116,9 +116,9 @@ object PostAuthenticationMessageHandler {
     }
 
     private fun readHeader(
-        inputStream: DataInputStream,
-        markActivityOnSocket: () -> Unit,
-        retryReadingLength: Boolean
+            inputStream: DataInputStream,
+            markActivityOnSocket: () -> Unit,
+            retryReadingLength: Boolean
     ): ByteArray {
         val headerLength = inputStream.readShort().toInt() and 0xffff // Ensure unsigned
         // logger.debug("🔍 [readHeader] Raw headerLength read: $headerLength")
