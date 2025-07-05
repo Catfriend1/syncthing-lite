@@ -24,6 +24,7 @@ import net.syncthing.java.bep.connectionactor.ConnectionActorWrapper
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
 import net.syncthing.java.core.beans.DeviceId
 
+@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class Connections (val generate: (DeviceId) -> ConnectionActorWrapper) {
     private val map = mutableMapOf<DeviceId, ConnectionActorWrapper>()
     private val connectionStatus = ConflatedBroadcastChannel<Map<DeviceId, ConnectionInfo>>(emptyMap())
