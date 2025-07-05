@@ -22,6 +22,7 @@ import java.io.StringWriter
 import java.net.InetAddress
 import java.util.*
 
+@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class Configuration(configFolder: File = DefaultConfigFolder) {
     private val modifyLock = Mutex()
     private val saveLock = Mutex()
