@@ -15,9 +15,8 @@ object UpdateIndexInfo {
             indexId: Long,
             maxSequence: Long
     ): IndexInfo {
-        logger.debug("🔎 Looking up IndexInfo for device=$deviceId / folder=$folder")
         val oldIndexSequenceInfo = transaction.findIndexInfoByDeviceAndFolder(deviceId, folder)
-        logger.debug("📦 Lookup result: $oldIndexSequenceInfo")
+        logger.debug("🔎 Looked up IndexInfo for device=$deviceId, folder=$folder: $oldIndexSequenceInfo")
 
         var newIndexSequenceInfo = oldIndexSequenceInfo ?: IndexInfo(
                 folderId = folder,
@@ -57,7 +56,7 @@ object UpdateIndexInfo {
         }
 
         if (oldIndexInfo != newIndexSequenceInfo) {
-            logger.debug("📈 Updating IndexInfo sequence: $oldIndexInfo → $newIndexSequenceInfo")
+            logger.debug("📈 Updating IndexInfo sequence: $oldIndexInfo to $newIndexSequenceInfo")
             transaction.updateIndexInfo(newIndexSequenceInfo)
         }
 
