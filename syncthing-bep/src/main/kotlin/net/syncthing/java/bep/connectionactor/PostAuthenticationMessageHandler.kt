@@ -140,9 +140,9 @@ object PostAuthenticationMessageHandler {
     }
 
     private fun readMessage(
-                inputStream: DataInputStream,
-                markActivityOnSocket: () -> Unit,
-                retryReadingLength: Boolean
+            inputStream: DataInputStream,
+            markActivityOnSocket: () -> Unit,
+            retryReadingLength: Boolean
     ): ByteArray {
         var messageLength = inputStream.readInt()
 
