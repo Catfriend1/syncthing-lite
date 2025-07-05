@@ -28,7 +28,7 @@ import java.nio.ByteBuffer
 object PostAuthenticationMessageHandler {
     private val logger = LoggerFactory.getLogger(PostAuthenticationMessageHandler::class.java)
     
-    private var messageCounter = 0
+    // private var messageCounter = 0
 
     fun sendMessage(
             outputStream: DataOutputStream,
@@ -80,9 +80,9 @@ object PostAuthenticationMessageHandler {
         // logger.debug("📦 Message compression: ${header.compression}, type: ${header.type}")
 
         var messageBuffer = readMessage(
-            inputStream = inputStream,
-            retryReadingLength = true,
-            markActivityOnSocket = markActivityOnSocket
+                inputStream = inputStream,
+                retryReadingLength = true,
+                markActivityOnSocket = markActivityOnSocket
         )
 
         // logger.debug("🔸 Raw message buffer (${messageBuffer.size} bytes): ${messageBuffer.take(64).toByteArray().toHexString()}")
@@ -140,9 +140,9 @@ object PostAuthenticationMessageHandler {
     }
 
     private fun readMessage(
-            inputStream: DataInputStream,
-            markActivityOnSocket: () -> Unit,
-            retryReadingLength: Boolean
+                inputStream: DataInputStream,
+                markActivityOnSocket: () -> Unit,
+                retryReadingLength: Boolean
     ): ByteArray {
         var messageLength = inputStream.readInt()
 
