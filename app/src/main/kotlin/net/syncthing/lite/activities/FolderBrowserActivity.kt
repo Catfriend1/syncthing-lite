@@ -25,6 +25,7 @@ import net.syncthing.lite.dialogs.FileUploadDialog
 import net.syncthing.lite.dialogs.ReconnectIssueDialogFragment
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileDialogFragment
 
+@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class FolderBrowserActivity : SyncthingActivity() {
 
     companion object {

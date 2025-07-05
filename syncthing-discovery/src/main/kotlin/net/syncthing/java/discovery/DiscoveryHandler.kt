@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.util.*
 
+@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class DiscoveryHandler(
         private val configuration: Configuration,
         exceptionReportHandler: (ExceptionReport) -> Unit

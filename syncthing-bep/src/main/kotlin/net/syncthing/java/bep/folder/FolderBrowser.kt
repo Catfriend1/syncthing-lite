@@ -26,6 +26,7 @@ import net.syncthing.java.core.beans.FolderStats
 import net.syncthing.java.core.configuration.Configuration
 import java.io.Closeable
 
+@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class FolderBrowser internal constructor(private val indexHandler: IndexHandler, private val configuration: Configuration) : Closeable {
     private val job = Job()
     private val foldersStatus = ConflatedBroadcastChannel<Map<String, FolderStatus>>()
