@@ -5,7 +5,6 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 27
 
-
     defaultConfig {
         applicationId "net.syncthing.lite"
         minSdkVersion 21
@@ -57,4 +56,12 @@ dependencies {
 
     implementation project(':syncthing-repository-android')
     implementation project(':syncthing-temp-repository-encryption')
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        freeCompilerArgs += [
+            "-Xuse-experimental=kotlin.Experimental"
+        ]
+    }
 }
