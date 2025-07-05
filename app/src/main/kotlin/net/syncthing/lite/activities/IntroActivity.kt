@@ -32,6 +32,7 @@ import java.io.IOException
  * Shown when a user first starts the app. Shows some info and helps the user to add their first
  * device and folder.
  */
+@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IntroActivity : AppIntro() {
 
     /**

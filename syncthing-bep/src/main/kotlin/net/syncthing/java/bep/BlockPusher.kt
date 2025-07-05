@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicReference
 import org.apache.logging.log4j.util.Unbox.box
 
 // TODO: refactor this
+@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class BlockPusher(private val localDeviceId: DeviceId,
                   private val connectionHandler: ConnectionActorWrapper,
                   private val indexHandler: IndexHandler,

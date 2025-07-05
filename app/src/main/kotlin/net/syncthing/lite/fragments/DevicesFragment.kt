@@ -23,6 +23,7 @@ import net.syncthing.lite.utils.FragmentIntentIntegrator
 import net.syncthing.lite.utils.Util
 import java.io.IOException
 
+@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class DevicesFragment : SyncthingFragment() {
 
     private lateinit var binding: FragmentDevicesBinding

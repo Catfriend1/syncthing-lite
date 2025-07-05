@@ -29,6 +29,7 @@ import net.syncthing.java.core.interfaces.IndexTransaction
 import net.syncthing.java.core.utils.PathUtils
 import java.util.*
 
+@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IndexBrowser internal constructor(
         private val indexRepository: IndexRepository,
         private val indexHandler: IndexHandler
