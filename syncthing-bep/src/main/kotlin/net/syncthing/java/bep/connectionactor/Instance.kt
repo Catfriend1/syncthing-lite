@@ -32,6 +32,7 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
 
+@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 object ConnectionActor {
     private val logger = org.slf4j.LoggerFactory.getLogger("ConnectionActor")
 
@@ -42,10 +43,6 @@ object ConnectionActor {
             requestHandler: (BlockExchangeProtos.Request) -> Deferred<BlockExchangeProtos.Response>
     ): SendChannel<ConnectionAction> {
         val channel = Channel<ConnectionAction>(Channel.RENDEZVOUS)
-
-        val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-            logger.error("⚠️ Uncaught coroutine exception: ${throwable.message}", throwable)
-        }
 
         GlobalScope.async (Dispatchers.IO) {
             Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
@@ -70,7 +67,6 @@ object ConnectionActor {
 
                 // helpers for messages
                 val sendPostAuthMessageLock = Mutex()
-                val receivePostAuthMessageLock = Mutex()
 
                 suspend fun sendPostAuthMessage(message: MessageLite) = sendPostAuthMessageLock.withLock {
                     PostAuthenticationMessageHandler.sendMessage(outputStream, message, markActivityOnSocket = {})
