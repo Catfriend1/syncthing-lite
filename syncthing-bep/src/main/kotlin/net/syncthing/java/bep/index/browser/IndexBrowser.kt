@@ -89,15 +89,15 @@ class IndexBrowser internal constructor(
 
             suspend fun dispatch() {
                 // let Kotlin understand that the value does not change during running this
-                val directoryInfo = directoryInfo
+                val currentDirectoryInfo = directoryInfo
 
-                val newStatus = if ((parentPath != null && parentEntry == null) || directoryInfo == null || directoryInfo.type != FileInfo.FileType.DIRECTORY) {
+                val newStatus = if ((parentPath != null && parentEntry == null) || currentDirectoryInfo == null || currentDirectoryInfo.type != FileInfo.FileType.DIRECTORY) {
                     DirectoryNotFoundListing(folder, path)
                 } else {
                     DirectoryContentListing(
                             entries = entries,
                             parentEntry = parentEntry,
-                            directoryInfo = directoryInfo
+                            directoryInfo = currentDirectoryInfo
                     )
                 }
 
