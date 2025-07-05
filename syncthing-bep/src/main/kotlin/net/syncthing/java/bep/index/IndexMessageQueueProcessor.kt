@@ -31,6 +31,7 @@ import net.syncthing.java.core.interfaces.TempRepository
 import org.slf4j.LoggerFactory
 import org.apache.logging.log4j.util.Unbox.box
 
+@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IndexMessageQueueProcessor (
         private val indexRepository: IndexRepository,
         private val tempRepository: TempRepository,
