@@ -13,6 +13,9 @@
  */
 package net.syncthing.java.discovery
 
+import java.io.File
+import java.util.concurrent.CountDownLatch
+import kotlinx.coroutines.runBlocking
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
@@ -22,8 +25,6 @@ import org.apache.commons.cli.DefaultParser
 import org.apache.commons.cli.HelpFormatter
 import org.apache.commons.cli.Option
 import org.apache.commons.cli.Options
-import java.io.File
-import java.util.concurrent.CountDownLatch
 
 class Main {
 
@@ -63,13 +64,11 @@ class Main {
             "q" -> {
                 val deviceId = DeviceId(option.value)
                 System.out.println("query device id = $deviceId")
-                val latch = CountDownLatch(1)
-                GlobalDiscoveryHandler(configuration).query(deviceId, { it ->
-                    val addresses = it.map { it.address }.fold("", { l, r -> "$l\n$r"})
-                    System.out.println("server response: $addresses")
-                    latch.countDown()
-                })
-                latch.await()
+                runBlocking {
+                    val addresses = GlobalDiscoveryHandler(configuration).query(deviceId)
+                    val result = addresses.joinToString("\n") { it.address }
+                    println("server response: $result")
+                }
             }
             "d" -> {
                 val deviceId = DeviceId(option.value)
