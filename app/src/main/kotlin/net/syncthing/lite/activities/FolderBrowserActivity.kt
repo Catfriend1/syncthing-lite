@@ -2,12 +2,13 @@ package net.syncthing.lite.activities
 
 import android.app.Activity
 import android.content.Intent
+import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.channels.*
 import net.syncthing.java.bep.index.browser.DirectoryContentListing
 import net.syncthing.java.bep.index.browser.DirectoryListing
@@ -166,8 +167,8 @@ class FolderBrowserActivity : SyncthingActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         if (requestCode == REQUEST_SELECT_UPLOAD_FILE && resultCode == Activity.RESULT_OK) {
             libraryHandler.syncthingClient { syncthingClient ->
+                GlobalScope.launch(Dispatchers.Main) {
                     // FIXME: it would be better if the dialog would use the library handler
-                lifecycleScope.launch {
                     val currentPath = path.valueOrNull ?: IndexBrowser.ROOT_PATH
                     FileUploadDialog(
                         this@FolderBrowserActivity,
