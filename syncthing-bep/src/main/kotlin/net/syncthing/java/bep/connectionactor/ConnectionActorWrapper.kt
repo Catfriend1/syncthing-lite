@@ -30,18 +30,19 @@ class ConnectionActorWrapper (
         private val exceptionReportHandler: (ExceptionReport) -> Unit
 ) {
     private val job = Job()
+    private val scope = CoroutineScope(job)
 
     private var connection: Connection? = null
     private val connectionInfo = ConflatedBroadcastChannel<ConnectionInfo>(ConnectionInfo.empty)
 
-    val isConnected
+    val isConnected: Boolean
         get() = connectionInfo.valueOrNull?.status == ConnectionStatus.Connected
 
     init {
-        GlobalScope.async (job) {
-            source.consumeEach { (connection, connectionInfo) ->
+        scope.launch {
+            source.consumeEach { (connection, info) ->
                 this@ConnectionActorWrapper.connection = connection
-                this@ConnectionActorWrapper.connectionInfo.send(connectionInfo)
+                this@ConnectionActorWrapper.connectionInfo.send(info)
             }
         }.reportExceptions("ConnectionActorWrapper(${deviceId.deviceId}).", exceptionReportHandler)
     }
@@ -70,12 +71,12 @@ class ConnectionActorWrapper (
     fun reconnect() {
         val actor = connection?.actor
 
-        GlobalScope.launch {
+        scope.launch {
             if (actor != null) {
                 ConnectionActorUtil.disconnect(actor)
             }
         }
     }
 
-    fun subscribeToConnectionInfo() = connectionInfo.openSubscription()
+    fun subscribeToConnectionInfo(): ReceiveChannel<ConnectionInfo> = connectionInfo.openSubscription()
 }
