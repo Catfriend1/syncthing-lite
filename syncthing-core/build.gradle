@@ -2,13 +2,13 @@ apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
 dependencies {
-    compile 'commons-codec:commons-codec:1.11'
+    api 'commons-codec:commons-codec:1.11'
     // Can't upgrade to 2.6 because it crashes on Android
-    compile "commons-io:commons-io:2.5"
-    compile "org.slf4j:slf4j-api:1.7.25"
-    compile "ch.qos.logback:logback-classic:1.2.3"
-    compile "com.google.code.gson:gson:2.8.2"
-    compile "org.bouncycastle:bcmail-jdk15on:1.59"
+    api "commons-io:commons-io:2.5"
+    api "org.slf4j:slf4j-api:1.7.25"
+    implementation "ch.qos.logback:logback-classic:1.2.3"
+    api "com.google.code.gson:gson:2.8.2"
+    api "org.bouncycastle:bcmail-jdk15on:1.59"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.0'
 }
