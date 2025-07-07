@@ -4,7 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.support.v4.os.CancellationSignal
 import android.util.Log
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.syncthing.java.bep.BlockPullerStatus
@@ -61,7 +61,7 @@ class DownloadFileTask(private val fileStorageDirectory: File,
     init {
         val file = DownloadFilePath(fileStorageDirectory, fileInfo.hash!!)
 
-        GlobalScope.launch {
+        MainScope().launch {
             if (file.targetFile.exists()) {
                 if (BuildConfig.DEBUG) {
                     Log.d(TAG, "there is already a file")
