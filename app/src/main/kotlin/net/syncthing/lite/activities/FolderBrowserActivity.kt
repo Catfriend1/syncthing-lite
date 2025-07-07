@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.coroutines.*
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.channels.*
@@ -167,7 +168,7 @@ class FolderBrowserActivity : SyncthingActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         if (requestCode == REQUEST_SELECT_UPLOAD_FILE && resultCode == Activity.RESULT_OK) {
             libraryHandler.syncthingClient { syncthingClient ->
-                GlobalScope.launch(Dispatchers.Main) {
+                MainScope().launch {
                     // FIXME: it would be better if the dialog would use the library handler
                     val currentPath = path.valueOrNull ?: IndexBrowser.ROOT_PATH
                     FileUploadDialog(
