@@ -242,7 +242,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
 
         var size: Long = 0
             private set
-        lateinit var blocks: List<BlockExchangeProtos.BlockInfo>
+        var blocks: List<BlockExchangeProtos.BlockInfo> = emptyList()
             private set
         private var hashes: Set<String>? = null
 
