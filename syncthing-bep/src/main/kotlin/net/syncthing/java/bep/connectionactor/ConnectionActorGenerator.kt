@@ -210,7 +210,7 @@ object ConnectionActorGenerator {
             while (true) {
                 run {
                     // get the new list version if there is any
-                    val newDeviceAddressList = deviceAddressSource.poll()
+                    val newDeviceAddressList = deviceAddressSource.tryReceive().getOrNull()
 
                     if (newDeviceAddressList != null) {
                         currentStatus = currentStatus.copy(addresses = newDeviceAddressList)
@@ -222,7 +222,7 @@ object ConnectionActorGenerator {
                     val deviceAddressList = currentStatus.addresses
 
                     if (deviceAddressList.isNotEmpty()) {
-                        if (reconnectTicker.poll() != null) {
+                        if (reconnectTicker.tryReceive().getOrNull() != null) {
                             if (currentDeviceAddress != deviceAddressList.first()) {
                                 val oldDeviceAddress = currentDeviceAddress!!
 
@@ -253,7 +253,7 @@ object ConnectionActorGenerator {
 
                     // reset countdown before trying other connection if it would be time now
                     // this does not reset if it has not counted down the whole time yet
-                    reconnectTicker.poll()
+                    reconnectTicker.tryReceive().getOrNull()
 
                     // wait for new device address list but not more than 15 seconds before the next iteration
                     val newDeviceAddressList = withTimeoutOrNull(15 * 1000) {
