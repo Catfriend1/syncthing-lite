@@ -136,7 +136,7 @@ object ConnectionActorGenerator {
             dispatchStatus()
         }
 
-        suspend fun tryConnectingToAddressHandleBaseErrors(deviceAddress: DeviceAddress) = try {
+        suspend fun tryConnectingToAddressHandleBaseErrors(deviceAddress: DeviceAddress): Pair<SendChannel<ConnectionAction>, ClusterConfigInfo>? = try {
             val newActor = ConnectionActor.createInstance(deviceAddress, configuration, indexHandler, requestHandler)
             val clusterConfig = ConnectionActorUtil.waitUntilConnected(newActor)
 
@@ -258,5 +258,9 @@ object ConnectionActorGenerator {
                 }
             }
         }
+    }
+
+    fun shutdown() {
+        scope.cancel()
     }
 }
