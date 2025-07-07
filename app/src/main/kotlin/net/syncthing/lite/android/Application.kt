@@ -37,7 +37,7 @@ class Application: Application() {
             }
         }
 
-        Thread.setDefaultUncaughtExceptionHandler { thread, ex ->
+        Thread.setDefaultUncaughtExceptionHandler { _, ex ->
             if (Looper.getMainLooper() === Looper.myLooper()) {
                 handleCrash(ex)
             } else {
