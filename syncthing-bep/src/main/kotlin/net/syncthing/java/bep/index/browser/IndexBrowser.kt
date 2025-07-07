@@ -16,6 +16,7 @@ package net.syncthing.java.bep.index.browser
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consume
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.withContext
@@ -67,7 +68,7 @@ class IndexBrowser internal constructor(
         }
     }
 
-    fun streamDirectoryListing(folder: String, path: String) = GlobalScope.produce {
+    fun streamDirectoryListing(folder: String, path: String): ReceiveChannel<DirectoryListing> = GlobalScope.produce {
         indexHandler.subscribeToOnIndexUpdateEvents().consume {
             val directoryName = PathUtils.getFileName(path)
             val parentPath = if (PathUtils.isRoot(path)) null else PathUtils.getParentPath(path)
