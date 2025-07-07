@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.BlockPusher
@@ -38,7 +39,7 @@ class UploadFileTask(
     init {
         Log.i(TAG, "Uploading file $localFile to folder $syncthingFolder:$syncthingPath")
 
-        MainScope().launch {
+        MainScope().launch(Dispatchers.IO) {
             try {
                 val blockPusher = syncthingClient.getBlockPusher(folderId = syncthingFolder)
                 val observer = blockPusher.pushFile(uploadStream, syncthingFolder, syncthingPath)

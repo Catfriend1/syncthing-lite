@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.support.v4.os.CancellationSignal
 import android.util.Log
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -61,7 +62,7 @@ class DownloadFileTask(private val fileStorageDirectory: File,
     init {
         val file = DownloadFilePath(fileStorageDirectory, fileInfo.hash!!)
 
-        MainScope().launch {
+        MainScope().launch(Dispatchers.IO) {
             if (file.targetFile.exists()) {
                 if (BuildConfig.DEBUG) {
                     Log.d(TAG, "there is already a file")
