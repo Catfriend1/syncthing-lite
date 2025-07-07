@@ -35,7 +35,8 @@ compileKotlin.dependsOn('generateProto')
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
         freeCompilerArgs += [
-            "-Xuse-experimental=kotlin.Experimental"
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=kotlin.RequiresOptIn"
         ]
     }
 }

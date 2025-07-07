@@ -119,6 +119,7 @@ class DownloadFileDialogFragment : DialogFragment() {
 
                     context!!.toast(R.string.toast_file_download_failed)
                 }
+                else -> { /* no-op or log unexpected status */ }
             }
         })
 
