@@ -34,8 +34,9 @@ object AddressRanker {
     private val ACCEPTED_ADDRESS_TYPES = BASE_SCORE_MAP.keys
     private val logger = LoggerFactory.getLogger(AddressRanker::class.java)
 
-    fun pingAddressesChannel(sourceAddresses: List<DeviceAddress>) = GlobalScope.produce<DeviceAddress> {
-        sourceAddresses
+    fun pingAddressesChannel(sourceAddresses: List<DeviceAddress>) =
+        CoroutineScope(Dispatchers.IO).produce<DeviceAddress> {
+            sourceAddresses
                 .filter { ACCEPTED_ADDRESS_TYPES.contains(it.type) }
                 .toList()
                 .map { address ->
@@ -43,7 +44,7 @@ object AddressRanker {
                         try {
                             val addressWithScore = withTimeout(TCP_CONNECTION_TIMEOUT * 2L) {
                                 // this nested async ensures that cancelling/ the timeout has got an effect without delay
-                                GlobalScope.async (Dispatchers.IO) {
+                                withContext(Dispatchers.IO) {
                                     pingAddressSync(address)
                                 }.await()
                             }
