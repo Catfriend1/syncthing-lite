@@ -2,6 +2,8 @@ package net.syncthing.lite.library
 
 import android.os.Handler
 import android.os.Looper
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -11,8 +13,7 @@ import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.channels.*
 import java.util.concurrent.Executors
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import net.syncthing.java.bep.index.browser.DirectoryListing
 
 /**
  * This class manages the access to an LibraryInstance
@@ -104,7 +105,7 @@ class LibraryManager(
         }
     }
 
-    fun streamDirectoryListing(folder: String, path: String): ReceiveChannel<Any> = GlobalScope.produce {
+    fun streamDirectoryListing(folder: String, path: String): ReceiveChannel<DirectoryListing> = GlobalScope.produce {
         var job = Job()
 
         instanceStream.openSubscription().consumeEach { instance ->
