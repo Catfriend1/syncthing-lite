@@ -28,7 +28,7 @@ import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.java.core.interfaces.IndexRepository
 import net.syncthing.java.core.interfaces.IndexTransaction
 import net.syncthing.java.core.utils.PathUtils
-import java.util.*
+import java.util.Locale
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IndexBrowser internal constructor(
@@ -38,11 +38,11 @@ class IndexBrowser internal constructor(
     companion object {
         val sortAlphabeticallyDirectoriesFirst: Comparator<FileInfo> =
                 compareBy<FileInfo>({!isParent(it) }, {!it.isDirectory()})
-                        .thenBy { it.fileName.toLowerCase() }
+                        .thenBy { it.fileName.lowercase(Locale.getDefault()) }
 
         val sortByLastModification: Comparator<FileInfo> =
                 compareBy<FileInfo>({!isParent(it) }, {it.lastModified})
-                        .thenBy { it.fileName.toLowerCase() }
+                        .thenBy { it.fileName.lowercase(Locale.getDefault()) }
 
         private fun isParent(fileInfo: FileInfo) = PathUtils.isParent(fileInfo.path)
 
