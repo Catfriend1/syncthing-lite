@@ -169,12 +169,13 @@ class FolderBrowserActivity : SyncthingActivity() {
             libraryHandler.syncthingClient { syncthingClient ->
                 GlobalScope.launch(Dispatchers.Main) {
                     // FIXME: it would be better if the dialog would use the library handler
+                    val currentPath = path.valueOrNull ?: IndexBrowser.ROOT_PATH
                     FileUploadDialog(
                         this@FolderBrowserActivity,
                         syncthingClient,
                         intent!!.data,
                         folder,
-                        path.value,
+                        currentPath,
                         { /* nothing to do on success */ }
                     ).show()
                 }
