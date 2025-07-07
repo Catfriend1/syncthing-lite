@@ -28,7 +28,7 @@ data class Connection (
         val clusterConfigInfo: ClusterConfigInfo
 )
 
-@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 object ConnectionActorGenerator {
     private val closed = Channel<ConnectionAction>().apply { cancel() }
     private val logger = LoggerFactory.getLogger(ConnectionActorGenerator::class.java)

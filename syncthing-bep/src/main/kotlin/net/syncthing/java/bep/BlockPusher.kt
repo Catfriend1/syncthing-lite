@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicReference
 import org.apache.logging.log4j.util.Unbox.box
 
 // TODO: refactor this
-@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class BlockPusher(private val localDeviceId: DeviceId,
                   private val connectionHandler: ConnectionActorWrapper,
                   private val indexHandler: IndexHandler,
@@ -242,7 +242,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
 
         var size: Long = 0
             private set
-        lateinit var blocks: List<BlockExchangeProtos.BlockInfo>
+        var blocks: List<BlockExchangeProtos.BlockInfo> = emptyList()
             private set
         private var hashes: Set<String>? = null
 

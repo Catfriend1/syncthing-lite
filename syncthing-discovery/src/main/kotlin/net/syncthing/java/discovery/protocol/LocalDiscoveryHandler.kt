@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 
-@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 internal class LocalDiscoveryHandler(
         private val configuration: Configuration,
         private val exceptionReportHandler: (ExceptionReport) -> Unit,

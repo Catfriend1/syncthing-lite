@@ -12,7 +12,7 @@ import java.util.*
 @TypeConverters(DateConverter::class)
 interface FolderStatsDao {
     @Query("UPDATE folder_stats SET dir_count = dir_count + :deltaDirCount, file_count = file_count + :deltaFileCount, size = size + :deltaSize, last_update = :lastUpdate WHERE folder = :folder")
-    fun updateFolderStats(folder: String, deltaFileCount: Long, deltaDirCount: Long, deltaSize: Long, lastUpdate: Date): Long
+    fun updateFolderStats(folder: String, deltaFileCount: Long, deltaDirCount: Long, deltaSize: Long, lastUpdate: Date): Int
 
     @Insert
     fun insertFolderStats(item: FolderStatsItem)
