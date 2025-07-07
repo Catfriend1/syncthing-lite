@@ -4,10 +4,11 @@ import android.os.Handler
 import android.os.Looper
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.runBlocking
@@ -105,20 +106,21 @@ class LibraryManager(
         }
     }
 
-    fun streamDirectoryListing(folder: String, path: String): ReceiveChannel<DirectoryListing> = GlobalScope.produce {
-        var job = Job()
+    fun streamDirectoryListing(folder: String, path: String): ReceiveChannel<DirectoryListing> =
+        CoroutineScope(Dispatchers.IO).produce {
+            var job = Job()
 
-        instanceStream.openSubscription().consumeEach { instance ->
-            job.cancel()
-            job = Job()
+            instanceStream.openSubscription().consumeEach { instance ->
+                job.cancel()
+                job = Job()
 
-            if (instance != null) {
-                async(job) {
-                    instance.indexBrowser.streamDirectoryListing(folder, path).consumeEach {
-                        send(it)
+                if (instance != null) {
+                    async(job) {
+                        instance.indexBrowser.streamDirectoryListing(folder, path).consumeEach {
+                            send(it)
+                        }
                     }
                 }
             }
         }
-    }
 }
