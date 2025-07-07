@@ -35,10 +35,11 @@ class FolderBrowser internal constructor(
     private val configuration: Configuration
 ) : Closeable {
     private val job = Job()
+    private val scope = CoroutineScope(job + Dispatchers.Default)
     private val foldersStatus = ConflatedBroadcastChannel<Map<String, FolderStatus>>()
 
     init {
-        GlobalScope.launch(job + Dispatchers.Default) {
+        scope.launch {
             // get initial status
             val currentFolderStats = mutableMapOf<String, FolderStats>()
 
@@ -109,7 +110,7 @@ class FolderBrowser internal constructor(
         }
     }
 
-    fun folderInfoAndStatusStream(): ReceiveChannel<List<FolderStatus>> = GlobalScope.produce {
+    fun folderInfoAndStatusStream(): ReceiveChannel<List<FolderStatus>> = scope.produce {
         foldersStatus.openSubscription().consumeEach { folderStats ->
             send(folderStats.values.sortedBy { it.info.label })
         }
