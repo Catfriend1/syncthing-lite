@@ -15,7 +15,11 @@
 package net.syncthing.java.bep
 
 import com.google.protobuf.ByteString
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
@@ -85,8 +89,10 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 path = targetPath
         )
 
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
         requestHandlerRegistry.registerListener(requestFilter) { request ->
-            GlobalScope.async {
+            scope.async {
                 val hash = Hex.toHexString(request.hash.toByteArray())
                 logger.debug("Handling block request: {}:{}-{} ({}).",
                         request.name,
@@ -110,16 +116,17 @@ class BlockPusher(private val localDeviceId: DeviceId,
 
         logger.debug("Send index update for this file: {}.", targetPath)
         val indexListenerStream = indexHandler.subscribeToOnIndexUpdateEvents()
-        GlobalScope.launch {
+        scope.launch {
             indexListenerStream.consumeEach { event ->
                 if (event is IndexRecordAcquiredEvent) {
                     val (indexFolderId, newRecords, _) = event
 
                     if (indexFolderId == folderId) {
-                        //TODO Rename fileInfo2 (there's also a fileInfo and fileInfo1)
+                        // TODO Rename fileInfo2 (there's also a fileInfo and fileInfo1)
                         for (fileInfo2 in newRecords) {
-                            if (fileInfo2.path == targetPath && fileInfo2.hash == dataSource.getHash()) { //TODO check not invalid
-                                //                                sentBlocks.addAll(dataSource.getHashes());
+                            if (fileInfo2.path == targetPath && fileInfo2.hash == dataSource.getHash()) {
+                                // TODO check not invalid
+                                // sentBlocks.addAll(dataSource.getHashes());
                                 isCompleted.set(true)
                                 synchronized(updateLock) {
                                     updateLock.notifyAll()
@@ -130,6 +137,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 }
             }
         }
+
         val indexUpdate = sendIndexUpdate(folderId, BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(targetPath)
                 .setSize(fileSize)
@@ -144,6 +152,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
 
             override fun close() {
                 logger.debug("Closing the upload process.")
+                scope.cancel()
                 monitoringProcessExecutorService.shutdown()
                 indexListenerStream.cancel()
                 requestHandlerRegistry.unregisterListener(requestFilter)

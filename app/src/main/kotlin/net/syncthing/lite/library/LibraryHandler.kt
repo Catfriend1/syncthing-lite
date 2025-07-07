@@ -5,7 +5,7 @@ import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -71,19 +71,19 @@ class LibraryHandler(context: Context) {
 
             job = Job()
 
-            GlobalScope.launch (job) {
+            CoroutineScope(job).launch {
                 libraryInstance.syncthingClient.indexHandler.subscribeToOnFullIndexAcquiredEvents().consumeEach {
                     indexUpdateCompleteMessages.send(it)
                 }
             }
 
-            GlobalScope.launch (job) {
+            CoroutineScope(job).launch {
                 libraryInstance.folderBrowser.folderInfoAndStatusStream().consumeEach {
                     folderStatusList.send(it)
                 }
             }
 
-            GlobalScope.launch (job) {
+            CoroutineScope(job).launch {
                 libraryInstance.syncthingClient.subscribeToConnectionStatus().consumeEach {
                     connectionStatus.send(it)
                 }

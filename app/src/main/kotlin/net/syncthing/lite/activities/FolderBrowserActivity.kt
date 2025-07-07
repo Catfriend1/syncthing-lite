@@ -7,8 +7,10 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.coroutines.*
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.*
 import net.syncthing.java.bep.index.browser.DirectoryContentListing
 import net.syncthing.java.bep.index.browser.DirectoryListing
 import net.syncthing.java.bep.index.browser.DirectoryNotFoundListing
@@ -25,7 +27,7 @@ import net.syncthing.lite.dialogs.FileUploadDialog
 import net.syncthing.lite.dialogs.ReconnectIssueDialogFragment
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileDialogFragment
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ObsoleteCoroutinesApi::class)
 class FolderBrowserActivity : SyncthingActivity() {
 
     companion object {
@@ -48,17 +50,18 @@ class FolderBrowserActivity : SyncthingActivity() {
         binding.listView.adapter = adapter
         binding.mainListViewUploadHereButton.setOnClickListener {
             startActivityForResult(
-                    Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                        addCategory(Intent.CATEGORY_OPENABLE)
-                        type = "*/*"
-                    },
-                    REQUEST_SELECT_UPLOAD_FILE
+                Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "*/*"
+                },
+                REQUEST_SELECT_UPLOAD_FILE
             )
         }
-        adapter.listener = object: FolderContentsListener {
+
+        adapter.listener = object : FolderContentsListener {
             override fun onItemClicked(fileInfo: FileInfo) {
                 if (fileInfo.isDirectory()) {
-                    path.trySend(fileInfo.path).isSuccess
+                    path.trySend(fileInfo.path)
                 } else {
                     DownloadFileDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
                 }
@@ -67,23 +70,15 @@ class FolderBrowserActivity : SyncthingActivity() {
             override fun onItemLongClicked(fileInfo: FileInfo): Boolean {
                 return if (fileInfo.type == FileInfo.FileType.FILE) {
                     FileMenuDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
-
                     true
-                } else {
-                    false
-                }
+                } else false
             }
         }
 
         ReconnectIssueDialogFragment.showIfNeeded(this)
 
         val folder: String? = intent.getStringExtra(EXTRA_FOLDER_NAME)
-        path.trySend(
-            if (savedInstanceState == null)
-                IndexBrowser.ROOT_PATH
-            else
-                savedInstanceState.getString(STATUS_PATH) ?: IndexBrowser.ROOT_PATH
-        )
+        path.trySend(if (savedInstanceState == null) IndexBrowser.ROOT_PATH else savedInstanceState.getString(STATUS_PATH))
 
         launch {
             var job = Job()
@@ -114,8 +109,7 @@ class FolderBrowserActivity : SyncthingActivity() {
                     binding.isLoading = false
                     adapter.data = if (listing is DirectoryContentListing)
                         listing.entries.sortedWith(IndexBrowser.sortAlphabeticallyDirectoriesFirst)
-                    else
-                        emptyList()
+                    else emptyList()
                 }
             }
         }
@@ -125,7 +119,6 @@ class FolderBrowserActivity : SyncthingActivity() {
                 val devicesToAskFor = libraryHandler.libraryManager.withLibrary {
                     val folderInfo = it.configuration.folders.find { it.folderId == folder }
                     val notIgnoredBlacklistEntries = folderInfo?.notIgnoredBlacklistEntries ?: emptySet()
-
                     notIgnoredBlacklistEntries.mapNotNull { deviceId ->
                         it.configuration.peers.find { peer -> peer.deviceId == deviceId }
                     }
@@ -133,11 +126,11 @@ class FolderBrowserActivity : SyncthingActivity() {
 
                 if (devicesToAskFor.isNotEmpty()) {
                     EnableFolderSyncForNewDeviceDialog.newInstance(
-                            folderId = folder,
-                            devices = devicesToAskFor,
-                            folderName = libraryHandler.libraryManager.withLibrary {
-                                it.configuration.folders.find { it.folderId == folder }?.label ?: folder
-                            }
+                        folderId = folder,
+                        devices = devicesToAskFor,
+                        folderName = libraryHandler.libraryManager.withLibrary {
+                            it.configuration.folders.find { it.folderId == folder }?.label ?: folder
+                        }
                     ).show(supportFragmentManager)
                 }
             }
@@ -146,12 +139,14 @@ class FolderBrowserActivity : SyncthingActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-
-        outState.putString(STATUS_PATH, path.value)
+        path.valueOrNull?.let {
+            outState.putString(STATUS_PATH, it)
+        }
     }
 
     private fun goUp(): Boolean {
-        val parentPath = when (val currentListing = listing.value) {
+        val currentListing = listing.value
+        val parentPath = when (currentListing) {
             is DirectoryContentListing -> currentListing.parentEntry?.path
             is DirectoryNotFoundListing -> currentListing.theoreticalParentPath
             else -> null
@@ -161,7 +156,6 @@ class FolderBrowserActivity : SyncthingActivity() {
             false
         } else {
             path.trySend(parentPath)
-
             true
         }
     }
@@ -175,15 +169,16 @@ class FolderBrowserActivity : SyncthingActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         if (requestCode == REQUEST_SELECT_UPLOAD_FILE && resultCode == AppCompatActivity.RESULT_OK) {
             libraryHandler.syncthingClient { syncthingClient ->
-                GlobalScope.launch (Dispatchers.Main) {
+                MainScope().launch {
                     // FIXME: it would be better if the dialog would use the library handler
+                    val currentPath = path.valueOrNull ?: IndexBrowser.ROOT_PATH
                     FileUploadDialog(
-                            this@FolderBrowserActivity,
-                            syncthingClient,
-                            intent!!.data,
-                            folder,
-                            path.value,
-                            { /* nothing to do on success */ }
+                        this@FolderBrowserActivity,
+                        syncthingClient,
+                        intent!!.data,
+                        folder,
+                        currentPath,
+                        { /* nothing to do on success */ }
                     ).show()
                 }
             }
@@ -194,21 +189,16 @@ class FolderBrowserActivity : SyncthingActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.folder_browser, menu)
-
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.go_home -> {
             finish()
-
             true
         }
         android.R.id.home -> {
-            if (!goUp()) {
-                finish()
-            }
-
+            if (!goUp()) finish()
             true
         }
         else -> super.onOptionsItemSelected(item)

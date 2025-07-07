@@ -21,12 +21,12 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.slf4j.LoggerFactory
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.bep.index.IndexHandler
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.security.KeystoreHandler
+import org.slf4j.LoggerFactory
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -34,7 +34,7 @@ import java.util.*
 
 @OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 object ConnectionActor {
-    private val logger = org.slf4j.LoggerFactory.getLogger("ConnectionActor")
+    private val logger = LoggerFactory.getLogger("ConnectionActor")
 
     fun createInstance(
             address: DeviceAddress,
@@ -44,7 +44,7 @@ object ConnectionActor {
     ): SendChannel<ConnectionAction> {
         val channel = Channel<ConnectionAction>(Channel.RENDEZVOUS)
 
-        GlobalScope.async (Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
                 println("💣 Uncaught exception in thread ${thread.name}: ${throwable.message}")
                 throwable.printStackTrace()
@@ -187,8 +187,7 @@ object ConnectionActor {
                         // TODO: only send when there were no messages for 90 seconds
 
                         while (isActive) {
-                            delay(90 * 1000)
-
+                            delay(90_000)
                             launch { sendPostAuthMessage(BlockExchangeProtos.Ping.getDefaultInstance()) }
                         }
                     }

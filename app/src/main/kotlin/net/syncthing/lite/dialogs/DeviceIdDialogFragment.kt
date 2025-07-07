@@ -18,14 +18,15 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
 import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R
 import net.syncthing.lite.databinding.DialogDeviceIdBinding
 import net.syncthing.lite.fragments.SyncthingDialogFragment
 import org.jetbrains.anko.doAsync
 
-class DeviceIdDialogFragment: SyncthingDialogFragment() {
+class DeviceIdDialogFragment : SyncthingDialogFragment() {
+
     companion object {
         private const val QR_RESOLUTION = 512
         private const val TAG = "DeviceIdDialog"
@@ -34,7 +35,7 @@ class DeviceIdDialogFragment: SyncthingDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val binding = DialogDeviceIdBinding.inflate(LayoutInflater.from(context), null, false)
 
-        // use an placeholder to prevent size changes; this string is never shown
+        // use a placeholder to prevent size changes; this string is never shown
         binding.deviceId.text = "XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX"
         binding.deviceId.visibility = View.INVISIBLE
 
@@ -63,7 +64,7 @@ class DeviceIdDialogFragment: SyncthingDialogFragment() {
                 ))
             }
 
-            GlobalScope.launch (Dispatchers.Main) {
+            MainScope().launch {
                 binding.deviceId.text = deviceId.deviceId
                 binding.deviceId.visibility = View.VISIBLE
 
@@ -84,7 +85,7 @@ class DeviceIdDialogFragment: SyncthingDialogFragment() {
                         }
                     }
 
-                    GlobalScope.launch (Dispatchers.Main) {
+                    MainScope().launch {
                         binding.flipper.displayedChild = 1
                         binding.qrCode.setImageBitmap(bmp)
                     }

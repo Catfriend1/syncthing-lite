@@ -15,9 +15,7 @@
 package net.syncthing.java.bep.index
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.syncthing.java.bep.BlockExchangeProtos
@@ -50,6 +48,7 @@ class IndexMessageQueueProcessor (
     }
 
     private val job = Job()
+    private val scope = CoroutineScope(job + Dispatchers.IO)
     private val indexUpdateIncomingLock = Mutex()
     private val indexUpdateProcessStoredQueue = Channel<StoredIndexUpdateAction>(capacity = Channel.UNLIMITED)
     private val indexUpdateProcessingQueue = Channel<IndexUpdateAction>(capacity = Channel.RENDEZVOUS)
@@ -69,7 +68,8 @@ class IndexMessageQueueProcessor (
                     .setFolder(folderId)
                     .build()
 
-            if (indexUpdateProcessingQueue.offer(IndexUpdateAction(data, clusterConfigInfo, peerDeviceId))) {
+            val result = indexUpdateProcessingQueue.trySend(IndexUpdateAction(data, clusterConfigInfo, peerDeviceId))
+            if (result.isSuccess) {
                 // message is being processed now
             } else {
                 val key = tempRepository.pushTempData(data.toByteArray())
@@ -81,7 +81,7 @@ class IndexMessageQueueProcessor (
     }
 
     init {
-        GlobalScope.async(Dispatchers.IO + job) {
+        scope.launch {
             indexUpdateProcessingQueue.consumeEach {
                 try {
                     doHandleIndexMessageReceivedEvent(it)
@@ -96,7 +96,7 @@ class IndexMessageQueueProcessor (
             }
         }.reportExceptions("IndexMessageQueueProcessor.indexUpdateProcessingQueue", exceptionReportHandler)
 
-        GlobalScope.async(Dispatchers.IO + job) {
+        scope.launch {
             indexUpdateProcessStoredQueue.consumeEach { action ->
                 logger.debug("Processing the index message event from the temporary record {}.", action.updateId)
 

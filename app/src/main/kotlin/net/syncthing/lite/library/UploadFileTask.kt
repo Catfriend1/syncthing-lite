@@ -5,7 +5,8 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.BlockPusher
 import net.syncthing.java.client.SyncthingClient
@@ -14,12 +15,16 @@ import net.syncthing.lite.utils.Util
 import org.apache.commons.io.IOUtils
 
 // TODO: this should be an IntentService with notification
-class UploadFileTask(context: Context, syncthingClient: SyncthingClient,
-                     localFile: Uri, private val syncthingFolder: String,
-                     syncthingSubFolder: String,
-                     private val onProgress: (BlockPusher.FileUploadObserver) -> Unit,
-                     private val onComplete: () -> Unit,
-                     private val onError: () -> Unit) {
+class UploadFileTask(
+    context: Context,
+    syncthingClient: SyncthingClient,
+    localFile: Uri,
+    private val syncthingFolder: String,
+    syncthingSubFolder: String,
+    private val onProgress: (BlockPusher.FileUploadObserver) -> Unit,
+    private val onComplete: () -> Unit,
+    private val onError: () -> Unit
+) {
 
     companion object {
         private const val TAG = "UploadFileTask"
@@ -34,7 +39,7 @@ class UploadFileTask(context: Context, syncthingClient: SyncthingClient,
     init {
         Log.i(TAG, "Uploading file $localFile to folder $syncthingFolder:$syncthingPath")
 
-        GlobalScope.launch {
+        MainScope().launch(Dispatchers.IO) {
             try {
                 val blockPusher = syncthingClient.getBlockPusher(folderId = syncthingFolder)
                 val observer = blockPusher.pushFile(uploadStream, syncthingFolder, syncthingPath)
@@ -49,6 +54,7 @@ class UploadFileTask(context: Context, syncthingClient: SyncthingClient,
                     Log.i(TAG, "upload progress = ${observer.progressPercentage()}%")
                     handler.post { onProgress(observer) }
                 }
+
                 IOUtils.closeQuietly(uploadStream)
                 handler.post { onComplete() }
             } catch (ex: Exception) {

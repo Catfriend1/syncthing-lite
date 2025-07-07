@@ -4,13 +4,15 @@ import androidx.appcompat.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import androidx.app.FragmentManager
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.lite.R
 import net.syncthing.lite.fragments.SyncthingDialogFragment
+import java.io.Serializable
 
-class EnableFolderSyncForNewDeviceDialog: SyncthingDialogFragment() {
+class EnableFolderSyncForNewDeviceDialog : SyncthingDialogFragment() {
+
     companion object {
         private const val FOLDER_ID = "folderId"
         private const val FOLDER_NAME = "folderName"
@@ -60,7 +62,7 @@ class EnableFolderSyncForNewDeviceDialog: SyncthingDialogFragment() {
                 ))
 
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                    GlobalScope.launch {
+                    MainScope().launch {
                         libraryHandler.libraryManager.withLibrary {
                             val oldFolderEntry = it.configuration.folders.find { it.folderId == folderId }!!
 
@@ -85,7 +87,7 @@ class EnableFolderSyncForNewDeviceDialog: SyncthingDialogFragment() {
                 }
 
                 dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
-                    GlobalScope.launch {
+                    MainScope().launch {
                         libraryHandler.libraryManager.withLibrary {
                             val oldFolderEntry = it.configuration.folders.find { it.folderId == folderId }!!
 
