@@ -14,9 +14,15 @@
 package net.syncthing.java.bep.connectionactor
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.launch
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.exception.ExceptionReport
@@ -31,6 +37,8 @@ class ConnectionActorWrapper (
 ) {
     private val job = Job()
     private val scope = CoroutineScope(job)
+    private val job = SupervisorJob()
+    private val scope = CoroutineScope(job + Dispatchers.Default)
 
     private var connection: Connection? = null
     private val connectionInfo = ConflatedBroadcastChannel<ConnectionInfo>(ConnectionInfo.empty)
@@ -39,12 +47,13 @@ class ConnectionActorWrapper (
         get() = connectionInfo.valueOrNull?.status == ConnectionStatus.Connected
 
     init {
+        // consume updates from the upstream connection generator
         scope.launch {
             source.consumeEach { (connection, info) ->
                 this@ConnectionActorWrapper.connection = connection
                 this@ConnectionActorWrapper.connectionInfo.send(info)
             }
-        }.reportExceptions("ConnectionActorWrapper(${deviceId.deviceId}).", exceptionReportHandler)
+        }.reportExceptions("ConnectionActorWrapper(${deviceId.deviceId})", exceptionReportHandler)
     }
 
     suspend fun sendRequest(request: BlockExchangeProtos.Request) = ConnectionActorUtil.sendRequest(
@@ -62,7 +71,8 @@ class ConnectionActorWrapper (
     fun getClusterConfig() = connection?.clusterConfigInfo ?: throw IOException("Not connected.")
 
     fun shutdown() {
-        job.cancel()
+        // closes the scope and the subscription channel
+        scope.cancel()
         connectionInfo.close()
     }
 
