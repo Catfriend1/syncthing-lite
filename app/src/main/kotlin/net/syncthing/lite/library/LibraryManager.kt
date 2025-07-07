@@ -9,6 +9,7 @@ import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.channels.*
 import java.util.concurrent.Executors
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -29,11 +30,11 @@ import kotlin.coroutines.suspendCoroutine
  *
  * The listeners are called for all changes, nothing is skipped or batched
  */
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
-class LibraryManager (
-        val synchronousInstanceCreator: () -> LibraryInstance,
-        val userCounterListener: (Int) -> Unit = {},
-        val isRunningListener: (isRunning: Boolean) -> Unit = {}
+@OptIn(ExperimentalCoroutinesApi::class, ObsoleteCoroutinesApi::class)
+class LibraryManager(
+    val synchronousInstanceCreator: () -> LibraryInstance,
+    val userCounterListener: (Int) -> Unit = {},
+    val isRunningListener: (isRunning: Boolean) -> Unit = {}
 ) {
     companion object {
         private val handler = Handler(Looper.getMainLooper())
@@ -52,7 +53,7 @@ class LibraryManager (
             handler.post { userCounterListener(newUserCounter) }
 
             if (instanceStream.value == null) {
-                instanceStream.offer(synchronousInstanceCreator())
+                instanceStream.trySend(synchronousInstanceCreator())
                 handler.post { isRunningListener(true) }
             }
 
@@ -70,7 +71,6 @@ class LibraryManager (
 
     suspend fun <T> withLibrary(action: suspend (LibraryInstance) -> T): T {
         val instance = startLibraryUsageCoroutine()
-
         return try {
             action(instance)
         } finally {
@@ -84,7 +84,6 @@ class LibraryManager (
 
             if (newUserCounter < 0) {
                 userCounter = 0
-
                 throw IllegalStateException("can not stop library usage if there are 0 users")
             }
 
@@ -96,8 +95,7 @@ class LibraryManager (
         startStopExecutor.submit {
             if (userCounter == 0) {
                 runBlocking { instanceStream.value?.shutdown() }
-                instanceStream.offer(null)
-
+                instanceStream.trySend(null)
                 handler.post { isRunningListener(false) }
                 handler.post { listener(true) }
             } else {
@@ -106,7 +104,7 @@ class LibraryManager (
         }
     }
 
-    fun streamDirectoryListing(folder: String, path: String) = GlobalScope.produce {
+    fun streamDirectoryListing(folder: String, path: String): ReceiveChannel<Any> = GlobalScope.produce {
         var job = Job()
 
         instanceStream.openSubscription().consumeEach { instance ->
@@ -114,7 +112,7 @@ class LibraryManager (
             job = Job()
 
             if (instance != null) {
-                async (job) {
+                async(job) {
                     instance.indexBrowser.streamDirectoryListing(folder, path).consumeEach {
                         send(it)
                     }
