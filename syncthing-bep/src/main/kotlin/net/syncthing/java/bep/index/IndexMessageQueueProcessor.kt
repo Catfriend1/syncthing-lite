@@ -15,9 +15,7 @@
 package net.syncthing.java.bep.index
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.syncthing.java.bep.BlockExchangeProtos
@@ -69,7 +67,8 @@ class IndexMessageQueueProcessor (
                     .setFolder(folderId)
                     .build()
 
-            if (indexUpdateProcessingQueue.offer(IndexUpdateAction(data, clusterConfigInfo, peerDeviceId))) {
+            val result = indexUpdateProcessingQueue.trySend(IndexUpdateAction(data, clusterConfigInfo, peerDeviceId))
+            if (result.isSuccess) {
                 // message is being processed now
             } else {
                 val key = tempRepository.pushTempData(data.toByteArray())
