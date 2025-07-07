@@ -11,7 +11,7 @@ java {
 
 dependencies {
     implementation project(':syncthing-core')
-    implementation "commons-cli:commons-cli:1.4"
+    implementation "commons-cli:commons-cli:1.9.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "com.google.protobuf:protobuf-javalite:$protobuf_lite_version"D
     implementation 'org.slf4j:slf4j-api:2.0.13'
