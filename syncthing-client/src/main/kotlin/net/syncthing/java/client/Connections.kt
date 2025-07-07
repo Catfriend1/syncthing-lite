@@ -13,7 +13,7 @@
  */
 package net.syncthing.java.client
 
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.consumeEach
@@ -25,11 +25,12 @@ import net.syncthing.java.bep.connectionactor.ConnectionInfo
 import net.syncthing.java.core.beans.DeviceId
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
-class Connections (val generate: (DeviceId) -> ConnectionActorWrapper) {
+class Connections(val generate: (DeviceId) -> ConnectionActorWrapper) {
     private val map = mutableMapOf<DeviceId, ConnectionActorWrapper>()
     private val connectionStatus = ConflatedBroadcastChannel<Map<DeviceId, ConnectionInfo>>(emptyMap())
     private val connectionStatusLock = Mutex()
     private val job = Job()
+    private val scope = CoroutineScope(job)
 
     fun getByDeviceId(deviceId: DeviceId): ConnectionActorWrapper {
         synchronized(map) {
@@ -42,12 +43,12 @@ class Connections (val generate: (DeviceId) -> ConnectionActorWrapper) {
 
                 map[deviceId] = newEntry
 
-                GlobalScope.launch (job) {
-                    newEntry.subscribeToConnectionInfo().consumeEach {  status ->
+                scope.launch {
+                    newEntry.subscribeToConnectionInfo().consumeEach { status ->
                         connectionStatusLock.withLock {
                             connectionStatus.send(
-                                    connectionStatus.value +
-                                            mapOf(deviceId to status)
+                                connectionStatus.value +
+                                        mapOf(deviceId to status)
                             )
                         }
                     }
