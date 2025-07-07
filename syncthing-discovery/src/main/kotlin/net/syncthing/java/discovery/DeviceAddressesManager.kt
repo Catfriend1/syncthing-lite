@@ -13,13 +13,13 @@
  */
 package net.syncthing.java.discovery
 
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.*
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.beans.DeviceId
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-class DeviceAddressesManager (val deviceId: DeviceId) {
+class DeviceAddressesManager(val deviceId: DeviceId) {
+
     companion object {
         private const val MAX_ADDRESSES_PER_TYPE = 16
     }
@@ -59,13 +59,13 @@ class DeviceAddressesManager (val deviceId: DeviceId) {
     }
 
     // this creates a copy of the set
-    fun getCurrentDeviceAddresses() = synchronized(lock) {
+    fun getCurrentDeviceAddresses(): List<DeviceAddress> = synchronized(lock) {
         deviceAddressesCache.toList()
     }
 
     fun streamCurrentDeviceAddresses(): ReceiveChannel<DeviceAddress> = Channel<DeviceAddress>(capacity = Channel.UNLIMITED).apply {
         val listener: (DeviceAddress) -> Unit = {
-            offer(it)
+            trySend(it)
         }
 
         invokeOnClose {
