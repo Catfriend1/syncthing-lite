@@ -33,7 +33,7 @@ import java.lang.Exception
 import java.net.*
 import java.nio.ByteBuffer
 
-@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 object LocalDiscoveryUtil {
     private const val LISTENING_PORT = 21027
     private const val MAGIC = 0x2EA7D90B

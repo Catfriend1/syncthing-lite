@@ -29,7 +29,7 @@ import kotlin.coroutines.suspendCoroutine
  *
  * The listeners are called for all changes, nothing is skipped or batched
  */
-@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class LibraryManager (
         val synchronousInstanceCreator: () -> LibraryInstance,
         val userCounterListener: (Int) -> Unit = {},

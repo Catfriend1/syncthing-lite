@@ -16,7 +16,7 @@ import net.syncthing.lite.databinding.FragmentFoldersBinding
 import net.syncthing.lite.dialogs.FolderInfoDialog
 import org.jetbrains.anko.intentFor
 
-@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class FoldersFragment : SyncthingFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val adapter = FoldersListAdapter()

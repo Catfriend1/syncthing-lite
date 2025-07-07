@@ -1,9 +1,9 @@
 package net.syncthing.repository.android.database.dao
 
-import android.arch.persistence.room.Dao
-import android.arch.persistence.room.Insert
-import android.arch.persistence.room.Query
-import android.arch.persistence.room.TypeConverters
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.TypeConverters
 import net.syncthing.repository.android.database.converters.DateConverter
 import net.syncthing.repository.android.database.item.FolderStatsItem
 import java.util.*
@@ -12,7 +12,7 @@ import java.util.*
 @TypeConverters(DateConverter::class)
 interface FolderStatsDao {
     @Query("UPDATE folder_stats SET dir_count = dir_count + :deltaDirCount, file_count = file_count + :deltaFileCount, size = size + :deltaSize, last_update = :lastUpdate WHERE folder = :folder")
-    fun updateFolderStats(folder: String, deltaFileCount: Long, deltaDirCount: Long, deltaSize: Long, lastUpdate: Date): Long
+    fun updateFolderStats(folder: String, deltaFileCount: Long, deltaDirCount: Long, deltaSize: Long, lastUpdate: Date): Int
 
     @Insert
     fun insertFolderStats(item: FolderStatsItem)

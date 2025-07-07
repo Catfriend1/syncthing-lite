@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 
-@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IndexHandler(
         configuration: Configuration,
         val indexRepository: IndexRepository,

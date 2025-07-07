@@ -108,7 +108,7 @@ class SqliteTransaction(
             deltaSize: Long,
             lastUpdate: Date
     ) = runIfAllowed {
-        if (database.folderStats().updateFolderStats(folder, deltaFileCount, deltaDirCount, deltaSize, lastUpdate) == 0L) {
+        if (database.folderStats().updateFolderStats(folder, deltaFileCount, deltaDirCount, deltaSize, lastUpdate).toLong() == 0L) {
             database.folderStats().insertFolderStats(FolderStatsItem(folder, deltaFileCount, deltaDirCount, lastUpdate, deltaSize))
         }
     }

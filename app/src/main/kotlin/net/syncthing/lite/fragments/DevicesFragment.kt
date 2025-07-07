@@ -3,7 +3,7 @@ package net.syncthing.lite.fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.databinding.DataBindingUtil
+import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -23,7 +23,7 @@ import net.syncthing.lite.utils.FragmentIntentIntegrator
 import net.syncthing.lite.utils.Util
 import java.io.IOException
 
-@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class DevicesFragment : SyncthingFragment() {
 
     private lateinit var binding: FragmentDevicesBinding

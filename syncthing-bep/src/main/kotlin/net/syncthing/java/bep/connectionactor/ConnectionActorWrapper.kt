@@ -23,7 +23,7 @@ import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.core.exception.reportExceptions
 import java.io.IOException
 
-@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class ConnectionActorWrapper (
         private val source: ReceiveChannel<Pair<Connection, ConnectionInfo>>,
         val deviceId: DeviceId,

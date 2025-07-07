@@ -76,8 +76,6 @@ object Util {
                 } else {
                     context.toast(context.getString(R.string.device_already_known, newDeviceId.shortId))
                 }
-
-                null
             }
         }
     }

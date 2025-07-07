@@ -1,7 +1,7 @@
 package net.syncthing.lite.activities
 
 import android.app.AlertDialog
-import android.databinding.DataBindingUtil
+import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.view.LayoutInflater
