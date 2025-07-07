@@ -65,8 +65,6 @@ object ConnectionActorGenerator {
                         lastValue = source.receive()
                     }
                 }
-
-                throw IllegalStateException()
             } catch (ex: TimeoutCancellationException) {
                 // this is expected here
             }
