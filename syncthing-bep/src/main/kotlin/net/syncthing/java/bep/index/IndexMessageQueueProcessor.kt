@@ -48,6 +48,7 @@ class IndexMessageQueueProcessor (
     }
 
     private val job = Job()
+    private val scope = CoroutineScope(job + Dispatchers.IO)
     private val indexUpdateIncomingLock = Mutex()
     private val indexUpdateProcessStoredQueue = Channel<StoredIndexUpdateAction>(capacity = Channel.UNLIMITED)
     private val indexUpdateProcessingQueue = Channel<IndexUpdateAction>(capacity = Channel.RENDEZVOUS)
@@ -80,7 +81,7 @@ class IndexMessageQueueProcessor (
     }
 
     init {
-        GlobalScope.async(Dispatchers.IO + job) {
+        scope.launch {
             indexUpdateProcessingQueue.consumeEach {
                 try {
                     doHandleIndexMessageReceivedEvent(it)
@@ -95,7 +96,7 @@ class IndexMessageQueueProcessor (
             }
         }.reportExceptions("IndexMessageQueueProcessor.indexUpdateProcessingQueue", exceptionReportHandler)
 
-        GlobalScope.async(Dispatchers.IO + job) {
+        scope.launch {
             indexUpdateProcessStoredQueue.consumeEach { action ->
                 logger.debug("Processing the index message event from the temporary record {}.", action.updateId)
 
