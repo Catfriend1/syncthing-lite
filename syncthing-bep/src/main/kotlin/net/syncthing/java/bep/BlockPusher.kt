@@ -122,6 +122,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
                     val (indexFolderId, newRecords, _) = event
 
                     if (indexFolderId == folderId) {
+                        // TODO Rename fileInfo2 (there's also a fileInfo and fileInfo1)
                         for (fileInfo2 in newRecords) {
                             if (fileInfo2.path == targetPath && fileInfo2.hash == dataSource.getHash()) {
                                 // TODO check not invalid
