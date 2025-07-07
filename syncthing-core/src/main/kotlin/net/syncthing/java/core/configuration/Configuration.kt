@@ -5,7 +5,7 @@ import com.google.gson.stream.JsonWriter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -45,7 +45,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
             }
             val keystoreData = KeystoreHandler.Loader().generateKeystore()
             isSaved = false
-            configChannel.sendBlocking(
+            val result = configChannel.trySendBlocking(
                     Config(peers = setOf(), folders = setOf(),
                             localDeviceName = localDeviceName,
                             localDeviceId = keystoreData.first.deviceId,
@@ -55,11 +55,17 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
                             useDefaultDiscoveryServers = true
                     )
             )
+            if (result.isFailure) {
+                throw result.exceptionOrNull() ?: IllegalStateException("Failed to send config")
+            }
             runBlocking { persistNow() }
         } else {
-            configChannel.sendBlocking(
+            val result = configChannel.trySendBlocking(
                     Config.parse(JsonReader(StringReader(configFile.readText())))
             )
+            if (result.isFailure) {
+                throw result.exceptionOrNull() ?: IllegalStateException("Failed to send config")
+            }
         }
         logger.debug("Loaded Configuration: {}.", configChannel.value)
     }
