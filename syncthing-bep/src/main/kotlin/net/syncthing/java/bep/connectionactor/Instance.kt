@@ -212,7 +212,7 @@ object ConnectionActor {
                                                         .build()
                                         )
                                     } catch (ex: Exception) {
-                                        action.completableDeferred.cancel(ex)
+                                        action.completableDeferred.completeExceptionally(ex)
                                     }
                                 }
                             }
@@ -228,7 +228,7 @@ object ConnectionActor {
                                     try {
                                         sendPostAuthMessage(action.message)
                                     } catch (ex: Exception) {
-                                        action.completableDeferred.cancel(ex)
+                                        action.completableDeferred.completeExceptionally(ex)
                                     }
                                 }
                             }
