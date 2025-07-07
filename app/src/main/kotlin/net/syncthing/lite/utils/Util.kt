@@ -20,7 +20,7 @@ object Util {
 
     private fun capitalizeCompat(input: String): String {
         return if (input.isNotEmpty()) {
-            input.substring(0, 1).toUpperCase(Locale.getDefault()) + input.substring(1)
+            input.substring(0, 1).uppercase(Locale.getDefault()) + input.substring(1)
         } else {
             input
         }
@@ -47,8 +47,13 @@ object Util {
     }
 
     @Throws(IOException::class)
-    fun importDeviceId(libraryManager: LibraryManager, context: Context, deviceId: String, onComplete: () -> Unit) {
-        val newDeviceId = DeviceId(deviceId.uppercase(Locale.US))
+    fun importDeviceId(
+            libraryManager: LibraryManager,
+            context: Context,
+            deviceId: String,
+            onComplete: () -> Unit
+    ) {
+        val newDeviceId = DeviceId(deviceId.uppercase(Locale.getDefault()))
 
         GlobalScope.launch(Dispatchers.Main) {
             libraryManager.withLibrary { library ->

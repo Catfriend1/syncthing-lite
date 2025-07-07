@@ -26,7 +26,7 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Types
-import java.util.*
+import java.util.Locale
 
 class SqlTransaction(
         private val connection: Connection,
@@ -345,7 +345,6 @@ class SqlTransaction(
         //        try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM file_info WHERE LOWER(file_name) LIKE ? AND is_deleted=FALSE LIMIT ?")) {
         connection.prepareStatement("SELECT * FROM file_info WHERE LOWER(file_name) REGEXP ? AND is_deleted=FALSE").use { preparedStatement ->
             //        try (Connection connection = getConnection(); PreparedStatement prepareStatement = connection.prepareStatement("SELECT * FROM file_info LIMIT 10")) {
-            //            preparedStatement.setString(1, "%" + query.trim().toLowerCase() + "%");
             preparedStatement.setString(1, query.trim { it <= ' ' }.lowercase(Locale.getDefault()))
             //            preparedStatement.setInt(2, maxResult);
             val resultSet = preparedStatement.executeQuery()
