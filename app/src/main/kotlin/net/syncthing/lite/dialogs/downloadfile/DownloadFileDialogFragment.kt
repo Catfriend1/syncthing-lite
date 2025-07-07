@@ -115,6 +115,7 @@ class DownloadFileDialogFragment : DialogFragment() {
                     dismissAllowingStateLoss()
                     requireContext().toast(R.string.toast_file_download_failed)
                 }
+                else -> { /* no-op or log unexpected status */ }
             }
         })
 
