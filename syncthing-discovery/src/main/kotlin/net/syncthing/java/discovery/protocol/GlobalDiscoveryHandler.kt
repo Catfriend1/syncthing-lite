@@ -14,7 +14,8 @@
  */
 package net.syncthing.java.discovery.protocol
 
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -28,7 +29,7 @@ import java.io.IOException
 internal class GlobalDiscoveryHandler(private val configuration: Configuration) {
 
     @Deprecated(message = "coroutine version should be used instead of callback")
-    fun query(deviceId: DeviceId, callback: (List<DeviceAddress>) -> Unit) = GlobalScope.launch {
+    fun query(deviceId: DeviceId, callback: (List<DeviceAddress>) -> Unit) = CoroutineScope(Dispatchers.IO).launch {
         try {
             callback(query(deviceId))
         } catch (ex: Exception) {
