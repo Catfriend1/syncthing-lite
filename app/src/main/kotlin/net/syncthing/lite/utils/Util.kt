@@ -5,7 +5,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.OpenableColumns
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.DeviceInfo
@@ -55,14 +55,14 @@ object Util {
     ) {
         val newDeviceId = DeviceId(deviceId.uppercase(Locale.getDefault()))
 
-        GlobalScope.launch(Dispatchers.Main) {
+        MainScope().launch(Dispatchers.Main) {
             libraryManager.withLibrary { library ->
                 val didAddDevice = library.configuration.update { oldConfig ->
                     if (oldConfig.peers.any { it.deviceId == newDeviceId }) {
                         oldConfig
                     } else {
                         oldConfig.copy(
-                                peers = oldConfig.peers + DeviceInfo(newDeviceId, newDeviceId.shortId)
+                            peers = oldConfig.peers + DeviceInfo(newDeviceId, newDeviceId.shortId)
                         )
                     }
                 }
