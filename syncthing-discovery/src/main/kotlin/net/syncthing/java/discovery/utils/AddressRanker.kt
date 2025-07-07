@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.Socket
 
+@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 object AddressRanker {
 
     private const val TCP_CONNECTION_TIMEOUT = 5000

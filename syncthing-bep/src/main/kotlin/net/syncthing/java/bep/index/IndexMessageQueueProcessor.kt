@@ -31,6 +31,7 @@ import net.syncthing.java.core.interfaces.TempRepository
 import org.slf4j.LoggerFactory
 import org.apache.logging.log4j.util.Unbox.box
 
+@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IndexMessageQueueProcessor (
         private val indexRepository: IndexRepository,
         private val tempRepository: TempRepository,
@@ -89,6 +90,8 @@ class IndexMessageQueueProcessor (
                     // this is expected when the data is deleted but some index updates are still in the queue
 
                     logger.warn("Could not find the index information for the index update.")
+                } catch (ex: Exception) {
+                    logger.error("💥 Unexpected exception while processing index message: ${ex.message}", ex)
                 }
             }
         }.reportExceptions("IndexMessageQueueProcessor.indexUpdateProcessingQueue", exceptionReportHandler)
@@ -112,8 +115,20 @@ class IndexMessageQueueProcessor (
     private suspend fun doHandleIndexMessageReceivedEvent(action: IndexUpdateAction) {
         val (message, clusterConfigInfo, peerDeviceId) = action
 
-        val folderInfo = clusterConfigInfo.folderInfoById[message.folder]
-                ?: throw IllegalStateException("Received folder information for folder without known folder information.")
+        logger.debug("📦 IndexUpdate folderId: ${message.folder}")
+        logger.debug("📦 IndexUpdate filesCount: ${message.filesCount}")
+        /*
+        message.filesList.forEachIndexed { i, file ->
+            val versionInfo = file.version.countersList.joinToString { "id=${it.id}, value=${it.value}" }
+            logger.debug("📄 File[$i]: name=${file.name}, size=${file.size}, type=${file.type}, deleted=${file.deleted}, version=[$versionInfo]")
+        }
+        */
+
+        val folderId = message.folder
+        logger.debug("🔎 Checking folder info for folderId=$folderId")
+
+        val folderInfo = clusterConfigInfo.folderInfoById[folderId]
+            ?: throw IllegalStateException("Received folder information for unknown folderId=$folderId")
 
         if (!folderInfo.isDeviceInSharedFolderWhitelist) {
             throw IllegalStateException("Received index update for a folder which is not shared.")

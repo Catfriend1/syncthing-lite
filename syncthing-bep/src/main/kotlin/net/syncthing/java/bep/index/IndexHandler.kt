@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 
+@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IndexHandler(
         configuration: Configuration,
         val indexRepository: IndexRepository,
@@ -126,7 +127,7 @@ class IndexHandler(
                 logger.debug("Acquired folder information from the cluster configuration: {}.", folder)
                 for (deviceRecord in folderRecord.devicesList) {
                     val deviceId = DeviceId.fromHashData(deviceRecord.id.toByteArray())
-                    if (deviceRecord.indexId > 0L && deviceRecord.maxSequence > 0L) {
+                    if (deviceRecord.indexId >= 0L && deviceRecord.maxSequence >= 0L) {
                         val folderIndexInfo = UpdateIndexInfo.updateIndexInfoFromClusterConfig(transaction, folder, deviceId, deviceRecord.indexId, deviceRecord.maxSequence)
                         logger.debug("Acquired folder index information from the cluster configuration: {}.", folderIndexInfo)
                         updatedIndexInfos.add(folderIndexInfo)
@@ -156,7 +157,7 @@ class IndexHandler(
         return indexRepository.runInTransaction { it.findFileInfo(folder, path) }
     }
 
-    fun getFileInfoAndBlocksByPath(folder: String, path: String): Pair<FileInfo, FileBlocks>? {
+    fun getFileInfoAndBlocksByPath(folder: String, path: String): FileBlocks? {
         return indexRepository.runInTransaction { transaction ->
             val fileInfo = transaction.findFileInfo(folder, path)
 
@@ -170,7 +171,7 @@ class IndexHandler(
 
                 FileInfo.checkBlocks(fileInfo, fileBlocks)
 
-                Pair(fileInfo, fileBlocks)
+                fileBlocks
             }
         }
     }

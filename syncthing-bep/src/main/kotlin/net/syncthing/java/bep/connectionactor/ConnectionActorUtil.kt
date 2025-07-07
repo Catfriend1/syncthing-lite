@@ -18,6 +18,7 @@ import kotlinx.coroutines.channels.SendChannel
 import net.syncthing.java.bep.BlockExchangeProtos
 import java.io.IOException
 
+@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 object ConnectionActorUtil {
     suspend fun waitUntilConnected(actor: SendChannel<ConnectionAction>): ClusterConfigInfo {
         val deferred = CompletableDeferred<ClusterConfigInfo>()

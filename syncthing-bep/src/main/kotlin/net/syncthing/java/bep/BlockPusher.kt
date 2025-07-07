@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicReference
 import org.apache.logging.log4j.util.Unbox.box
 
 // TODO: refactor this
+@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class BlockPusher(private val localDeviceId: DeviceId,
                   private val connectionHandler: ConnectionActorWrapper,
                   private val indexHandler: IndexHandler,
@@ -151,7 +152,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
                     val folderStatsUpdateCollector = FolderStatsUpdateCollector(folderId)
 
                     // TODO: notify the IndexBrowsers again (as it was earlier)
-                    val fileInfo = IndexElementProcessor.pushRecord(
+                    val builtFileInfo = IndexElementProcessor.pushRecord(
                             it,
                             indexUpdate.folder,
                             indexUpdate.filesList.single(),
@@ -162,7 +163,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
                     IndexMessageProcessor.handleFolderStatsUpdate(it, folderStatsUpdateCollector)
                     val folderStatsUpdate = it.findFolderStats(folderId) ?: FolderStats.createDummy(folderId)
 
-                    fileInfo to folderStatsUpdate
+                    builtFileInfo to folderStatsUpdate
                 }
 
                 runBlocking { indexHandler.sendFolderStatsUpdate(folderStatsUpdate) }
@@ -203,16 +204,16 @@ class BlockPusher(private val localDeviceId: DeviceId,
                             .addCounters(newVersion))
         }
         val lastModified = Date()
-        val fileInfo = fileInfoBuilder
+        val builtFileInfo  = fileInfoBuilder
                 .setModifiedS(lastModified.time / 1000)
                 .setModifiedNs((lastModified.time % 1000 * 1000000).toInt())
                 .setNoPermissions(true)
                 .build()
         val indexUpdate = BlockExchangeProtos.IndexUpdate.newBuilder()
                 .setFolder(folderId)
-                .addFiles(fileInfo)
+                .addFiles(builtFileInfo )
                 .build()
-        logger.debug("Update index with file information. File info: {}.", fileInfo)
+        logger.debug("Update index with file information. File info: {}.", builtFileInfo)
 
         connectionHandler.sendIndexUpdate(indexUpdate)
 

@@ -30,6 +30,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 
+@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class Main(private val commandLine: CommandLine) {
 
     companion object {

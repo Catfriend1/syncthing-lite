@@ -27,6 +27,8 @@ import java.nio.ByteBuffer
 
 object PostAuthenticationMessageHandler {
     private val logger = LoggerFactory.getLogger(PostAuthenticationMessageHandler::class.java)
+    
+    // private var messageCounter = 0
 
     fun sendMessage(
             outputStream: DataOutputStream,
@@ -55,15 +57,26 @@ object PostAuthenticationMessageHandler {
         markActivityOnSocket()
     }
 
+    fun ByteArray.toHexString(): String =
+        joinToString(" ") { "%02x".format(it) }
+
     fun receiveMessage(
             inputStream: DataInputStream,
             markActivityOnSocket: () -> Unit
     ): Pair<BlockExchangeProtos.MessageType, MessageLite> {
-        val header = BlockExchangeProtos.Header.parseFrom(readHeader(
-                inputStream = inputStream,
-                retryReadingLength = true,
-                markActivityOnSocket = markActivityOnSocket
-        ))
+        val headerBytes = readHeader(
+            inputStream = inputStream,
+            markActivityOnSocket = markActivityOnSocket
+        )
+
+        // logger.debug("🔹 Raw header bytes: ${headerBytes.toHexString()}")
+        val header: BlockExchangeProtos.Header = if (headerBytes.isEmpty()) {
+            logger.warn("📭 Header bytes were empty — using default Header")
+            BlockExchangeProtos.Header.getDefaultInstance()
+        } else {
+            BlockExchangeProtos.Header.parseFrom(headerBytes)
+        }
+        // logger.debug("📦 Message compression: ${header.compression}, type: ${header.type}")
 
         var messageBuffer = readMessage(
                 inputStream = inputStream,
@@ -71,46 +84,56 @@ object PostAuthenticationMessageHandler {
                 markActivityOnSocket = markActivityOnSocket
         )
 
+        // logger.debug("🔸 Raw message buffer (${messageBuffer.size} bytes): ${messageBuffer.take(64).toByteArray().toHexString()}")
+
         if (header.compression == BlockExchangeProtos.MessageCompression.LZ4) {
             val uncompressedLength = ByteBuffer.wrap(messageBuffer).int
-            messageBuffer = LZ4Factory.fastestInstance().fastDecompressor().decompress(messageBuffer, 4, uncompressedLength)
+            // logger.debug("💨 LZ4 compression detected. Uncompressed length: $uncompressedLength")
+            messageBuffer = LZ4Factory.fastestInstance().fastDecompressor()
+                .decompress(messageBuffer, 4, uncompressedLength)
+            // logger.debug("✅ Successfully decompressed. First 64 bytes: ${messageBuffer.take(64).toByteArray().toHexString()}")
         }
 
         val messageTypeInfo = MessageTypes.messageTypesByProtoMessageType[header.type]
         NetworkUtils.assertProtocol(messageTypeInfo != null) {"unsupported message type = ${header.type}"}
 
+        // logger.debug("📨 Received #${++messageCounter}: ${header.type} (${messageBuffer.size} bytes)")
+
         try {
-            return header.type to messageTypeInfo!!.parseFrom(messageBuffer)
+            val parsed = messageTypeInfo!!.parseFrom(messageBuffer)
+            logger.debug("✅ Successfully parsed message of type ${header.type}")
+            return header.type to parsed
         } catch (e: Exception) {
-            when (e) {
-                is IllegalAccessException, is IllegalArgumentException, is InvocationTargetException, is NoSuchMethodException, is SecurityException ->
-                    throw IOException(e)
-                else -> throw e
+            logger.error("🔥 Parsing exception for ${header.type}: ${e.message}", e)
+            throw when (e) {
+                is IllegalAccessException, is IllegalArgumentException,
+                is InvocationTargetException, is NoSuchMethodException,
+                is SecurityException -> IOException(e)
+                else -> e
             }
         }
     }
 
     private fun readHeader(
             inputStream: DataInputStream,
-            markActivityOnSocket: () -> Unit,
-            retryReadingLength: Boolean
+            markActivityOnSocket: () -> Unit
     ): ByteArray {
-        var headerLength = inputStream.readShort().toInt()
+        val headerLength = inputStream.readShort().toInt() and 0xffff // Ensure unsigned
+        // logger.debug("🔍 [readHeader] Raw headerLength read: $headerLength")
 
-        // TODO: what is this good for?
-        if (retryReadingLength) {
-            while (headerLength == 0) {
-                logger.warn("Received headerLength == 0, skipping short.")
-                headerLength = inputStream.readShort().toInt()
-            }
+        if (headerLength == 0) {
+            logger.debug("📭 headerLength == 0, message may be keepalive or without header")
+            return ByteArray(0)
         }
 
         markActivityOnSocket()
 
-        NetworkUtils.assertProtocol(headerLength > 0) {"invalid length, must be > 0, got $headerLength"}
+        NetworkUtils.assertProtocol(headerLength > 0) {
+            "invalid header length, must be > 0, got $headerLength"
+        }
 
-        return ByteArray(headerLength).apply {
-            inputStream.readFully(this)
+        return ByteArray(headerLength).also {
+            inputStream.readFully(it)
         }
     }
 
@@ -120,6 +143,13 @@ object PostAuthenticationMessageHandler {
             retryReadingLength: Boolean
     ): ByteArray {
         var messageLength = inputStream.readInt()
+
+        // logger.debug("📏 Raw messageLength read: $messageLength")
+
+        if (messageLength == 0) {
+            logger.warn("⚠️ Message length is zero — skipping readFully, maybe keepalive?")
+            return ByteArray(0)
+        }
 
         // TODO: what is this good for?
         if (retryReadingLength) {
@@ -131,8 +161,19 @@ object PostAuthenticationMessageHandler {
 
         NetworkUtils.assertProtocol(messageLength >= 0) {"invalid length, must be >= 0, got $messageLength"}
 
+        // logger.debug("📥 Reading full messageBuffer ($messageLength bytes)...")
         val messageBuffer = ByteArray(messageLength)
-        inputStream.readFully(messageBuffer)
+        var bytesRead = 0
+        while (bytesRead < messageLength) {
+            val result = inputStream.read(messageBuffer, bytesRead, messageLength - bytesRead)
+            if (result == -1) {
+                logger.warn("🛑 Stream ended unexpectedly after $bytesRead bytes (expected $messageLength)")
+                break
+            }
+            bytesRead += result
+            // logger.debug("📶 Read $result bytes (total: $bytesRead/$messageLength)")
+        }
+        // logger.debug("📥 Successfully read messageBuffer")
         markActivityOnSocket()
 
         return messageBuffer

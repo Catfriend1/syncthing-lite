@@ -29,6 +29,7 @@ import net.syncthing.java.core.interfaces.IndexTransaction
 import net.syncthing.java.core.utils.PathUtils
 import java.util.*
 
+@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IndexBrowser internal constructor(
         private val indexRepository: IndexRepository,
         private val indexHandler: IndexHandler
@@ -88,15 +89,15 @@ class IndexBrowser internal constructor(
 
             suspend fun dispatch() {
                 // let Kotlin understand that the value does not change during running this
-                val directoryInfo = directoryInfo
+                val currentDirectoryInfo = directoryInfo
 
-                val newStatus = if ((parentPath != null && parentEntry == null) || directoryInfo == null || directoryInfo.type != FileInfo.FileType.DIRECTORY) {
+                val newStatus = if ((parentPath != null && parentEntry == null) || currentDirectoryInfo == null || currentDirectoryInfo.type != FileInfo.FileType.DIRECTORY) {
                     DirectoryNotFoundListing(folder, path)
                 } else {
                     DirectoryContentListing(
                             entries = entries,
                             parentEntry = parentEntry,
-                            directoryInfo = directoryInfo
+                            directoryInfo = currentDirectoryInfo
                     )
                 }
 

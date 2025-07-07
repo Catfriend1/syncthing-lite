@@ -150,6 +150,10 @@ object ClusterConfigHandler {
             oldConfig.copy(folders = configFolders)
         }
 
+        configuration.folders.forEach {
+            logger.debug("🗂 Local Folder: id=${it.folderId}, whitelist=${it.deviceIdWhitelist}, blacklist=${it.deviceIdBlacklist}")
+        }
+
         configuration.persistLater()
         indexHandler.handleClusterConfigMessageProcessedEvent(clusterConfig)
 

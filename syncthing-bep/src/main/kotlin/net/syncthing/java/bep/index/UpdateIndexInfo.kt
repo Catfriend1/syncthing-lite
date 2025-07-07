@@ -3,8 +3,11 @@ package net.syncthing.java.bep.index
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.IndexInfo
 import net.syncthing.java.core.interfaces.IndexTransaction
+import org.slf4j.LoggerFactory
 
 object UpdateIndexInfo {
+    private val logger = LoggerFactory.getLogger(UpdateIndexInfo::class.java)
+
     fun updateIndexInfoFromClusterConfig(
             transaction: IndexTransaction,
             folder: String,
@@ -13,6 +16,7 @@ object UpdateIndexInfo {
             maxSequence: Long
     ): IndexInfo {
         val oldIndexSequenceInfo = transaction.findIndexInfoByDeviceAndFolder(deviceId, folder)
+        logger.debug("🔎 Looked up IndexInfo for device=$deviceId, folder=$folder: $oldIndexSequenceInfo")
 
         var newIndexSequenceInfo = oldIndexSequenceInfo ?: IndexInfo(
                 folderId = folder,
@@ -31,7 +35,10 @@ object UpdateIndexInfo {
         }
 
         if (oldIndexSequenceInfo != newIndexSequenceInfo) {
+            logger.debug("🔄 Updating IndexInfo for device=$deviceId, folder=$folder: $newIndexSequenceInfo")
             transaction.updateIndexInfo(newIndexSequenceInfo)
+        } else {
+            logger.debug("✅ IndexInfo unchanged for device=$deviceId, folder=$folder")
         }
 
         return newIndexSequenceInfo
@@ -49,6 +56,7 @@ object UpdateIndexInfo {
         }
 
         if (oldIndexInfo != newIndexSequenceInfo) {
+            logger.debug("📈 Updating IndexInfo sequence: $oldIndexInfo to $newIndexSequenceInfo")
             transaction.updateIndexInfo(newIndexSequenceInfo)
         }
 

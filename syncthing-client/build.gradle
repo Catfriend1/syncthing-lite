@@ -8,9 +8,17 @@ java {
 }
 
 dependencies {
+    api project(':syncthing-bep')
+    api project(':syncthing-discovery')
     implementation project(':syncthing-core')
-    implementation project(':syncthing-bep')
-    implementation project(':syncthing-discovery')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.0'
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        freeCompilerArgs += [
+            "-Xuse-experimental=kotlin.Experimental"
+        ]
+    }
 }

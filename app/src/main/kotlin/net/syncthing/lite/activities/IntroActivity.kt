@@ -3,6 +3,7 @@ package net.syncthing.lite.activities
 import android.arch.lifecycle.Observer
 import android.content.Intent
 import androidx.databinding.DataBindingUtil
+import android.os.Build
 import android.os.Bundle
 import androidx.app.Fragment
 import androidx.content.ContextCompat
@@ -32,6 +33,7 @@ import java.io.IOException
  * Shown when a user first starts the app. Shows some info and helps the user to add their first
  * device and folder.
  */
+@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IntroActivity : AppIntro() {
 
     /**
@@ -187,7 +189,13 @@ class IntroActivity : AppIntro() {
                 libraryHandler.subscribeToConnectionStatus().consumeEach {
                     if (it.values.find { it.addresses.isNotEmpty() } != null) {
                         val desc = activity?.getString(R.string.intro_page_three_description, "<b>$ownDeviceId</b>")
-                        binding.description.text = Html.fromHtml(desc)
+                        val spanned = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            Html.fromHtml(desc, Html.FROM_HTML_MODE_LEGACY)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            Html.fromHtml(desc)
+                        }
+                        binding.description.text = spanned
                     } else {
                         binding.description.text = getString(R.string.intro_page_three_searching_device)
                     }
