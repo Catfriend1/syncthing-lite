@@ -2,7 +2,7 @@ package net.syncthing.lite.activities
 
 import android.arch.lifecycle.Observer
 import android.content.Intent
-import android.databinding.DataBindingUtil
+import androidx.databinding.DataBindingUtil
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
