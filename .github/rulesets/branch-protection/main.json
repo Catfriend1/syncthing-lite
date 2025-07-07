@@ -1,9 +1,9 @@
 {
-  "id": 4209024,
+  "id": 6535573,
   "name": "Branch protection: main",
   "target": "branch",
   "source_type": "Repository",
-  "source": "Catfriend1/syncthing-android",
+  "source": "Catfriend1/syncthing-lite",
   "enforcement": "active",
   "conditions": {
     "ref_name": {
