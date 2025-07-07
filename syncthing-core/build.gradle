@@ -2,7 +2,7 @@ apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
 dependencies {
-    api 'commons-codec:commons-codec:1.17.1'
+    api 'commons-codec:commons-codec:1.11'
     // Can't upgrade to 2.6 because it crashes on Android
     api "commons-io:commons-io:2.18.0"
     api "org.slf4j:slf4j-api:2.0.17"
