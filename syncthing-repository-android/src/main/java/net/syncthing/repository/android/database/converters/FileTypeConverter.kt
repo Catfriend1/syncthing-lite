@@ -1,6 +1,6 @@
 package net.syncthing.repository.android.database.converters
 
-import android.arch.persistence.room.TypeConverter
+import androidx.room.TypeConverter
 import net.syncthing.java.core.beans.FileInfo
 
 class FileTypeConverter {

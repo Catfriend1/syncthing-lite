@@ -1,6 +1,6 @@
 package net.syncthing.repository.android.database.dao
 
-import android.arch.persistence.room.*
+import androidx.room.*
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.repository.android.database.converters.DeviceIdConverter
 import net.syncthing.repository.android.database.item.FolderIndexInfoItem

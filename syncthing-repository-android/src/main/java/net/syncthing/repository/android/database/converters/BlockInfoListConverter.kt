@@ -1,6 +1,6 @@
 package net.syncthing.repository.android.database.converters
 
-import android.arch.persistence.room.TypeConverter
+import androidx.room.TypeConverter
 import com.google.protobuf.ByteString
 import net.syncthing.java.bep.BlockExchangeExtraProtos
 import net.syncthing.java.bep.BlockExchangeProtos
