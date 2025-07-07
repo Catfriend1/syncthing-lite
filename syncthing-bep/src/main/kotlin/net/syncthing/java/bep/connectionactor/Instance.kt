@@ -32,7 +32,7 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
 
-@UseExperimental(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 object ConnectionActor {
     private val logger = org.slf4j.LoggerFactory.getLogger("ConnectionActor")
 

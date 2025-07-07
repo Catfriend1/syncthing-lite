@@ -18,7 +18,7 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.beans.DeviceId
 
-@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class DeviceAddressesManager (val deviceId: DeviceId) {
     companion object {
         private const val MAX_ADDRESSES_PER_TYPE = 16
