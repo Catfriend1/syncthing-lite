@@ -248,9 +248,9 @@ object ConnectionActor {
             }
         }.invokeOnCompletion { ex ->
             if (ex != null) {
-                channel.cancel(ex)
+                channel.close(ex)
             } else {
-                channel.cancel()
+                channel.close()
             }
         }
 
