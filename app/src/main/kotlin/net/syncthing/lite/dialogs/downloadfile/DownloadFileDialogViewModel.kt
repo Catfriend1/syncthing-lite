@@ -7,7 +7,7 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.support.v4.os.CancellationSignal
 import android.util.Log
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.lite.BuildConfig
 import net.syncthing.lite.library.DownloadFileTask
@@ -68,7 +68,7 @@ class DownloadFileDialogViewModel : ViewModel() {
                         onComplete = { file ->
                             libraryHandler.stop()
 
-                            GlobalScope.launch {
+                            MainScope().launch {
                                 try {
                                     if (outputUri != null) {
                                         contentResolver.openOutputStream(outputUri).use { outputStream ->
