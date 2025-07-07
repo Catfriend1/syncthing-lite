@@ -35,8 +35,6 @@ class ConnectionActorWrapper (
         val deviceId: DeviceId,
         private val exceptionReportHandler: (ExceptionReport) -> Unit
 ) {
-    private val job = Job()
-    private val scope = CoroutineScope(job)
     private val job = SupervisorJob()
     private val scope = CoroutineScope(job + Dispatchers.Default)
 
