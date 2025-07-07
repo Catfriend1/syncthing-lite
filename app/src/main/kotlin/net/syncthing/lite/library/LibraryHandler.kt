@@ -96,7 +96,7 @@ class LibraryHandler(context: Context) {
             throw IllegalStateException("already stopped")
         }
 
-        job!!.cancel()
+        job.cancel()
 
         syncthingClient {
             try {
