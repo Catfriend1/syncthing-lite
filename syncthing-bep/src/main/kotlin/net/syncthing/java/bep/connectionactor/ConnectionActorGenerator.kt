@@ -15,6 +15,10 @@
 package net.syncthing.java.bep.connectionactor
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.*
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.bep.index.IndexHandler
@@ -32,8 +36,9 @@ data class Connection (
 object ConnectionActorGenerator {
     private val closed = Channel<ConnectionAction>().apply { cancel() }
     private val logger = LoggerFactory.getLogger(ConnectionActorGenerator::class.java)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private fun deviceAddressesGenerator(deviceAddress: ReceiveChannel<DeviceAddress>) = GlobalScope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
+    private fun deviceAddressesGenerator(deviceAddress: ReceiveChannel<DeviceAddress>) = scope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
         val addresses = mutableMapOf<String, DeviceAddress>()
 
         deviceAddress.consumeEach { address ->
@@ -49,7 +54,7 @@ object ConnectionActorGenerator {
         }
     }
 
-    private fun <T> waitForFirstValue(source: ReceiveChannel<T>, time: Long) = GlobalScope.produce<T> {
+    private fun <T> waitForFirstValue(source: ReceiveChannel<T>, time: Long) = scope.produce<T> {
         source.consume {
             val firstValue = source.receive()
             var lastValue = firstValue
@@ -95,7 +100,7 @@ object ConnectionActorGenerator {
             configuration: Configuration,
             indexHandler: IndexHandler,
             requestHandler: (BlockExchangeProtos.Request) -> Deferred<BlockExchangeProtos.Response>
-    ) = GlobalScope.produce<Pair<Connection, ConnectionInfo>> {
+    ) = scope.produce<Pair<Connection, ConnectionInfo>> {
         var currentActor: SendChannel<ConnectionAction> = closed
         var currentClusterConfig = ClusterConfigInfo.dummy
         var currentDeviceAddress: DeviceAddress? = null
