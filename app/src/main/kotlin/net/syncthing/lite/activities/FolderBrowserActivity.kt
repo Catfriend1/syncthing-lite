@@ -137,7 +137,9 @@ class FolderBrowserActivity : SyncthingActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString(STATUS_PATH, path.value)
+        path.valueOrNull?.let {
+            outState.putString(STATUS_PATH, it)
+        }
     }
 
     private fun goUp(): Boolean {
