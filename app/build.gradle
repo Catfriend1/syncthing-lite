@@ -3,8 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 28
-    // namespace = "net.syncthing.lite"
+    compileSdkVersion 27
 
     defaultConfig {
         applicationId "net.syncthing.lite"
@@ -57,8 +56,6 @@ dependencies {
 
     implementation project(':syncthing-repository-android')
     implementation project(':syncthing-temp-repository-encryption')
-    
-    implementation 'androidx.multidex:multidex:2.0.1'
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
