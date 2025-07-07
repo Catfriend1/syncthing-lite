@@ -2,8 +2,11 @@ package net.syncthing.java.core.configuration
 
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.launch
@@ -27,6 +30,8 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
     private val modifyLock = Mutex()
     private val saveLock = Mutex()
     private val configChannel = ConflatedBroadcastChannel<Config>()
+
+    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val configFile = File(configFolder, ConfigFileName)
     val databaseFolder = File(configFolder, DatabaseFolderName)
@@ -130,7 +135,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
     }
 
     fun persistLater() {
-        GlobalScope.launch (Dispatchers.IO) { persist() }
+        coroutineScope.launch { persist() }
     }
 
     private suspend fun persist() {
@@ -159,6 +164,10 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
                 }
             }
         }
+    }
+
+    fun shutdown() {
+        coroutineScope.cancel()
     }
 
     fun subscribe() = configChannel.openSubscription()
