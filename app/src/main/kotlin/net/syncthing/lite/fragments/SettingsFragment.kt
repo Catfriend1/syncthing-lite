@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.support.v7.preference.EditTextPreference
 import android.support.v7.preference.PreferenceFragmentCompat
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R
 import net.syncthing.lite.dialogs.ErrorReportDialog
@@ -25,7 +25,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val reportBug       = findPreference("report_bug")
         val libraryManager  = DefaultLibraryManager.with(context!!)
 
-        GlobalScope.launch (Dispatchers.Main) {
+        MainScope().launch(Dispatchers.Main) {
             libraryManager.withLibrary { library ->
                 localDeviceName.text = library.configuration.localDeviceName
             }
@@ -36,7 +36,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         localDeviceName.setOnPreferenceChangeListener { _, _ ->
             val newDeviceName = localDeviceName.text
 
-            GlobalScope.launch {
+            MainScope().launch {
                 libraryManager.withLibrary { library ->
                     library.configuration.update { it.copy(localDeviceName = newDeviceName) }
                     library.configuration.persistLater()
