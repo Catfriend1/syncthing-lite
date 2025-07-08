@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.databinding.DataBindingUtil
 import android.os.Build
 import android.os.Bundle
+import android.util.TypedValue
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
 import android.text.Html
@@ -46,7 +47,10 @@ class IntroActivity : AppIntro() {
         addSlide(IntroFragmentTwo())
         addSlide(IntroFragmentThree())
 
-        setSeparatorColor(ContextCompat.getColor(this, android.R.color.primary_text_dark))
+        val typedValue = TypedValue()
+        theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+        setSeparatorColor(ContextCompat.getColor(this, typedValue.resourceId))
+
         showSkipButton(true)
         isProgressButtonEnabled = true
         pager.isPagingEnabled = false
