@@ -31,7 +31,6 @@ android {
     buildFeatures {
         dataBinding true
     }
-    namespace 'net.syncthing.lite'
 }
 
 dependencies {
