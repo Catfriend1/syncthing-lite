@@ -48,10 +48,6 @@ class LibraryInstance (
         }
     }
 
-    init {
-        Log.d(LOG_TAG, "LibraryInstance constructor entered")
-    }
-
     private val tempRepository = EncryptedTempRepository(
             TempDirectoryLocalRepository(
                     File(context.filesDir, "temp_repository")
@@ -60,31 +56,22 @@ class LibraryInstance (
 
     val isListeningPortTaken = checkIsListeningPortTaken()  // this must come first to work correctly
     val configuration = Configuration(configFolder = context.filesDir)
+    val syncthingClient = SyncthingClient(
+            configuration = configuration,
+            repository = SqliteIndexRepository(
+                    database = RepositoryDatabase.with(context),
+                    closeDatabaseOnClose = false,
+                    clearTempStorageHook = { tempRepository.deleteAllTempData() }
+            ),
+            tempRepository = tempRepository,
+            exceptionReportHandler = { ex ->
+                Log.w(LOG_TAG, "${ex.component}\n${ex.detailsReadableString}\n${Log.getStackTraceString(ex.exception)}")
 
-    val syncthingClient = try {
-        SyncthingClient(
-                configuration = configuration,
-                repository = SqliteIndexRepository(
-                        database = RepositoryDatabase.with(context),
-                        closeDatabaseOnClose = false,
-                        clearTempStorageHook = { tempRepository.deleteAllTempData() }
-                ),
-                tempRepository = tempRepository,
-                exceptionReportHandler = { ex ->
-                    Log.w(LOG_TAG, "${ex.component}\n${ex.detailsReadableString}\n${Log.getStackTraceString(ex.exception)}")
-
-                    MainScope().launch(Dispatchers.Main) {
-                        exceptionReportHandler(ex)
-                    }
+                MainScope().launch(Dispatchers.Main) {
+                    exceptionReportHandler(ex)
                 }
-        ).also {
-            Log.d(LOG_TAG, "SyncthingClient created successfully")
-        }
-    } catch (e: Exception) {
-        Log.e(LOG_TAG, "Failed to construct SyncthingClient", e)
-        throw e
-    }
-
+            }
+    )
     val folderBrowser = syncthingClient.indexHandler.folderBrowser
     val indexBrowser = syncthingClient.indexHandler.indexBrowser
 
