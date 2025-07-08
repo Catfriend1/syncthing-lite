@@ -40,6 +40,11 @@ class SyncthingClient(
         private val tempRepository: TempRepository,
         exceptionReportHandler: (ExceptionReport) -> Unit
 ) : Closeable {
+
+    companion object {
+        private const val TAG = "SyncthingClient"
+    }
+
     val indexHandler = IndexHandler(configuration, repository, tempRepository, exceptionReportHandler)
     val discoveryHandler = DiscoveryHandler(configuration, exceptionReportHandler)
 
@@ -67,6 +72,7 @@ class SyncthingClient(
     )
 
     suspend fun clearCacheAndIndex() {
+        log(TAG, "Clearing index and cache")
         indexHandler.clearIndex()
         configuration.update {
             it.copy(folders = emptySet())
@@ -75,18 +81,27 @@ class SyncthingClient(
         connections.reconnectAllConnections()
     }
 
-    private fun getConnections() = configuration.peerIds.map { connections.getByDeviceId(it) }
+    private fun getConnections(): List<ConnectionActorWrapper> {
+        log(TAG, "Resolving connections")
+        return configuration.peerIds.map { connections.getByDeviceId(it) }
+    }
+    
+    private fun log(tag: String, msg: String) = println("[$tag] $msg")
 
     init {
+        log(TAG, "SyncthingClient init starting")
         discoveryHandler.newDeviceAddressSupplier() // starts the discovery
         getConnections()
+        log(TAG, "SyncthingClient init completed")
     }
 
     fun reconnect(deviceId: DeviceId) {
+        log(TAG, "Reconnecting to $deviceId")
         connections.reconnect(deviceId)
     }
 
     fun connectToNewlyAddedDevices() {
+        log(TAG, "Connecting to newly added devices")
         getConnections()
     }
 
@@ -125,6 +140,7 @@ class SyncthingClient(
     fun subscribeToConnectionStatus() = connections.subscribeToConnectionStatusMap()
 
     override fun close() {
+        log(TAG, "Shutting down SyncthingClient")
         discoveryHandler.close()
         indexHandler.close()
         repository.close()
