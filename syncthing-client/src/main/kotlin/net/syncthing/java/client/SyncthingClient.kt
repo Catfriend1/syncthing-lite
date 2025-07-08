@@ -45,8 +45,15 @@ class SyncthingClient(
         private const val TAG = "SyncthingClient"
     }
 
-    val indexHandler = IndexHandler(configuration, repository, tempRepository, exceptionReportHandler)
-    val discoveryHandler = DiscoveryHandler(configuration, exceptionReportHandler)
+    val indexHandler = run {
+        log(TAG, "Creating indexHandler")
+        IndexHandler(configuration, repository, tempRepository, exceptionReportHandler)
+    }
+
+    val discoveryHandler = run {
+        log(TAG, "Creating discoveryHandler")
+        DiscoveryHandler(configuration, exceptionReportHandler)
+    }
 
     private val requestHandlerRegistry = RequestHandlerRegistry()
     private val connections = Connections(
@@ -85,7 +92,7 @@ class SyncthingClient(
         log(TAG, "Resolving connections")
         return configuration.peerIds.map { connections.getByDeviceId(it) }
     }
-    
+
     private fun log(tag: String, msg: String) = println("[$tag] $msg")
 
     init {
