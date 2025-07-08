@@ -17,29 +17,45 @@ import net.syncthing.repository.android.database.item.*
             IndexSequenceItem::class
         ]
 )
-abstract class RepositoryDatabase: RoomDatabase() {
+abstract class RepositoryDatabase : RoomDatabase() {
     companion object {
         private var instance: RepositoryDatabase? = null
         private val lock = Object()
 
-        fun createInstance(context: Context, name: String) = Room.databaseBuilder(
-                context.applicationContext,
-                RepositoryDatabase::class.java,
-                name
-        ).build()
+        // Umschaltbar zwischen persistenter DB und In-Memory
+        private const val USE_IN_MEMORY_DB_FOR_TESTING = true
 
-        fun createInMemoryInstance(context: Context) = Room.inMemoryDatabaseBuilder(
-                context.applicationContext,
-                RepositoryDatabase::class.java
-        ).build()
+        fun createInstance(context: Context, name: String): RepositoryDatabase {
+            println("[RepositoryDatabase] createInstance() called — mode: ${if (USE_IN_MEMORY_DB_FOR_TESTING) "inMemory" else "file"}")
+
+            return if (USE_IN_MEMORY_DB_FOR_TESTING) {
+                createInMemoryInstance(context)
+            } else {
+                Room.databaseBuilder(
+                        context.applicationContext,
+                        RepositoryDatabase::class.java,
+                        name
+                )
+                .fallbackToDestructiveMigration()
+                .build()
+            }
+        }
+
+        fun createInMemoryInstance(context: Context): RepositoryDatabase {
+            println("[RepositoryDatabase] createInMemoryInstance() called")
+            return Room.inMemoryDatabaseBuilder(
+                    context.applicationContext,
+                    RepositoryDatabase::class.java
+            ).build()
+        }
 
         fun with(context: Context): RepositoryDatabase {
             println("[RepositoryDatabase] entering with()")
             if (instance == null) {
-                synchronized (lock) {
+                synchronized(lock) {
                     println("[RepositoryDatabase] entering synchronized block")
                     if (instance == null) {
-                        println("[RepositoryDatabase] creating Room database")
+                        println("[RepositoryDatabase] creating database instance…")
                         instance = createInstance(context, "repository_database")
                         println("[RepositoryDatabase] instance assigned")
                     }
