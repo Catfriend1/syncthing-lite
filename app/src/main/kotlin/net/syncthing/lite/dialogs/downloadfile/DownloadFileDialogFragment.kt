@@ -60,7 +60,7 @@ class DownloadFileDialogFragment : DialogFragment() {
         model.init(
             libraryHandler = LibraryHandler(requireContext()),
             fileSpec = fileSpec,
-            externalCacheDir = requireContext().externalCacheDir,
+            externalCacheDir = requireNotNull(requireContext().externalCacheDir),
             outputUri = outputUri,
             contentResolver = requireContext().contentResolver
         )
