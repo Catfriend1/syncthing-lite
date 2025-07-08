@@ -81,7 +81,7 @@ class IndexMessageQueueProcessor (
     }
 
     init {
-        scope.launch {
+        /* scope.launch {
             indexUpdateProcessingQueue.consumeEach {
                 try {
                     doHandleIndexMessageReceivedEvent(it)
@@ -94,9 +94,9 @@ class IndexMessageQueueProcessor (
                     logger.error("💥 Unexpected exception while processing index message: ${ex.message}", ex)
                 }
             }
-        }.reportExceptions("IndexMessageQueueProcessor.indexUpdateProcessingQueue", exceptionReportHandler)
+        }.reportExceptions("IndexMessageQueueProcessor.indexUpdateProcessingQueue", exceptionReportHandler) */
 
-        scope.launch {
+        /* scope.launch {
             indexUpdateProcessStoredQueue.consumeEach { action ->
                 logger.debug("Processing the index message event from the temporary record {}.", action.updateId)
 
@@ -109,7 +109,7 @@ class IndexMessageQueueProcessor (
                         action.peerDeviceId
                 ))
             }
-        }.reportExceptions("IndexMessageQueueProcessor.indexUpdateProcessStoredQueue", exceptionReportHandler)
+        }.reportExceptions("IndexMessageQueueProcessor.indexUpdateProcessStoredQueue", exceptionReportHandler) */
     }
 
     private suspend fun doHandleIndexMessageReceivedEvent(action: IndexUpdateAction) {
