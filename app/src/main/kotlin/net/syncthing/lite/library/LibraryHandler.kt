@@ -1,15 +1,12 @@
 package net.syncthing.lite.library
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
@@ -30,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * It's possible to do multiple start and stop cycles with one instance of this class.
  */
-@OptIn(ExperimentalCoroutinesApi::class, ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class LibraryHandler(context: Context) {
 
     companion object {
@@ -49,51 +46,45 @@ class LibraryHandler(context: Context) {
     val isListeningPortTaken: LiveData<Boolean> = isListeningPortTakenInternal
 
     private val messageFromUnknownDeviceListeners = HashSet<(DeviceId) -> Unit>()
-    private val internalMessageFromUnknownDeviceListener: (DeviceId) -> Unit = { deviceId ->
+    private val internalMessageFromUnknownDeviceListener: (DeviceId) -> Unit = {
+        deviceId ->
+
         handler.post {
             messageFromUnknownDeviceListeners.forEach { listener -> listener(deviceId) }
         }
     }
 
     fun start(onLibraryLoaded: (LibraryHandler) -> Unit = {}) {
-        if (isStarted.getAndSet(true)) {
+        if (isStarted.getAndSet(true) == true) {
             throw IllegalStateException("already started")
         }
 
-        Log.d(TAG, "Calling startLibraryUsage...")
-
-        libraryManager.startLibraryUsage { libraryInstance ->
-            Log.d(TAG, "startLibraryUsage callback entered")
+        libraryManager.startLibraryUsage {
+            libraryInstance ->
 
             isListeningPortTakenInternal.value = libraryInstance.isListeningPortTaken
             onLibraryLoaded(this)
 
             val client = libraryInstance.syncthingClient
-            Log.d(TAG, "Registering unknown device listener...")
+
             client.discoveryHandler.registerMessageFromUnknownDeviceListener(internalMessageFromUnknownDeviceListener)
 
             job = Job()
 
             CoroutineScope(job).launch {
-                Log.d(TAG, "Launching index subscription...")
                 libraryInstance.syncthingClient.indexHandler.subscribeToOnFullIndexAcquiredEvents().consumeEach {
-                    Log.d(TAG, "Received index update: $it")
                     indexUpdateCompleteMessages.send(it)
                 }
             }
 
             CoroutineScope(job).launch {
-                Log.d(TAG, "Launching folder status stream...")
                 libraryInstance.folderBrowser.folderInfoAndStatusStream().consumeEach {
-                    Log.d(TAG, "Received folder status update")
                     folderStatusList.send(it)
                 }
             }
 
             CoroutineScope(job).launch {
-                Log.d(TAG, "Launching connection status stream...")
                 libraryInstance.syncthingClient.subscribeToConnectionStatus().consumeEach {
-                    Log.d(TAG, "Received connection status update")
                     connectionStatus.send(it)
                 }
             }
@@ -101,20 +92,17 @@ class LibraryHandler(context: Context) {
     }
 
     fun stop() {
-        if (!isStarted.getAndSet(false)) {
+        if (isStarted.getAndSet(false) == false) {
             throw IllegalStateException("already stopped")
         }
 
-        Log.d(TAG, "Stopping library usage...")
         job.cancel()
 
         syncthingClient {
             try {
-                Log.d(TAG, "Unregistering unknown device listener")
                 it.discoveryHandler.unregisterMessageFromUnknownDeviceListener(internalMessageFromUnknownDeviceListener)
             } catch (e: IllegalArgumentException) {
                 // ignored, no idea why this is thrown
-                Log.w(TAG, "Failed to unregister listener", e)
             }
         }
 
