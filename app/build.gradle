@@ -26,12 +26,7 @@ android {
         }
     }
     packagingOptions {
-        jniLibs {
-            excludes += ['META-INF/*']
-        }
-        resources {
-            excludes += ['META-INF/*']
-        }
+        exclude 'META-INF/*'
     }
     buildFeatures {
         dataBinding true
