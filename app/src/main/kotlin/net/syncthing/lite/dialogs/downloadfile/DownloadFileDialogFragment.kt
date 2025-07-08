@@ -1,16 +1,15 @@
 package net.syncthing.lite.dialogs.downloadfile
 
 import android.app.Dialog
-import android.app.ProgressDialog
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProviders
 import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.app.DialogFragment
-import androidx.app.FragmentManager
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
+import androidx.appcompat.app.AlertDialog
 import android.util.Log
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.lite.BuildConfig
@@ -77,6 +76,12 @@ class DownloadFileDialogFragment : DialogFragment() {
         model.status.observe(this, Observer {
             status ->
 
+        val alertDialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        model.status.observe(this, androidx.lifecycle.Observer { status ->
             when (status) {
                 is DownloadFileStatusRunning -> {
                     progressDialog.apply {

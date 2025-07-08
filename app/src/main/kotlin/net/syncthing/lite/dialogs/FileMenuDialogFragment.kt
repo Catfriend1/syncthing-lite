@@ -3,8 +3,8 @@ package net.syncthing.lite.dialogs
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.os.Bundle
-import androidx.design.widget.BottomSheetDialogFragment
-import androidx.app.FragmentManager
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import androidx.fragment.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup

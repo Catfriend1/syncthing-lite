@@ -1,12 +1,12 @@
 package net.syncthing.lite.activities
 
-import android.arch.lifecycle.Observer
+import androidx.lifecycle.Observer
 import android.content.Intent
 import androidx.databinding.DataBindingUtil
 import android.os.Build
 import android.os.Bundle
-import androidx.app.Fragment
-import androidx.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.core.content.ContextCompat
 import android.text.Html
 import android.view.LayoutInflater
 import android.view.View

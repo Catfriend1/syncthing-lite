@@ -1,6 +1,6 @@
 package net.syncthing.lite.async
 
-import androidx.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

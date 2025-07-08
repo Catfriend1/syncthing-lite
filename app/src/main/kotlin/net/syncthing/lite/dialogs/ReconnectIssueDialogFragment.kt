@@ -1,9 +1,9 @@
 package net.syncthing.lite.dialogs
 
 import android.os.Bundle
-import androidx.app.DialogFragment
-import androidx.app.FragmentActivity
-import androidx.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentActivity
+import androidx.appcompat.app.AlertDialog
 import net.syncthing.lite.R
 import org.jetbrains.anko.defaultSharedPreferences
 

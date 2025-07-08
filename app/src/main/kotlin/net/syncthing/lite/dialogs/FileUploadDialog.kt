@@ -1,12 +1,13 @@
 package net.syncthing.lite.dialogs
 
-import android.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import android.content.Context
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import net.syncthing.java.bep.BlockPusher
 import net.syncthing.java.client.SyncthingClient
 import net.syncthing.lite.R
@@ -88,7 +89,7 @@ class FileUploadDialog(
     }
 
     private fun Context.runOnUiThread(action: () -> Unit) {
-        if (this is android.app.Activity) {
+        if (this is AppCompatActivity) {
             runOnUiThread(action)
         } else {
             action()
