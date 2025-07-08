@@ -1,11 +1,11 @@
 package net.syncthing.lite.dialogs.downloadfile
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import android.content.ContentResolver
 import android.net.Uri
-import android.support.v4.os.CancellationSignal
+import androidx.core.os.CancellationSignal
 import android.util.Log
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch

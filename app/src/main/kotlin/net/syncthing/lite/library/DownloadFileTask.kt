@@ -2,7 +2,7 @@ package net.syncthing.lite.library
 
 import android.os.Handler
 import android.os.Looper
-import android.support.v4.os.CancellationSignal
+import androidx.core.os.CancellationSignal
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope

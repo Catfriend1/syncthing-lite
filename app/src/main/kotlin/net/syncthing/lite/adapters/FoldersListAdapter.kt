@@ -1,6 +1,6 @@
 package net.syncthing.lite.adapters
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.text.format.DateUtils
 import android.util.Log
 import android.view.LayoutInflater

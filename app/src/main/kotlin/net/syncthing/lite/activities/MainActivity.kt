@@ -4,8 +4,8 @@ import android.app.AlertDialog
 import android.content.res.Configuration
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v7.app.ActionBarDrawerToggle
+import androidx.fragment.app.Fragment
+import androidx.appcompat.app.ActionBarDrawerToggle
 import android.view.Gravity
 import android.view.MenuItem
 import kotlinx.coroutines.Dispatchers

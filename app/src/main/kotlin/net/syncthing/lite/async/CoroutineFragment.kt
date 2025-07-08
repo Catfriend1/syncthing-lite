@@ -1,6 +1,6 @@
 package net.syncthing.lite.async
 
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

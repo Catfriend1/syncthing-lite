@@ -3,7 +3,7 @@ package net.syncthing.lite.activities
 import android.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.design.widget.Snackbar
+import com.google.android.material.snackbar.Snackbar
 import android.view.LayoutInflater
 import net.syncthing.lite.BuildConfig
 import net.syncthing.lite.R

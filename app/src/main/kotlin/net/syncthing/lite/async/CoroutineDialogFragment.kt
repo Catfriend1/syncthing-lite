@@ -1,6 +1,6 @@
 package net.syncthing.lite.async
 
-import android.support.v4.app.DialogFragment
+import androidx.fragment.app.DialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
