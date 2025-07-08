@@ -28,10 +28,10 @@ object DefaultLibraryManager {
                     }
 
                     fun scheduleShutdown() {
-                        val shutdownDelay = context.defaultSharedPreferences.getString(
-                                "shutdown_delay",
-                                context.getString(R.string.default_shutdown_delay)
-                        ).toLong()
+                        val shutdownDelay = context.defaultSharedPreferences
+                            .getString("shutdown_delay", null)
+                            ?.toLongOrNull()
+                            ?: context.getString(R.string.default_shutdown_delay).toLong()
 
                         handler.postDelayed(shutdownRunnable, shutdownDelay)
                     }
