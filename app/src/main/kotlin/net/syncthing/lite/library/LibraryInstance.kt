@@ -50,6 +50,8 @@ class LibraryInstance (
 
     init {
         Log.d(LOG_TAG, "LibraryInstance constructor entered")
+        val dir = File(context.filesDir, "temp_repository")
+        println("[LibraryInstance] temp dir = ${dir.absolutePath}, exists = ${dir.exists()}")
     }
 
     private val tempRepository = EncryptedTempRepository(
@@ -62,10 +64,14 @@ class LibraryInstance (
     val configuration = Configuration(configFolder = context.filesDir)
 
     val syncthingClient = try {
+        println("[LibraryInstance] creating RepositoryDatabase")
+        val db = RepositoryDatabase.with(context)
+        println("[LibraryInstance] RepositoryDatabase created")
+                        
         SyncthingClient(
                 configuration = configuration,
                 repository = SqliteIndexRepository(
-                        database = RepositoryDatabase.with(context),
+                        database = db,
                         closeDatabaseOnClose = false,
                         clearTempStorageHook = { tempRepository.deleteAllTempData() }
                 ),
