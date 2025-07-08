@@ -53,7 +53,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         lastCrash.setOnPreferenceClickListener {
-            ErrorReportDialog.newInstance(ErrorStorage.getLastErrorReport(context!!)).show(fragmentManager!!)
+            val errorReport = ErrorStorage.getLastErrorReport(context!!) ?: ""
+            ErrorReportDialog.newInstance(errorReport).show(fragmentManager!!)
 
             true
         }
