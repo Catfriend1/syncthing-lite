@@ -31,14 +31,7 @@ android {
 
     kapt {
         arguments {
-            arg("room.schemaLocation", "$projectDir/schemas")
-            arg("room.incremental", "true")
-        }
-    }
-
-    sourceSets {
-        main {
-            java.srcDirs += "$buildDir/generated/kapt/main"
+            arg("room.schemaLocation", "$projectDir/schemas".toString())
         }
     }
 
