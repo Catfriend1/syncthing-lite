@@ -1,15 +1,15 @@
 package net.syncthing.lite.dialogs.downloadfile
 
 import android.app.Dialog
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProviders
 import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v4.app.FragmentManager
-import android.support.v7.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
+import androidx.appcompat.app.AlertDialog
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -78,7 +78,7 @@ class DownloadFileDialogFragment : DialogFragment() {
             .setCancelable(true)
             .create()
 
-        model.status.observe(this, android.arch.lifecycle.Observer { status ->
+        model.status.observe(this, androidx.lifecycle.Observer { status ->
             when (status) {
                 is DownloadFileStatusRunning -> {
                     progressBar.isIndeterminate = false
