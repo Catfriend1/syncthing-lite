@@ -31,7 +31,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
-        appVersion.summary = context!!.packageManager.getPackageInfo(context!!.packageName, 0)?.versionName
+        appVersion.summary = context!!.packageManager.getPackageInfo(context!!.packageName, 0)?.versionName ?: ""
 
         localDeviceName.setOnPreferenceChangeListener { _, _ ->
             val newDeviceName = localDeviceName.text
