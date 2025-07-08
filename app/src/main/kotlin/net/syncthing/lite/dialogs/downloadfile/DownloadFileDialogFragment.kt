@@ -87,6 +87,7 @@ class DownloadFileDialogFragment : DialogFragment() {
                 is DownloadFileStatusDone -> {
                     dismissAllowingStateLoss()
                     if (outputUri == null) {
+                        val file = status.file
                         val mimeType = MimeType.getFromFilename(fileSpec.fileName)
                         try {
                             startActivity(
@@ -95,7 +96,7 @@ class DownloadFileDialogFragment : DialogFragment() {
                                         CacheFileProviderUrl.fromFile(
                                             filename = fileSpec.fileName,
                                             mimeType = mimeType,
-                                            file = status.file,
+                                            file = file,
                                             context = requireContext()
                                         ).serialized,
                                         mimeType
@@ -105,7 +106,7 @@ class DownloadFileDialogFragment : DialogFragment() {
                             )
                         } catch (e: ActivityNotFoundException) {
                             if (BuildConfig.DEBUG) {
-                                Log.w(TAG, "No handler found for file ${status.file.name}", e)
+                                Log.w(TAG, "No handler found for file ${file.name}", e)
                             }
                             requireContext().toast(R.string.toast_open_file_failed)
                         }
