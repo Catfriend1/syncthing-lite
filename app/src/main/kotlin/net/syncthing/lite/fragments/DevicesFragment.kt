@@ -1,6 +1,6 @@
 package net.syncthing.lite.fragments
 
-import android.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import androidx.databinding.DataBindingUtil

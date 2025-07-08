@@ -1,6 +1,6 @@
 package net.syncthing.lite.activities
 
-import android.app.Activity
+import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
@@ -166,7 +166,7 @@ class FolderBrowserActivity : SyncthingActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-        if (requestCode == REQUEST_SELECT_UPLOAD_FILE && resultCode == Activity.RESULT_OK) {
+        if (requestCode == REQUEST_SELECT_UPLOAD_FILE && resultCode == AppCompatActivity.RESULT_OK) {
             libraryHandler.syncthingClient { syncthingClient ->
                 MainScope().launch {
                     // FIXME: it would be better if the dialog would use the library handler

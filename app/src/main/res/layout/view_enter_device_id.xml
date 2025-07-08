@@ -35,8 +35,8 @@
             android:padding="8dp"
             android:layout_marginBottom="8dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_qr_code_black_24dp"
-            android:background="?android:selectableItemBackgroundBorderless"/>
+            app:srcCompat="@drawable/ic_qr_code_black_24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
 
     </LinearLayout>
 </layout>

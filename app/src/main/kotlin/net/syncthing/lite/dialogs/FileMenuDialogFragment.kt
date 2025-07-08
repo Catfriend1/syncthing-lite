@@ -1,6 +1,6 @@
 package net.syncthing.lite.dialogs
 
-import android.app.Activity
+import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.os.Bundle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -61,7 +61,7 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             REQ_SAVE_AS -> {
-                if (resultCode == Activity.RESULT_OK) {
+                if (resultCode == AppCompatActivity.RESULT_OK) {
                     DownloadFileDialogFragment.newInstance(fileSpec, data!!.data!!).show(fragmentManager)
                     dismiss()
                 }
