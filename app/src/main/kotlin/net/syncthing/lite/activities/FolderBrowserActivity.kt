@@ -10,7 +10,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.channels.*
 import net.syncthing.java.bep.index.browser.DirectoryContentListing
 import net.syncthing.java.bep.index.browser.DirectoryListing
 import net.syncthing.java.bep.index.browser.DirectoryNotFoundListing

@@ -9,7 +9,6 @@ import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.lite.R
 import net.syncthing.lite.fragments.SyncthingDialogFragment
-import java.io.Serializable
 
 class EnableFolderSyncForNewDeviceDialog : SyncthingDialogFragment() {
 
