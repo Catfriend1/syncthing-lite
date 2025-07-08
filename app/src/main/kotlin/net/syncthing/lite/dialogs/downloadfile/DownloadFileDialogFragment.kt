@@ -78,7 +78,7 @@ class DownloadFileDialogFragment : DialogFragment() {
             .setCancelable(true)
             .create()
 
-        model.status.observe(this, androidx.lifecycle.Observer { status ->
+        model.status.observe(this, androidx.lifecycle.Observer<DownloadFileStatus> { status ->
             when (status) {
                 is DownloadFileStatusRunning -> {
                     progressBar.isIndeterminate = false
