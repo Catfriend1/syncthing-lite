@@ -11,7 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import android.widget.Toast
 import net.syncthing.lite.R
 
-class ErrorReportDialog: DialogFragment() {
+class ErrorReportDialog : DialogFragment() {
     companion object {
         private const val REPORT = "report"
         private const val TAG = "ErrorReportDialog"
