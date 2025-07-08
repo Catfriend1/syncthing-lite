@@ -31,8 +31,9 @@ class CacheFileProvider: ContentProvider() {
     }
 
     override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor {
+        val ctx = requireContext()
         val url = CacheFileProviderUrl.fromUri(uri)
-        val file = url.getFile(context)
+        val file = url.getFile(ctx)
 
         val resultProjection = projection ?: arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE)
         val resultCursor = MatrixCursor(resultProjection)
@@ -56,14 +57,18 @@ class CacheFileProvider: ContentProvider() {
 
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
         if (mode == "r") {
+            val ctx = requireContext()
             val url = CacheFileProviderUrl.fromUri(uri)
-            val file = url.getFile(context)
+            val file = url.getFile(ctx)
 
             return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
         } else {
             throw IOException("illegal mode")
         }
     }
+
+    private fun requireContext(): Context =
+        context ?: throw IllegalStateException("Context is not available")
 }
 
 data class CacheFileProviderUrl(
@@ -77,15 +82,15 @@ data class CacheFileProviderUrl(
         private const val MIME_TYPE = "mimeType"
 
         fun fromUri(uri: Uri) = CacheFileProviderUrl(
-                pathInCacheDirectory = uri.getQueryParameter(PATH),
-                filename = uri.getQueryParameter(FILENAME),
-                mimeType = uri.getQueryParameter(MIME_TYPE)
+                pathInCacheDirectory = uri.getQueryParameter(PATH) ?: throw IllegalArgumentException("Missing path"),
+                filename = uri.getQueryParameter(FILENAME) ?: throw IllegalArgumentException("Missing filename"),
+                mimeType = uri.getQueryParameter(MIME_TYPE) ?: throw IllegalArgumentException("Missing mimeType")
         )
 
         fun fromFile(file: File, filename: String, mimeType: String, context: Context) = CacheFileProviderUrl(
                 filename = filename,
                 mimeType = mimeType,
-                pathInCacheDirectory = file.toRelativeString(context.externalCacheDir)
+                pathInCacheDirectory = file.toRelativeString(context.externalCacheDir ?: throw IllegalStateException("No external cache dir"))
         )
     }
 
@@ -100,6 +105,6 @@ data class CacheFileProviderUrl(
     }
 
     fun getFile(context: Context): File {
-        return File(context.externalCacheDir, pathInCacheDirectory)
+        return File(context.externalCacheDir ?: throw IllegalStateException("No external cache dir"), pathInCacheDirectory)
     }
 }
