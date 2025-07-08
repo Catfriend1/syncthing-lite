@@ -34,14 +34,18 @@ abstract class RepositoryDatabase: RoomDatabase() {
         ).build()
 
         fun with(context: Context): RepositoryDatabase {
+            println("[RepositoryDatabase] entering with()")
             if (instance == null) {
                 synchronized (lock) {
+                    println("[RepositoryDatabase] entering synchronized block")
                     if (instance == null) {
+                        println("[RepositoryDatabase] creating Room database")
                         instance = createInstance(context, "repository_database")
+                        println("[RepositoryDatabase] instance assigned")
                     }
                 }
             }
-
+            println("[RepositoryDatabase] returning instance")
             return instance!!
         }
     }
