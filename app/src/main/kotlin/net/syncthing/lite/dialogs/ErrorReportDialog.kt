@@ -24,7 +24,7 @@ class ErrorReportDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val report = requireArguments().getString(REPORT)
+        val report = arguments!!.getString(REPORT)
         val ctx = requireContext()
         val clipboard = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
