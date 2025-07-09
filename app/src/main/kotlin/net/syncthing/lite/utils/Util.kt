@@ -4,8 +4,10 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.provider.OpenableColumns
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.DeviceInfo
@@ -17,6 +19,9 @@ import java.security.InvalidParameterException
 import java.util.Locale
 
 object Util {
+
+    // 🧠 Persistenter CoroutineScope für UI-Bindung
+    private val mainScope: CoroutineScope = MainScope()
 
     private fun capitalizeCompat(input: String): String {
         return if (input.isNotEmpty()) {
@@ -48,14 +53,14 @@ object Util {
 
     @Throws(IOException::class)
     fun importDeviceId(
-            libraryManager: LibraryManager,
-            context: Context,
-            deviceId: String,
-            onComplete: () -> Unit
+        libraryManager: LibraryManager,
+        context: Context,
+        deviceId: String,
+        onComplete: () -> Unit
     ) {
         val newDeviceId = DeviceId(deviceId.uppercase(Locale.getDefault()))
 
-        MainScope().launch(Dispatchers.Main) {
+        mainScope.launch(Dispatchers.Main) {
             libraryManager.withLibrary { library ->
                 val didAddDevice = library.configuration.update { oldConfig ->
                     if (oldConfig.peers.any { it.deviceId == newDeviceId }) {
@@ -78,5 +83,10 @@ object Util {
                 }
             }
         }
+    }
+
+    // 🧹 Optional: Bei Bedarf Scope canceln
+    fun shutdown() {
+        mainScope.cancel()
     }
 }
