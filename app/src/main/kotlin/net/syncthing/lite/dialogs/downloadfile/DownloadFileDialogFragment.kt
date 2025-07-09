@@ -105,12 +105,13 @@ class DownloadFileDialogFragment : DialogFragment() {
                             )
                         } catch (e: ActivityNotFoundException) {
                             if (BuildConfig.DEBUG) {
-                                Toast.makeText(
-                                    requireContext(),
-                                    "No app found to open this file",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                Log.w(TAG, "No handler found for file ${file.name}", e)
                             }
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.toast_open_file_failed),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 }
@@ -118,7 +119,7 @@ class DownloadFileDialogFragment : DialogFragment() {
                     dismissAllowingStateLoss()
                     Toast.makeText(
                         requireContext(),
-                        getString(R.string.toast_download_failed),
+                        getString(R.string.toast_file_download_failed),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
