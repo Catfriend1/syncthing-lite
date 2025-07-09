@@ -8,13 +8,15 @@ import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.syncthing.java.bep.BlockPusher
 import net.syncthing.java.client.SyncthingClient
 import net.syncthing.lite.R
 import net.syncthing.lite.library.UploadFileTask
 import net.syncthing.lite.utils.Util
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.toast
+import android.widget.Toast
 
 class FileUploadDialog(
     private val context: Context,
@@ -31,7 +33,7 @@ class FileUploadDialog(
 
     fun show() {
         showDialog()
-        doAsync {
+        GlobalScope.launch(Dispatchers.IO) {
             uploadFileTask = UploadFileTask(
                 context,
                 syncthingClient,
@@ -76,7 +78,7 @@ class FileUploadDialog(
     private fun onComplete() {
         context.runOnUiThread {
             dialog?.dismiss()
-            context.toast(R.string.toast_upload_complete)
+            Toast.makeText(context, R.string.toast_upload_complete, Toast.LENGTH_SHORT).show()
             onUploadCompleteListener()
         }
     }
@@ -84,7 +86,7 @@ class FileUploadDialog(
     private fun onError() {
         context.runOnUiThread {
             dialog?.dismiss()
-            context.toast(R.string.toast_file_upload_failed)
+            Toast.makeText(context, R.string.toast_file_upload_failed, Toast.LENGTH_SHORT).show()
         }
     }
 
