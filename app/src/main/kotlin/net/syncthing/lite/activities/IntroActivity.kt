@@ -1,18 +1,18 @@
 package net.syncthing.lite.activities
 
+import androidx.lifecycle.Observer
 import android.content.Intent
+import androidx.databinding.DataBindingUtil
 import android.os.Build
 import android.os.Bundle
-import android.text.Html
 import android.util.TypedValue
+import androidx.fragment.app.Fragment
+import androidx.core.content.ContextCompat
+import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import androidx.core.content.ContextCompat
-import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import com.github.paolorotolo.appintro.AppIntro
 import com.github.paolorotolo.appintro.ISlidePolicy
 import com.google.zxing.integration.android.IntentIntegrator
@@ -30,9 +30,16 @@ import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.intentFor
 import java.io.IOException
 
+/**
+ * Shown when a user first starts the app. Shows some info and helps the user to add their first
+ * device and folder.
+ */
 @OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IntroActivity : AppIntro() {
 
+    /**
+     * Initialize fragments and library parameters.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -59,6 +66,9 @@ class IntroActivity : AppIntro() {
         finish()
     }
 
+    /**
+     * Display some simple welcome text.
+     */
     class IntroFragmentOne : SyncthingFragment() {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
@@ -77,18 +87,18 @@ class IntroActivity : AppIntro() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val binding = FragmentIntroOneBinding.inflate(inflater, container, false)
 
-            libraryHandler.isListeningPortTaken.observe(viewLifecycleOwner, Observer {
-                binding.listeningPortTaken = it
-            })
+            libraryHandler.isListeningPortTaken.observe(this, Observer { binding.listeningPortTaken = it })
 
             return binding.root
         }
     }
 
+    /**
+     * Display device ID entry field and QR scanner option.
+     */
     class IntroFragmentTwo : SyncthingFragment(), ISlidePolicy {
 
         private lateinit var binding: FragmentIntroTwoBinding
-        private val addedDeviceIds = HashSet<DeviceId>()
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             binding = DataBindingUtil.inflate(inflater, R.layout.fragment_intro_two, container, false)
@@ -107,10 +117,14 @@ class IntroActivity : AppIntro() {
             }
         }
 
+        /**
+         * Checks if the entered device ID is valid. If yes, imports it and returns true. If not,
+         * sets an error on the textview and returns false.
+         */
         fun isDeviceIdValid(): Boolean {
             return try {
                 val deviceId = binding.enterDeviceId.deviceId.text.toString()
-                Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId) {}
+                Util.importDeviceId(libraryHandler.libraryManager, context!!, deviceId, { })
                 true
             } catch (e: IOException) {
                 binding.enterDeviceId.deviceId.error = getString(R.string.invalid_device_id)
@@ -120,38 +134,56 @@ class IntroActivity : AppIntro() {
 
         override fun isPolicyRespected() = isDeviceIdValid()
 
-        override fun onUserIllegallyRequestedNextPage() {}
+        override fun onUserIllegallyRequestedNextPage() {
+            // nothing to do, but some user feedback would be nice
+        }
+
+        private val addedDeviceIds = HashSet<DeviceId>()
 
         override fun onResume() {
             super.onResume()
+
             binding.foundDevices.removeAllViews()
             addedDeviceIds.clear()
+
             libraryHandler.registerMessageFromUnknownDeviceListener(onDeviceFound)
         }
 
         override fun onPause() {
             super.onPause()
+
             libraryHandler.unregisterMessageFromUnknownDeviceListener(onDeviceFound)
         }
 
-        private val onDeviceFound: (DeviceId) -> Unit = { deviceId ->
-            if (addedDeviceIds.add(deviceId)) {
-                binding.foundDevices.addView(
-                    Button(context).apply {
-                        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                        text = deviceId.deviceId
-                        setOnClickListener {
-                            binding.enterDeviceId.deviceId.setText(deviceId.deviceId)
-                            binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
-                            binding.scroll.scrollTo(0, 0)
-                        }
-                    }
-                )
-            }
+        private val onDeviceFound: (DeviceId) -> Unit = {
+            deviceId ->
+
+                if (addedDeviceIds.add(deviceId)) {
+                    binding.foundDevices.addView(
+                            Button(context).apply {
+                                layoutParams = ViewGroup.LayoutParams(
+                                        ViewGroup.LayoutParams.MATCH_PARENT,
+                                        ViewGroup.LayoutParams.WRAP_CONTENT
+                                )
+                                text = deviceId.deviceId
+
+                                setOnClickListener {
+                                    binding.enterDeviceId.deviceId.setText(deviceId.deviceId)
+                                    binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+
+                                    binding.scroll.scrollTo(0, 0)
+                                }
+                            }
+                    )
+                }
         }
     }
 
+    /**
+     * Waits until remote device connects with new folder.
+     */
     class IntroFragmentThree : SyncthingFragment() {
+
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val binding = FragmentIntroThreeBinding.inflate(inflater, container, false)
 
@@ -159,23 +191,25 @@ class IntroActivity : AppIntro() {
                 val ownDeviceId = libraryHandler.libraryManager.withLibrary { it.configuration.localDeviceId }
 
                 libraryHandler.subscribeToConnectionStatus().consumeEach {
-                    val desc = if (it.values.any { conn -> conn.addresses.isNotEmpty() }) {
-                        val html = getString(R.string.intro_page_three_description, "<b>$ownDeviceId</b>")
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                            Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY)
-                        else
-                            Html.fromHtml(html)
+                    if (it.values.find { it.addresses.isNotEmpty() } != null) {
+                        val desc = activity?.getString(R.string.intro_page_three_description, "<b>$ownDeviceId</b>")
+                        val spanned = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            Html.fromHtml(desc, Html.FROM_HTML_MODE_LEGACY)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            Html.fromHtml(desc)
+                        }
+                        binding.description.text = spanned
                     } else {
-                        Html.fromHtml(getString(R.string.intro_page_three_searching_device))
+                        binding.description.text = getString(R.string.intro_page_three_searching_device)
                     }
-                    binding.description.text = desc
                 }
             }
 
             launch {
                 libraryHandler.subscribeToFolderStatusList().consumeEach {
                     if (it.isNotEmpty()) {
-                        (activity as? IntroActivity)?.onDonePressed(this@IntroFragmentThree)
+                        (activity as IntroActivity?)?.onDonePressed(this@IntroFragmentThree)
                     }
                 }
             }
