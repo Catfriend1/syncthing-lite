@@ -11,10 +11,10 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.lite.R
 import net.syncthing.lite.library.LibraryManager
-import org.jetbrains.anko.toast
 import java.io.IOException
 import java.security.InvalidParameterException
 import java.util.Locale
+import android.widget.Toast
 
 object Util {
 
@@ -48,10 +48,10 @@ object Util {
 
     @Throws(IOException::class)
     fun importDeviceId(
-            libraryManager: LibraryManager,
-            context: Context,
-            deviceId: String,
-            onComplete: () -> Unit
+        libraryManager: LibraryManager,
+        context: Context,
+        deviceId: String,
+        onComplete: () -> Unit
     ) {
         val newDeviceId = DeviceId(deviceId.uppercase(Locale.getDefault()))
 
@@ -71,10 +71,18 @@ object Util {
                     library.configuration.persistLater()
                     library.syncthingClient.connectToNewlyAddedDevices()
 
-                    context.toast(context.getString(R.string.device_import_success, newDeviceId.shortId))
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.device_import_success, newDeviceId.shortId),
+                        Toast.LENGTH_SHORT
+                    ).show()
                     onComplete()
                 } else {
-                    context.toast(context.getString(R.string.device_already_known, newDeviceId.shortId))
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.device_already_known, newDeviceId.shortId),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
