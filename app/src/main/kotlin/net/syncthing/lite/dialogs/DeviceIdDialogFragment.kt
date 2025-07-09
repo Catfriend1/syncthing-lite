@@ -24,7 +24,6 @@ import kotlinx.coroutines.withContext
 import net.syncthing.lite.R
 import net.syncthing.lite.databinding.DialogDeviceIdBinding
 import net.syncthing.lite.fragments.SyncthingDialogFragment
-import org.jetbrains.anko.doAsync
 
 class DeviceIdDialogFragment : SyncthingDialogFragment() {
 
@@ -42,32 +41,38 @@ class DeviceIdDialogFragment : SyncthingDialogFragment() {
 
         binding.qrCode.setImageBitmap(Bitmap.createBitmap(QR_RESOLUTION, QR_RESOLUTION, Bitmap.Config.RGB_565))
 
-        MainScope().launch {
-            libraryHandler.library { configuration, _, _ ->
-                val deviceId = configuration.localDeviceId
+        libraryHandler.library { configuration, _, _ ->
+            val deviceId = configuration.localDeviceId
 
-                fun copyDeviceId() {
-                    val clipboard = context!!.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText(context!!.getString(R.string.device_id), deviceId.deviceId)
-                    clipboard.setPrimaryClip(clip)
-                    Toast.makeText(context, context!!.getString(R.string.device_id_copied), Toast.LENGTH_SHORT).show()
-                }
+            fun copyDeviceId() {
+                val clipboard = context!!.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText(context!!.getString(R.string.device_id), deviceId.deviceId)
 
-                fun shareDeviceId() {
-                    context!!.startActivity(Intent.createChooser(
-                        Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, deviceId.deviceId)
-                        },
-                        context!!.getString(R.string.share_device_id_chooser)
-                    ))
-                }
+                clipboard.primaryClip = clip
 
+                Toast.makeText(context, context!!.getString(R.string.device_id_copied), Toast.LENGTH_SHORT)
+                    .show()
+            }
+
+            fun shareDeviceId() {
+                context!!.startActivity(Intent.createChooser(
+                    Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, deviceId.deviceId)
+                    },
+                    context!!.getString(R.string.share_device_id_chooser)
+                ))
+            }
+
+            MainScope().launch {
                 binding.deviceId.text = deviceId.deviceId
                 binding.deviceId.visibility = View.VISIBLE
+
                 binding.deviceId.setOnClickListener { copyDeviceId() }
                 binding.share.setOnClickListener { shareDeviceId() }
+            }
 
+            MainScope().launch {
                 withContext(Dispatchers.Default) {
                     val writer = QRCodeWriter()
                     try {
@@ -92,8 +97,8 @@ class DeviceIdDialogFragment : SyncthingDialogFragment() {
             }
         }
 
-        return AlertDialog.Builder(requireContext(), theme)
-            .setTitle(requireContext().getString(R.string.device_id))
+        return AlertDialog.Builder(context!!, theme)
+            .setTitle(context!!.getString(R.string.device_id))
             .setView(binding.root)
             .setPositiveButton(android.R.string.ok, null)
             .create()
