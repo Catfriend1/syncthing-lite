@@ -14,15 +14,9 @@
 package net.syncthing.java.bep.connectionactor
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.launch
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.exception.ExceptionReport
@@ -35,23 +29,21 @@ class ConnectionActorWrapper (
         val deviceId: DeviceId,
         private val exceptionReportHandler: (ExceptionReport) -> Unit
 ) {
-    private val job = SupervisorJob()
-    private val scope = CoroutineScope(job + Dispatchers.Default)
+    private val job = Job()
 
     private var connection: Connection? = null
     private val connectionInfo = ConflatedBroadcastChannel<ConnectionInfo>(ConnectionInfo.empty)
 
-    val isConnected: Boolean
+    val isConnected
         get() = connectionInfo.valueOrNull?.status == ConnectionStatus.Connected
 
     init {
-        // consume updates from the upstream connection generator
-        scope.launch {
-            source.consumeEach { (connection, info) ->
+        GlobalScope.async (job) {
+            source.consumeEach { (connection, connectionInfo) ->
                 this@ConnectionActorWrapper.connection = connection
-                this@ConnectionActorWrapper.connectionInfo.send(info)
+                this@ConnectionActorWrapper.connectionInfo.send(connectionInfo)
             }
-        }.reportExceptions("ConnectionActorWrapper(${deviceId.deviceId})", exceptionReportHandler)
+        }.reportExceptions("ConnectionActorWrapper(${deviceId.deviceId}).", exceptionReportHandler)
     }
 
     suspend fun sendRequest(request: BlockExchangeProtos.Request) = ConnectionActorUtil.sendRequest(
@@ -69,8 +61,7 @@ class ConnectionActorWrapper (
     fun getClusterConfig() = connection?.clusterConfigInfo ?: throw IOException("Not connected.")
 
     fun shutdown() {
-        // closes the scope and the subscription channel
-        scope.cancel()
+        job.cancel()
         connectionInfo.close()
     }
 
@@ -79,12 +70,12 @@ class ConnectionActorWrapper (
     fun reconnect() {
         val actor = connection?.actor
 
-        scope.launch {
+        GlobalScope.launch {
             if (actor != null) {
                 ConnectionActorUtil.disconnect(actor)
             }
         }
     }
 
-    fun subscribeToConnectionInfo(): ReceiveChannel<ConnectionInfo> = connectionInfo.openSubscription()
+    fun subscribeToConnectionInfo() = connectionInfo.openSubscription()
 }

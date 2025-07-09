@@ -3,7 +3,7 @@ package net.syncthing.lite.library
 import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.syncthing.java.client.SyncthingClient
 import net.syncthing.java.core.configuration.Configuration
@@ -38,12 +38,14 @@ class LibraryInstance (
          * avoid adding another callback.
          */
         private fun checkIsListeningPortTaken(): Boolean {
-            return try {
+            try {
                 DatagramSocket(21027, InetAddress.getByName("0.0.0.0")).close()
-                false
+
+                return false
             } catch (e: SocketException) {
                 Log.w(LOG_TAG, e)
-                true
+
+                return true
             }
         }
     }
@@ -67,7 +69,7 @@ class LibraryInstance (
             exceptionReportHandler = { ex ->
                 Log.w(LOG_TAG, "${ex.component}\n${ex.detailsReadableString}\n${Log.getStackTraceString(ex.exception)}")
 
-                MainScope().launch(Dispatchers.Main) {
+                GlobalScope.launch (Dispatchers.Main) {
                     exceptionReportHandler(ex)
                 }
             }

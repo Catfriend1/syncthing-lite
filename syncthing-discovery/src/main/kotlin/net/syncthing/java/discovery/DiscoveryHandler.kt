@@ -14,10 +14,7 @@
  */
 package net.syncthing.java.discovery
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceAddress
@@ -43,7 +40,7 @@ class DiscoveryHandler(
             { message ->
                 logger.info("Received device address list from local discovery.")
 
-                CoroutineScope(Dispatchers.Default).launch {
+                GlobalScope.launch {
                     processDeviceAddressBg(message.addresses)
                 }
             },
@@ -64,7 +61,7 @@ class DiscoveryHandler(
 
         if (shouldLoadFromGlobal) {
             shouldLoadFromGlobal = false
-            CoroutineScope(Dispatchers.Default).launch {
+            GlobalScope.launch {
                 processDeviceAddressBg(globalDiscoveryHandler.query(configuration.peerIds))
             }
         }

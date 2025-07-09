@@ -32,10 +32,9 @@ internal class LocalDiscoveryHandler(
         private val onMessageFromUnknownDeviceListener: (DeviceId) -> Unit = {}
 ) : Closeable {
     private val job = Job()
-    private val scope = CoroutineScope(job + Dispatchers.IO)
 
     fun sendAnnounceMessage() {
-        scope.launch {
+        GlobalScope.async (Dispatchers.IO) {
             LocalDiscoveryUtil.sendAnnounceMessage(
                     ownDeviceId = configuration.localDeviceId,
                     instanceId = configuration.instanceId
@@ -44,7 +43,7 @@ internal class LocalDiscoveryHandler(
     }
 
     fun startListener() {
-        scope.launch {
+        GlobalScope.async (job) {
             try {
                 LocalDiscoveryUtil.listenForAnnounceMessages().consumeEach { message ->
                     if (message.deviceId == configuration.localDeviceId) {

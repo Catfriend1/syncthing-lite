@@ -28,15 +28,14 @@ object AddressRanker {
 
     private const val TCP_CONNECTION_TIMEOUT = 5000
     private val BASE_SCORE_MAP = mapOf(
-        AddressType.TCP to 0,
-        AddressType.RELAY to 2000
+            AddressType.TCP to 0,
+            AddressType.RELAY to 2000
     )
     private val ACCEPTED_ADDRESS_TYPES = BASE_SCORE_MAP.keys
     private val logger = LoggerFactory.getLogger(AddressRanker::class.java)
 
-    fun pingAddressesChannel(sourceAddresses: List<DeviceAddress>) =
-        CoroutineScope(Dispatchers.IO).produce<DeviceAddress> {
-            sourceAddresses
+    fun pingAddressesChannel(sourceAddresses: List<DeviceAddress>) = GlobalScope.produce<DeviceAddress> {
+        sourceAddresses
                 .filter { ACCEPTED_ADDRESS_TYPES.contains(it.type) }
                 .toList()
                 .map { address ->
@@ -44,9 +43,9 @@ object AddressRanker {
                         try {
                             val addressWithScore = withTimeout(TCP_CONNECTION_TIMEOUT * 2L) {
                                 // this nested async ensures that cancelling/ the timeout has got an effect without delay
-                                withContext(Dispatchers.IO) {
+                                GlobalScope.async (Dispatchers.IO) {
                                     pingAddressSync(address)
-                                }
+                                }.await()
                             }
 
                             if (addressWithScore != null) {
@@ -61,15 +60,14 @@ object AddressRanker {
                 }
                 .map { it.await() }
 
-            close()
-        }
+        close()
+    }
 
     @Deprecated(
-        message = "This is slower than the version which returns the channel",
-        replaceWith = ReplaceWith("pingAddressesChannel")
+            message = "This is slower than the version which returns the channel",
+            replaceWith = ReplaceWith("pingAddressesChannel")
     )
-    suspend fun pingAddressesReturnAllResultsAtOnce(sourceAddresses: List<DeviceAddress>) =
-        pingAddressesChannel(sourceAddresses)
+    suspend fun pingAddressesReturnAllResultsAtOnce(sourceAddresses: List<DeviceAddress>) = pingAddressesChannel(sourceAddresses)
             .toList()
             .sortedBy { it.score }
 

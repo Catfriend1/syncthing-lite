@@ -15,7 +15,6 @@
 package net.syncthing.java.discovery.protocol
 
 import com.google.protobuf.ByteString
-import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -42,7 +41,7 @@ object LocalDiscoveryUtil {
 
     private val logger = LoggerFactory.getLogger(LocalDiscoveryUtil::class.java)
 
-    suspend fun listenForAnnounceMessages(): ReceiveChannel<LocalDiscoveryMessage> = CoroutineScope(Dispatchers.IO).produce {
+    suspend fun listenForAnnounceMessages(): ReceiveChannel<LocalDiscoveryMessage> = GlobalScope.produce {
         DatagramSocket(LISTENING_PORT, InetAddress.getByName("0.0.0.0")).use { datagramSocket ->
             invokeOnClose {
                 datagramSocket.close()
