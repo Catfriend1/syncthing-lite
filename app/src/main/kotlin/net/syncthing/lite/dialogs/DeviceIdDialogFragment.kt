@@ -41,38 +41,36 @@ class DeviceIdDialogFragment : SyncthingDialogFragment() {
 
         binding.qrCode.setImageBitmap(Bitmap.createBitmap(QR_RESOLUTION, QR_RESOLUTION, Bitmap.Config.RGB_565))
 
-        libraryHandler.library { configuration, _, _ ->
-            val deviceId = configuration.localDeviceId
+        MainScope().launch {
+            libraryHandler.library { configuration, _, _ ->
+                val deviceId = configuration.localDeviceId
 
-            fun copyDeviceId() {
-                val clipboard = context!!.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText(context!!.getString(R.string.device_id), deviceId.deviceId)
+                fun copyDeviceId() {
+                    val clipboard = context!!.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText(context!!.getString(R.string.device_id), deviceId.deviceId)
 
-                clipboard.primaryClip = clip
+                    clipboard.primaryClip = clip
 
-                Toast.makeText(context, context!!.getString(R.string.device_id_copied), Toast.LENGTH_SHORT)
-                    .show()
-            }
+                    Toast.makeText(context, context!!.getString(R.string.device_id_copied), Toast.LENGTH_SHORT)
+                        .show()
+                }
 
-            fun shareDeviceId() {
-                context!!.startActivity(Intent.createChooser(
-                    Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, deviceId.deviceId)
-                    },
-                    context!!.getString(R.string.share_device_id_chooser)
-                ))
-            }
+                fun shareDeviceId() {
+                    context!!.startActivity(Intent.createChooser(
+                        Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, deviceId.deviceId)
+                        },
+                        context!!.getString(R.string.share_device_id_chooser)
+                    ))
+                }
 
-            MainScope().launch {
                 binding.deviceId.text = deviceId.deviceId
                 binding.deviceId.visibility = View.VISIBLE
 
                 binding.deviceId.setOnClickListener { copyDeviceId() }
                 binding.share.setOnClickListener { shareDeviceId() }
-            }
 
-            MainScope().launch {
                 withContext(Dispatchers.Default) {
                     val writer = QRCodeWriter()
                     try {
