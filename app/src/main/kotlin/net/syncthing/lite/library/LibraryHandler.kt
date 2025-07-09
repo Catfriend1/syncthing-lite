@@ -6,7 +6,9 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
@@ -21,12 +23,6 @@ import net.syncthing.java.core.configuration.Configuration
 import org.jetbrains.anko.doAsync
 import java.util.concurrent.atomic.AtomicBoolean
 
-/**
- * This class helps when using the library.
- * It's required to start and stop it to make the callbacks fire (or stop to fire).
- *
- * It's possible to do multiple start and stop cycles with one instance of this class.
- */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class LibraryHandler(context: Context) {
 
@@ -36,54 +32,53 @@ class LibraryHandler(context: Context) {
     }
 
     val libraryManager = DefaultLibraryManager.with(context)
+
     private val isStarted = AtomicBoolean(false)
     private val isListeningPortTakenInternal = MutableLiveData<Boolean>().apply { postValue(false) }
+    val isListeningPortTaken: LiveData<Boolean> = isListeningPortTakenInternal
+
     private val indexUpdateCompleteMessages = BroadcastChannel<String>(capacity = 16)
     private val folderStatusList = BroadcastChannel<List<FolderStatus>>(capacity = Channel.CONFLATED)
     private val connectionStatus = ConflatedBroadcastChannel<Map<DeviceId, ConnectionInfo>>()
-    private var job: Job = Job()
-
-    val isListeningPortTaken: LiveData<Boolean> = isListeningPortTakenInternal
 
     private val messageFromUnknownDeviceListeners = HashSet<(DeviceId) -> Unit>()
-    private val internalMessageFromUnknownDeviceListener: (DeviceId) -> Unit = {
-        deviceId ->
-
+    private val internalMessageFromUnknownDeviceListener: (DeviceId) -> Unit = { deviceId ->
         handler.post {
             messageFromUnknownDeviceListeners.forEach { listener -> listener(deviceId) }
         }
     }
 
+    private var job: Job = Job()
+    private lateinit var scope: CoroutineScope
+
     fun start(onLibraryLoaded: (LibraryHandler) -> Unit = {}) {
-        if (isStarted.getAndSet(true) == true) {
+        if (isStarted.getAndSet(true)) {
             throw IllegalStateException("already started")
         }
 
-        libraryManager.startLibraryUsage {
-            libraryInstance ->
-
+        libraryManager.startLibraryUsage { libraryInstance ->
             isListeningPortTakenInternal.value = libraryInstance.isListeningPortTaken
             onLibraryLoaded(this)
 
             val client = libraryInstance.syncthingClient
-
             client.discoveryHandler.registerMessageFromUnknownDeviceListener(internalMessageFromUnknownDeviceListener)
 
             job = Job()
+            scope = CoroutineScope(job + Dispatchers.IO)
 
-            CoroutineScope(job).launch {
+            scope.launch {
                 libraryInstance.syncthingClient.indexHandler.subscribeToOnFullIndexAcquiredEvents().consumeEach {
                     indexUpdateCompleteMessages.send(it)
                 }
             }
 
-            CoroutineScope(job).launch {
+            scope.launch {
                 libraryInstance.folderBrowser.folderInfoAndStatusStream().consumeEach {
                     folderStatusList.send(it)
                 }
             }
 
-            CoroutineScope(job).launch {
+            scope.launch {
                 libraryInstance.syncthingClient.subscribeToConnectionStatus().consumeEach {
                     connectionStatus.send(it)
                 }
@@ -92,27 +87,23 @@ class LibraryHandler(context: Context) {
     }
 
     fun stop() {
-        if (isStarted.getAndSet(false) == false) {
+        if (isStarted.getAndSet(false).not()) {
             throw IllegalStateException("already stopped")
         }
 
-        job.cancel()
+        job.cancel() // 🧹 cancel all coroutines
 
         syncthingClient {
             try {
                 it.discoveryHandler.unregisterMessageFromUnknownDeviceListener(internalMessageFromUnknownDeviceListener)
             } catch (e: IllegalArgumentException) {
-                // ignored, no idea why this is thrown
+                // ignored — can happen if listener wasn't registered
             }
         }
 
         libraryManager.stopLibraryUsage()
     }
 
-    /*
-     * The callback is executed asynchronously.
-     * As soon as it returns, there is no guarantee about the availability of the library
-     */
     fun library(callback: (Configuration, SyncthingClient, FolderBrowser) -> Unit) {
         libraryManager.startLibraryUsage {
             doAsync {
@@ -137,8 +128,6 @@ class LibraryHandler(context: Context) {
         library { _, _, f -> callback(f) }
     }
 
-    // these listeners are called at the UI Thread
-    // there is no need to unregister because they removed from the library when close is called
     fun registerMessageFromUnknownDeviceListener(listener: (DeviceId) -> Unit) {
         messageFromUnknownDeviceListeners.add(listener)
     }
