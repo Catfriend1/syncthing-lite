@@ -2,8 +2,10 @@ package net.syncthing.lite.library
 
 import android.content.Context
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import net.syncthing.java.client.SyncthingClient
 import net.syncthing.java.core.configuration.Configuration
@@ -18,24 +20,20 @@ import java.net.InetAddress
 import java.net.SocketException
 
 /**
- * This class is used internally to access the syncthing-java library
- * There should be never more than 1 instance of this class
- *
- * This class can not be recycled. This means that after doing a shutdown of it,
- * a new instance must be created
- *
- * The creation and the shutdown are synchronous, so keep them out of the UI Thread
+ * This class is used internally to access the syncthing-java library.
+ * There should be never more than 1 instance of this class.
+ * It cannot be recycled. After shutdown, create a new instance.
+ * Creation and shutdown are synchronous — keep them off the UI thread.
  */
-class LibraryInstance (
-        context: Context,
-        private val exceptionReportHandler: (ExceptionReport) -> Unit
+class LibraryInstance(
+    context: Context,
+    private val exceptionReportHandler: (ExceptionReport) -> Unit
 ) {
     companion object {
         private const val LOG_TAG = "LibraryInstance"
 
         /**
-         * Check if listening port for local discovery is taken by another app. Do this check here to
-         * avoid adding another callback.
+         * Check if listening port for local discovery is taken by another app.
          */
         private fun checkIsListeningPortTaken(): Boolean {
             return try {
@@ -48,35 +46,45 @@ class LibraryInstance (
         }
     }
 
+    // 🌐 Stable coroutine scope for main-thread reporting
+    private val mainScope = MainScope()
+
     private val tempRepository = EncryptedTempRepository(
-            TempDirectoryLocalRepository(
-                    File(context.filesDir, "temp_repository")
-            )
+        TempDirectoryLocalRepository(
+            File(context.filesDir, "temp_repository")
+        )
     )
 
-    val isListeningPortTaken = checkIsListeningPortTaken()  // this must come first to work correctly
+    val isListeningPortTaken = checkIsListeningPortTaken() // must come first
     val configuration = Configuration(configFolder = context.filesDir)
-    val syncthingClient = SyncthingClient(
-            configuration = configuration,
-            repository = SqliteIndexRepository(
-                    database = RepositoryDatabase.with(context),
-                    closeDatabaseOnClose = false,
-                    clearTempStorageHook = { tempRepository.deleteAllTempData() }
-            ),
-            tempRepository = tempRepository,
-            exceptionReportHandler = { ex ->
-                Log.w(LOG_TAG, "${ex.component}\n${ex.detailsReadableString}\n${Log.getStackTraceString(ex.exception)}")
 
-                MainScope().launch(Dispatchers.Main) {
-                    exceptionReportHandler(ex)
-                }
+    val syncthingClient = SyncthingClient(
+        configuration = configuration,
+        repository = SqliteIndexRepository(
+            database = RepositoryDatabase.with(context),
+            closeDatabaseOnClose = false,
+            clearTempStorageHook = { tempRepository.deleteAllTempData() }
+        ),
+        tempRepository = tempRepository,
+        exceptionReportHandler = { ex ->
+            Log.w(
+                LOG_TAG,
+                "${ex.component}\n${ex.detailsReadableString}\n${Log.getStackTraceString(ex.exception)}"
+            )
+
+            // 💡 Stable launch via stored MainScope
+            mainScope.launch(Dispatchers.Main) {
+                exceptionReportHandler(ex)
             }
+        }
     )
+
     val folderBrowser = syncthingClient.indexHandler.folderBrowser
     val indexBrowser = syncthingClient.indexHandler.indexBrowser
 
     suspend fun shutdown() {
         syncthingClient.close()
         configuration.persistNow()
+        mainScope.cancel() // 🧼 Cleanup
     }
 }
