@@ -2,10 +2,13 @@ package net.syncthing.java.core.configuration
 
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -22,11 +25,13 @@ import java.io.StringWriter
 import java.net.InetAddress
 import java.util.*
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class Configuration(configFolder: File = DefaultConfigFolder) {
     private val modifyLock = Mutex()
     private val saveLock = Mutex()
     private val configChannel = ConflatedBroadcastChannel<Config>()
+
+    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val configFile = File(configFolder, ConfigFileName)
     val databaseFolder = File(configFolder, DatabaseFolderName)
@@ -45,7 +50,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
             }
             val keystoreData = KeystoreHandler.Loader().generateKeystore()
             isSaved = false
-            configChannel.sendBlocking(
+            val result = configChannel.trySendBlocking(
                     Config(peers = setOf(), folders = setOf(),
                             localDeviceName = localDeviceName,
                             localDeviceId = keystoreData.first.deviceId,
@@ -55,11 +60,17 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
                             useDefaultDiscoveryServers = true
                     )
             )
+            if (result.isFailure) {
+                throw result.exceptionOrNull() ?: IllegalStateException("Failed to send config")
+            }
             runBlocking { persistNow() }
         } else {
-            configChannel.sendBlocking(
+            val result = configChannel.trySendBlocking(
                     Config.parse(JsonReader(StringReader(configFile.readText())))
             )
+            if (result.isFailure) {
+                throw result.exceptionOrNull() ?: IllegalStateException("Failed to send config")
+            }
         }
         logger.debug("Loaded Configuration: {}.", configChannel.value)
     }
@@ -124,7 +135,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
     }
 
     fun persistLater() {
-        GlobalScope.launch (Dispatchers.IO) { persist() }
+        coroutineScope.launch { persist() }
     }
 
     private suspend fun persist() {
@@ -153,6 +164,10 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
                 }
             }
         }
+    }
+
+    fun shutdown() {
+        coroutineScope.cancel()
     }
 
     fun subscribe() = configChannel.openSubscription()
