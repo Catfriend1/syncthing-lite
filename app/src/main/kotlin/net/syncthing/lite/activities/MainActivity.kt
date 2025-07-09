@@ -74,6 +74,7 @@ class MainActivity : SyncthingActivity() {
         // true, then it has handled the app icon touch event
         return if (drawerToggle?.onOptionsItemSelected(item) == true) {
             true
+        // Handle your other action bar items...
         } else {
             super.onOptionsItemSelected(item)
         }
