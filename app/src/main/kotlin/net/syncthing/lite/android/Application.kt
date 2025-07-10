@@ -6,6 +6,9 @@ import android.os.Looper
 import android.util.Log
 import net.syncthing.lite.error.ErrorStorage
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import java.security.Security
+
 class Application: Application() {
     companion object {
         private const val LOG_TAG = "Application"
@@ -14,6 +17,9 @@ class Application: Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        Security.addProvider(BouncyCastleProvider())
+        Log.d(LOG_TAG, "Security providers: " + Security.getProviders().joinToString { it.name })
 
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         val mainThread = Thread.currentThread()
