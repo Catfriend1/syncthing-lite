@@ -141,12 +141,12 @@ class DownloadFileDialogFragment : DialogFragment() {
         return alertDialog
     }
 
-    override fun onCancel(dialog: DialogInterface?) {
+    override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
         model.cancel()
     }
 
-    fun show(fragmentManager: FragmentManager?) {
-        show(fragmentManager, TAG)
+    fun show(fragmentManager: FragmentManager) {
+        super.show(fragmentManager, TAG)
     }
 }
