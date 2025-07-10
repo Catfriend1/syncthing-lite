@@ -21,8 +21,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.core.beans.DeviceId
@@ -30,7 +30,7 @@ import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.core.exception.reportExceptions
 import java.io.IOException
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class ConnectionActorWrapper (
         private val source: ReceiveChannel<Pair<Connection, ConnectionInfo>>,
         val deviceId: DeviceId,
@@ -48,7 +48,7 @@ class ConnectionActorWrapper (
     init {
         // consume updates from the upstream connection generator
         scope.launch {
-            source.collect { (connection, info) ->
+            source.consumeEach { (connection, info) ->
                 this@ConnectionActorWrapper.connection = connection
                 this@ConnectionActorWrapper.connectionInfo.emit(info)
             }

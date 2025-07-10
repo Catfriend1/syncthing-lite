@@ -153,7 +153,6 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 logger.debug("Closing the upload process.")
                 scope.cancel()
                 monitoringProcessExecutorService.shutdown()
-                indexListenerStream.cancel()
                 requestHandlerRegistry.unregisterListener(requestFilter)
                 //TODO: Rename fileInfo1 and fileInfo
                 val (fileInfo1, folderStatsUpdate) = indexHandler.indexRepository.runInTransaction {
