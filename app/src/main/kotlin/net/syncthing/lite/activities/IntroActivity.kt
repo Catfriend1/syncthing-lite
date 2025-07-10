@@ -14,7 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import com.github.appintro.AppIntro
-import com.github.appintro.ISlidePolicy
+import com.github.appintro.SlidePolicy
 import com.google.zxing.integration.android.IntentIntegrator
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
@@ -99,7 +99,7 @@ class IntroActivity : AppIntro() {
     /**
      * Display device ID entry field and QR scanner option.
      */
-    class IntroFragmentTwo : SyncthingFragment(), ISlidePolicy {
+    class IntroFragmentTwo : SyncthingFragment(), SlidePolicy {
 
         private lateinit var binding: FragmentIntroTwoBinding
 
@@ -141,7 +141,8 @@ class IntroActivity : AppIntro() {
             }
         }
 
-        override fun isPolicyRespected() = isDeviceIdValid()
+        override val isPolicyRespected: Boolean
+            get() = isDeviceIdValid()
 
         override fun onUserIllegallyRequestedNextPage() {
             // nothing to do, but some user feedback would be nice
