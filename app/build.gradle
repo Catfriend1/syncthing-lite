@@ -59,12 +59,3 @@ dependencies {
     implementation project(':syncthing-repository-android')
     implementation project(':syncthing-temp-repository-encryption')
 }
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        freeCompilerArgs += [
-            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "-opt-in=kotlin.RequiresOptIn"
-        ]
-    }
-}

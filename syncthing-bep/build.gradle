@@ -31,11 +31,3 @@ protobuf {
 // Workaround for https://github.com/google/protobuf-gradle-plugin/issues/100
 compileKotlin.dependsOn('generateProto')
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        freeCompilerArgs += [
-            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "-opt-in=kotlin.RequiresOptIn"
-        ]
-    }
-}
