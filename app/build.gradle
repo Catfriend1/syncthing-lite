@@ -44,7 +44,7 @@ dependencies {
 
     implementation 'com.google.zxing:android-integration:3.3.0'
     implementation 'com.google.zxing:core:3.3.0'
-    implementation 'com.github.apl-devs:AppIntro:v5.1.0'
+    implementation 'com.github.apl-devs:appintro:6.1.0'
 
     implementation(project(':syncthing-client'))
     implementation project(':syncthing-repository-android')
