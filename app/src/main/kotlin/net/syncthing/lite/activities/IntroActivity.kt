@@ -36,6 +36,10 @@ import java.io.IOException
 @OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IntroActivity : AppIntro() {
 
+    companion object {
+        const val ENABLE_TEST_DATA: Boolean = true
+    }
+
     /**
      * Initialize fragments and library parameters.
      */
@@ -106,6 +110,12 @@ class IntroActivity : AppIntro() {
                 FragmentIntentIntegrator(this@IntroFragmentTwo).initiateScan()
             }
             binding.enterDeviceId.scanQrCode.setImageResource(R.drawable.ic_qr_code_white_24dp)
+
+            if (ENABLE_TEST_DATA) {
+                binding.enterDeviceId.deviceId.setText("7FA4CR5-LT7RJ6T-AHAENPK-MKWHLUV-ZXR2IX5-AOLOVOT-EENKHYN-2IP34A7")
+                binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+            }
+
             return binding.root
         }
 
