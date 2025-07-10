@@ -48,7 +48,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
-
 // TODO: refactor this
 @OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class BlockPusher(private val localDeviceId: DeviceId,
