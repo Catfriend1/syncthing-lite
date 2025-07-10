@@ -12,21 +12,26 @@ android {
         versionName "0.3.12"
         multiDexEnabled true
     }
-    sourceSets {
-        main.java.srcDirs += "src/main/kotlin"
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
+
     buildTypes {
         debug {
             minifyEnabled false
         }
     }
+
+    sourceSets {
+        main.java.srcDirs += "src/main/kotlin"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     packagingOptions {
         exclude 'META-INF/*'
     }
+
     buildFeatures {
         dataBinding true
         viewBinding true
