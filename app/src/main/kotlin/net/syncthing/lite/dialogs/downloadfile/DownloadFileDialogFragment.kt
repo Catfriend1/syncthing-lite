@@ -1,20 +1,21 @@
 package net.syncthing.lite.dialogs.downloadfile
 
 import android.app.Dialog
-import androidx.lifecycle.ViewModelProviders
 import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
-import androidx.appcompat.app.AlertDialog
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.lite.BuildConfig
 import net.syncthing.lite.R
@@ -30,29 +31,34 @@ class DownloadFileDialogFragment : DialogFragment() {
         private const val ARG_SAVE_AS_URI = "save as"
         private const val TAG = "DownloadFileDialog"
 
-        fun newInstance(fileInfo: FileInfo) = newInstance(DownloadFileSpec(
-            folder = fileInfo.folder,
-            path = fileInfo.path,
-            fileName = fileInfo.fileName
-        ))
+        fun newInstance(fileInfo: FileInfo): DownloadFileDialogFragment = newInstance(
+            DownloadFileSpec(
+                folder = fileInfo.folder,
+                path = fileInfo.path,
+                fileName = fileInfo.fileName
+            )
+        )
 
-        fun newInstance(fileSpec: DownloadFileSpec, outputUri: Uri? = null) =
-            DownloadFileDialogFragment().apply {
+        fun newInstance(fileSpec: DownloadFileSpec, outputUri: Uri? = null): DownloadFileDialogFragment {
+            return DownloadFileDialogFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ARG_FILE_SPEC, fileSpec)
                     outputUri?.let { putParcelable(ARG_SAVE_AS_URI, it) }
                 }
             }
+        }
     }
 
-    val model: DownloadFileDialogViewModel by lazy {
-        ViewModelProviders.of(this).get(DownloadFileDialogViewModel::class.java)
-    }
-
+    private lateinit var model: DownloadFileDialogViewModel
     private lateinit var progressBar: ProgressBar
     private lateinit var progressMessage: TextView
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        model = ViewModelProvider(this, ViewModelProvider.NewInstanceFactory())
+            .get(DownloadFileDialogViewModel::class.java)
+
         val fileSpec = arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
         val outputUri = arguments?.getParcelable<Uri>(ARG_SAVE_AS_URI)
 
@@ -63,6 +69,11 @@ class DownloadFileDialogFragment : DialogFragment() {
             outputUri = outputUri,
             contentResolver = requireContext().contentResolver
         )
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val fileSpec = arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
+        val outputUri = arguments?.getParcelable<Uri>(ARG_SAVE_AS_URI)
 
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_download_progress, null)
         progressBar = dialogView.findViewById(R.id.progress_bar)
@@ -77,7 +88,7 @@ class DownloadFileDialogFragment : DialogFragment() {
             .setCancelable(true)
             .create()
 
-        model.status.observe(this, androidx.lifecycle.Observer<DownloadFileStatus> { status ->
+        model.status.observe(this, Observer { status ->
             when (status) {
                 is DownloadFileStatusRunning -> {
                     progressBar.isIndeterminate = false
