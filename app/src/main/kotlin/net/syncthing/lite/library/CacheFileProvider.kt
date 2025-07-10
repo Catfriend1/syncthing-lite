@@ -11,7 +11,7 @@ import android.provider.OpenableColumns
 import java.io.File
 import java.io.IOException
 
-class CacheFileProvider: ContentProvider() {
+class CacheFileProvider : ContentProvider() {
     companion object {
         const val AUTHORITY = "net.syncthing.lite.fileprovider"
     }
@@ -30,8 +30,14 @@ class CacheFileProvider: ContentProvider() {
         throw NotImplementedError()
     }
 
-    override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor {
-        val ctx = requireContext()
+    override fun query(
+        uri: Uri,
+        projection: Array<out String>?,
+        selection: String?,
+        selectionArgs: Array<out String>?,
+        sortOrder: String?
+    ): Cursor {
+        val ctx = context ?: throw IllegalStateException("Context is not available")
         val url = CacheFileProviderUrl.fromUri(uri)
         val file = url.getFile(ctx)
 
@@ -57,7 +63,7 @@ class CacheFileProvider: ContentProvider() {
 
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
         if (mode == "r") {
-            val ctx = requireContext()
+            val ctx = context ?: throw IllegalStateException("Context is not available")
             val url = CacheFileProviderUrl.fromUri(uri)
             val file = url.getFile(ctx)
 
@@ -66,9 +72,6 @@ class CacheFileProvider: ContentProvider() {
             throw IOException("illegal mode")
         }
     }
-
-    override fun requireContext(): Context =
-        context ?: throw IllegalStateException("Context is not available")
 }
 
 data class CacheFileProviderUrl(
