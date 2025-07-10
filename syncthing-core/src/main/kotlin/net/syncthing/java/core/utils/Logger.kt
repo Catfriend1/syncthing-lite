@@ -24,6 +24,10 @@ class Logger private constructor(private val tag: String) {
         fun getLogger(clazz: Class<*>): Logger {
             return Logger(clazz.simpleName)
         }
+        
+        fun getLogger(name: String): Logger {
+            return Logger(name)
+        }
     }
     
     /**

@@ -13,4 +13,8 @@ object LoggerFactory {
     fun getLogger(clazz: Class<*>): Logger {
         return Logger.getLogger(clazz)
     }
+
+    fun getLogger(name: String): Logger {
+        return Logger.getLogger(name)
+    }
 }
