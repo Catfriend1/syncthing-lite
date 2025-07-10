@@ -16,7 +16,7 @@ import android.widget.Button
 import com.github.appintro.AppIntro
 import com.github.appintro.SlidePolicy
 import com.google.zxing.integration.android.IntentIntegrator
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.lite.R
@@ -33,7 +33,6 @@ import java.io.IOException
  * Shown when a user first starts the app. Shows some info and helps the user to add their first
  * device and folder.
  */
-@OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IntroActivity : AppIntro() {
 
     companion object {
@@ -200,7 +199,7 @@ class IntroActivity : AppIntro() {
             launch {
                 val ownDeviceId = libraryHandler.libraryManager.withLibrary { it.configuration.localDeviceId }
 
-                libraryHandler.subscribeToConnectionStatus().consumeEach {
+                libraryHandler.subscribeToConnectionStatus().collect {
                     if (it.values.find { it.addresses.isNotEmpty() } != null) {
                         val desc = activity?.getString(R.string.intro_page_three_description, "<b>$ownDeviceId</b>")
                         val spanned = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -217,7 +216,7 @@ class IntroActivity : AppIntro() {
             }
 
             launch {
-                libraryHandler.subscribeToFolderStatusList().consumeEach {
+                libraryHandler.subscribeToFolderStatusList().collect {
                     if (it.isNotEmpty()) {
                         (activity as IntroActivity?)?.onDonePressed(null)
                     }

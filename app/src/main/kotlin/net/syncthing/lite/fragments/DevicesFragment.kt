@@ -10,7 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import com.google.zxing.integration.android.IntentIntegrator
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
 import net.syncthing.java.core.beans.DeviceInfo
@@ -23,7 +23,6 @@ import net.syncthing.lite.utils.FragmentIntentIntegrator
 import net.syncthing.lite.utils.Util
 import java.io.IOException
 
-@OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class DevicesFragment : SyncthingFragment() {
 
     private lateinit var binding: FragmentDevicesBinding
@@ -69,7 +68,7 @@ class DevicesFragment : SyncthingFragment() {
         }
 
         launch {
-            libraryHandler.subscribeToConnectionStatus().consumeEach { connectionInfo ->
+            libraryHandler.subscribeToConnectionStatus().collect { connectionInfo ->
                 val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }
 
                 adapter.data = devices.map { device -> device to (connectionInfo[device.deviceId] ?: ConnectionInfo.empty) }
