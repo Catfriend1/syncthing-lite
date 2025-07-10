@@ -70,7 +70,7 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
         }
     }
 
-    fun show(fragmentManager: FragmentManager?) {
-        show(fragmentManager, TAG)
+    fun show(fragmentManager: FragmentManager) {
+        super.show(fragmentManager, TAG)
     }
 }
