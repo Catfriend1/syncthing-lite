@@ -42,10 +42,6 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
 
-    implementation(project(':syncthing-client')) {
-        exclude group: 'ch.qos.logback'
-    }
-
     implementation 'com.google.zxing:android-integration:3.3.0'
     implementation 'com.google.zxing:core:3.3.0'
     implementation 'com.github.apl-devs:appintro:v4.2.3'
