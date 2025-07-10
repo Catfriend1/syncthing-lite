@@ -5,7 +5,6 @@ dependencies {
     api 'commons-codec:commons-codec:1.11'
     // Can't upgrade to 2.6 because it crashes on Android
     api "commons-io:commons-io:2.18.0"
-    api "org.slf4j:slf4j-api:2.0.17"
     api "com.google.code.gson:gson:2.11.0"
     api "org.bouncycastle:bcmail-jdk15to18:1.71"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
