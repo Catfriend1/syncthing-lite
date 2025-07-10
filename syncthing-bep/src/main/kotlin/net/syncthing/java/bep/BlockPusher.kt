@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
-import org.apache.logging.log4j.util.Unbox.box
+
 
 // TODO: refactor this
 @OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
@@ -96,8 +96,8 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 val hash = Hex.toHexString(request.hash.toByteArray())
                 logger.debug("Handling block request: {}:{}-{} ({}).",
                         request.name,
-                        box(request.offset),
-                        box(request.size),
+                        request.offset,
+                        request.size,
                         hash)
                 val data = dataSource.getBlock(request.offset, request.size, hash)
 

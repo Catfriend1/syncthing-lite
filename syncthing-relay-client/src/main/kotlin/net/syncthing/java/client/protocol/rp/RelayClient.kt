@@ -23,7 +23,7 @@ import net.syncthing.java.core.security.KeystoreHandler
 import net.syncthing.java.core.utils.NetworkUtils
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
-import org.apache.logging.log4j.util.Unbox.box
+
 import org.bouncycastle.util.encoders.Hex
 import java.io.*
 import java.net.InetAddress
@@ -43,7 +43,7 @@ class RelayClient(configuration: Configuration) {
 
     @Throws(IOException::class)
     private fun openConnectionSessionMode(sessionInvitation: SessionInvitation): RelayConnection {
-        logger.debug("Connecting to relay (Session Mode): Address {}, Port {}.", sessionInvitation.address, box(sessionInvitation.port))
+        logger.debug("Connecting to relay (Session Mode): Address {}, Port {}.", sessionInvitation.address, sessionInvitation.port)
         val socket = Socket(sessionInvitation.address, sessionInvitation.port)
         val inputStream = RelayDataInputStream(socket.getInputStream())
         val outputStream = RelayDataOutputStream(socket.getOutputStream())
