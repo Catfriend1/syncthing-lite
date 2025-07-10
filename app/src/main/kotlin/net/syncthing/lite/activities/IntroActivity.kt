@@ -52,18 +52,17 @@ class IntroActivity : AppIntro() {
 
         val typedValue = TypedValue()
         theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
-        setSeparatorColor(ContextCompat.getColor(this, typedValue.resourceId))
-
-        setSkipButtonEnabled(true)
-        setProgressButtonEnabled(true)
-        isSwipeEnabled = false
+        setColorDoneText(ContextCompat.getColor(this, typedValue.resourceId))
+        isSkipButtonEnabled = true
+        isSystemBackButtonLocked = true
+        isWizardMode = false
     }
 
-    override fun onSkipPressed() {
-        onDonePressed()
+    override fun onSkipPressed(currentFragment: Fragment?) {
+        onDonePressed(currentFragment)
     }
 
-    override fun onDonePressed() {
+    override fun onDonePressed(currentFragment: Fragment?) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         prefs.edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
         startActivity(Intent(this, MainActivity::class.java))
@@ -219,7 +218,7 @@ class IntroActivity : AppIntro() {
             launch {
                 libraryHandler.subscribeToFolderStatusList().consumeEach {
                     if (it.isNotEmpty()) {
-                        (activity as IntroActivity?)?.onDonePressed()
+                        (activity as IntroActivity?)?.onDonePressed(null)
                     }
                 }
             }
