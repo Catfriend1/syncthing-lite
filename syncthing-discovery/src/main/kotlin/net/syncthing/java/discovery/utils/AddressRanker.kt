@@ -19,7 +19,8 @@ import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.channels.toList
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.beans.DeviceAddress.AddressType
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import java.io.IOException
 import java.net.Socket
 

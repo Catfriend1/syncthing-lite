@@ -3,7 +3,8 @@ package net.syncthing.java.bep.index
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.IndexInfo
 import net.syncthing.java.core.interfaces.IndexTransaction
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 
 object UpdateIndexInfo {
     private val logger = LoggerFactory.getLogger(UpdateIndexInfo::class.java)

@@ -25,7 +25,8 @@ import net.syncthing.java.core.beans.FileBlocks
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.java.core.interfaces.TempRepository
 import org.bouncycastle.util.encoders.Hex
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import org.apache.logging.log4j.util.Unbox.box
 import java.io.*
 import java.security.MessageDigest

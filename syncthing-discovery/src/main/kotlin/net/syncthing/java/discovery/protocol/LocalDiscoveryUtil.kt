@@ -26,7 +26,8 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.exception.ExceptionDetailException
 import net.syncthing.java.core.exception.ExceptionDetails
 import net.syncthing.java.core.utils.NetworkUtils
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException

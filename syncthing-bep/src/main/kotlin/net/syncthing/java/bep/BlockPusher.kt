@@ -35,7 +35,8 @@ import net.syncthing.java.core.utils.BlockUtils
 import net.syncthing.java.core.utils.NetworkUtils
 import org.apache.commons.io.IOUtils
 import org.bouncycastle.util.encoders.Hex
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 import java.io.InputStream

@@ -18,7 +18,8 @@ import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.java.core.beans.FolderInfo
 import net.syncthing.java.core.security.KeystoreHandler
 import org.bouncycastle.util.encoders.Base64
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import java.io.File
 import java.io.StringReader
 import java.io.StringWriter

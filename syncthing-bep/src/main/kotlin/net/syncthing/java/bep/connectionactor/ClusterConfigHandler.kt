@@ -20,7 +20,8 @@ import net.syncthing.java.bep.index.IndexHandler
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.FolderInfo
 import net.syncthing.java.core.configuration.Configuration
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import org.apache.logging.log4j.util.Unbox.box
 
 object ClusterConfigHandler {
