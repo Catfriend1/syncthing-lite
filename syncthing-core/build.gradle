@@ -3,7 +3,7 @@ apply plugin: 'kotlin'
 
 dependencies {
     api 'commons-codec:commons-codec:1.17.1'
-    api "commons-io:commons-io:2.18.0"
+    api "commons-io:commons-io:2.19.0"
     api "com.google.code.gson:gson:2.11.0"
     api "org.bouncycastle:bcmail-jdk15to18:1.81"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
