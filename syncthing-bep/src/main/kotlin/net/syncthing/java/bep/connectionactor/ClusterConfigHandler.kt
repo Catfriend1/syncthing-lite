@@ -20,8 +20,8 @@ import net.syncthing.java.bep.index.IndexHandler
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.FolderInfo
 import net.syncthing.java.core.configuration.Configuration
-import org.slf4j.LoggerFactory
-import org.apache.logging.log4j.util.Unbox.box
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 
 object ClusterConfigHandler {
     private val logger = LoggerFactory.getLogger(ClusterConfigHandler::class.java)
@@ -62,8 +62,8 @@ object ClusterConfigHandler {
 
                                                 logger.info("Send delta index information: Device = {}, Index = {}, Max (Local) Sequence = {}.",
                                                         indexSequenceInfo.deviceId,
-                                                        box(indexSequenceInfo.indexId),
-                                                        box(indexSequenceInfo.localSequence))
+                                                        indexSequenceInfo.indexId,
+                                                        indexSequenceInfo.localSequence)
                                             }
                                         }
                         )

@@ -21,8 +21,7 @@ import net.syncthing.lite.R
 import net.syncthing.lite.library.CacheFileProviderUrl
 import net.syncthing.lite.library.LibraryHandler
 import net.syncthing.lite.utils.MimeType
-import org.jetbrains.anko.newTask
-import org.jetbrains.anko.toast
+import android.widget.Toast
 
 class DownloadFileDialogFragment : DialogFragment() {
 
@@ -101,20 +100,28 @@ class DownloadFileDialogFragment : DialogFragment() {
                                         ).serialized,
                                         mimeType
                                     )
-                                    .newTask()
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                     .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             )
                         } catch (e: ActivityNotFoundException) {
                             if (BuildConfig.DEBUG) {
                                 Log.w(TAG, "No handler found for file ${file.name}", e)
                             }
-                            requireContext().toast(R.string.toast_open_file_failed)
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.toast_open_file_failed),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 }
                 is DownloadFileStatusFailed -> {
                     dismissAllowingStateLoss()
-                    requireContext().toast(R.string.toast_file_download_failed)
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.toast_file_download_failed),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
                 else -> { /* no-op or log unexpected status */ }
             }

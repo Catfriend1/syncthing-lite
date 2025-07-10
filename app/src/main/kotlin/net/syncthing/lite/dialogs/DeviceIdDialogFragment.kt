@@ -17,12 +17,13 @@ import android.widget.Toast
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
 import com.google.zxing.qrcode.QRCodeWriter
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.syncthing.lite.R
 import net.syncthing.lite.databinding.DialogDeviceIdBinding
 import net.syncthing.lite.fragments.SyncthingDialogFragment
-import org.jetbrains.anko.doAsync
 
 class DeviceIdDialogFragment : SyncthingDialogFragment() {
 
@@ -34,74 +35,79 @@ class DeviceIdDialogFragment : SyncthingDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val binding = DialogDeviceIdBinding.inflate(LayoutInflater.from(context), null, false)
 
-        // use a placeholder to prevent size changes; this string is never shown
+        // Placeholder to prevent size changes; this string is never shown
         binding.deviceId.text = "XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX"
         binding.deviceId.visibility = View.INVISIBLE
 
         binding.qrCode.setImageBitmap(Bitmap.createBitmap(QR_RESOLUTION, QR_RESOLUTION, Bitmap.Config.RGB_565))
 
-        libraryHandler.library { configuration, _, _ ->
-            val deviceId = configuration.localDeviceId
+        MainScope().launch {
+            libraryHandler.library { configuration, _, _ ->
+                val deviceId = configuration.localDeviceId
 
-            fun copyDeviceId() {
-                val clipboard = context!!.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText(context!!.getString(R.string.device_id), deviceId.deviceId)
+                withContext(Dispatchers.Main) {
+                    binding.deviceId.text = deviceId.deviceId
+                    binding.deviceId.visibility = View.VISIBLE
 
-                clipboard.primaryClip = clip
+                    binding.deviceId.setOnClickListener { copyDeviceId(deviceId.deviceId) }
+                    binding.share.setOnClickListener { shareDeviceId(deviceId.deviceId) }
+                }
 
-                Toast.makeText(context, context!!.getString(R.string.device_id_copied), Toast.LENGTH_SHORT)
-                        .show()
-            }
+                // Generate QR code off the main thread
+                val qrCodeBitmap = generateQrCode(deviceId.deviceId)
 
-            fun shareDeviceId() {
-                context!!.startActivity(Intent.createChooser(
-                        Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, deviceId.deviceId)
-                        },
-                        context!!.getString(R.string.share_device_id_chooser)
-                ))
-            }
-
-            MainScope().launch {
-                binding.deviceId.text = deviceId.deviceId
-                binding.deviceId.visibility = View.VISIBLE
-
-                binding.deviceId.setOnClickListener { copyDeviceId() }
-                binding.share.setOnClickListener { shareDeviceId() }
-            }
-
-            doAsync {
-                val writer = QRCodeWriter()
-                try {
-                    val bitMatrix = writer.encode(deviceId.deviceId, BarcodeFormat.QR_CODE, QR_RESOLUTION, QR_RESOLUTION)
-                    val width = bitMatrix.width
-                    val height = bitMatrix.height
-                    val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
-                    for (x in 0 until width) {
-                        for (y in 0 until height) {
-                            bmp.setPixel(x, y, if (bitMatrix.get(x, y)) Color.BLACK else Color.WHITE)
-                        }
-                    }
-
-                    MainScope().launch {
-                        binding.flipper.displayedChild = 1
-                        binding.qrCode.setImageBitmap(bmp)
-                    }
-                } catch (e: WriterException) {
-                    Log.w(TAG, e)
+                withContext(Dispatchers.Main) {
+                    binding.flipper.displayedChild = 1
+                    binding.qrCode.setImageBitmap(qrCodeBitmap)
                 }
             }
         }
 
-        return AlertDialog.Builder(context!!, theme)
-                .setTitle(context!!.getString(R.string.device_id))
-                .setView(binding.root)
-                .setPositiveButton(android.R.string.ok, null)
-                .create()
+        return AlertDialog.Builder(requireContext(), theme)
+            .setTitle(getString(R.string.device_id))
+            .setView(binding.root)
+            .setPositiveButton(android.R.string.ok, null)
+            .create()
     }
 
-    fun show(manager: FragmentManager?) {
+    private fun copyDeviceId(deviceId: String) {
+        val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText(getString(R.string.device_id), deviceId)
+        clipboard.setPrimaryClip(clip)
+
+        Toast.makeText(requireContext(), getString(R.string.device_id_copied), Toast.LENGTH_SHORT).show()
+    }
+
+    private fun shareDeviceId(deviceId: String) {
+        startActivity(Intent.createChooser(
+            Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, deviceId)
+            },
+            getString(R.string.share_device_id_chooser)
+        ))
+    }
+
+    private suspend fun generateQrCode(data: String): Bitmap = withContext(Dispatchers.Default) {
+        val writer = QRCodeWriter()
+        try {
+            val bitMatrix = writer.encode(data, BarcodeFormat.QR_CODE, QR_RESOLUTION, QR_RESOLUTION)
+            val width = bitMatrix.width
+            val height = bitMatrix.height
+            val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    bmp.setPixel(x, y, if (bitMatrix.get(x, y)) Color.BLACK else Color.WHITE)
+                }
+            }
+            bmp
+        } catch (e: WriterException) {
+            Log.w(TAG, "QR Code generation failed", e)
+            Bitmap.createBitmap(QR_RESOLUTION, QR_RESOLUTION, Bitmap.Config.RGB_565)
+        }
+    }
+
+    fun show(manager: FragmentManager) {
         super.show(manager, TAG)
     }
 }

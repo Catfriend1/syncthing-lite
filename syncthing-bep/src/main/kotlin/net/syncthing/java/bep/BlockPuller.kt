@@ -25,8 +25,8 @@ import net.syncthing.java.core.beans.FileBlocks
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.java.core.interfaces.TempRepository
 import org.bouncycastle.util.encoders.Hex
-import org.slf4j.LoggerFactory
-import org.apache.logging.log4j.util.Unbox.box
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import java.io.*
 import java.security.MessageDigest
 import java.util.*
@@ -87,7 +87,7 @@ object BlockPuller {
                             // is handled differently so that the timeout is ignored.
                             // Due to that, it's converted to an IOException.
 
-                            logger.warn("Timeout limit exceeded ({} millis).", box(timeoutInMillis))
+                            logger.warn("Timeout limit exceeded ({} millis).", timeoutInMillis)
                             throw IOException("Time limit exceeded while requesting block.")
                         }
                     }
@@ -129,7 +129,7 @@ object BlockPuller {
                 repeat(4 /* 4 blocks per time */) { workerNumber ->
                     async {
                         for (block in pipe) {
-                            logger.debug("Message block with hash ({}) from worker: {}.", block.hash, box(workerNumber))
+                            logger.debug("Message block with hash ({}) from worker: {}.", block.hash, workerNumber)
 
                             lateinit var blockContent: ByteArray
 

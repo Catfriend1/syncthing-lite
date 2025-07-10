@@ -26,8 +26,7 @@ import net.syncthing.lite.databinding.FragmentIntroTwoBinding
 import net.syncthing.lite.fragments.SyncthingFragment
 import net.syncthing.lite.utils.FragmentIntentIntegrator
 import net.syncthing.lite.utils.Util
-import org.jetbrains.anko.defaultSharedPreferences
-import org.jetbrains.anko.intentFor
+import androidx.preference.PreferenceManager
 import java.io.IOException
 
 /**
@@ -61,8 +60,9 @@ class IntroActivity : AppIntro() {
     }
 
     override fun onDonePressed(currentFragment: Fragment) {
-        defaultSharedPreferences.edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
-        startActivity(intentFor<MainActivity>())
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        prefs.edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
+        startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
 

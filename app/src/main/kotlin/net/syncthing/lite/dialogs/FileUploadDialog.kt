@@ -1,20 +1,25 @@
 package net.syncthing.lite.dialogs
 
-import androidx.appcompat.app.AlertDialog
 import android.content.Context
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import net.syncthing.java.bep.BlockPusher
 import net.syncthing.java.client.SyncthingClient
 import net.syncthing.lite.R
 import net.syncthing.lite.library.UploadFileTask
 import net.syncthing.lite.utils.Util
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.toast
 
 class FileUploadDialog(
     private val context: Context,
@@ -29,9 +34,13 @@ class FileUploadDialog(
     private lateinit var progressBar: ProgressBar
     private lateinit var messageText: TextView
 
+    private val uiHandler = Handler(Looper.getMainLooper())
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
     fun show() {
         showDialog()
-        doAsync {
+
+        scope.launch {
             uploadFileTask = UploadFileTask(
                 context,
                 syncthingClient,
@@ -59,14 +68,14 @@ class FileUploadDialog(
         dialog = AlertDialog.Builder(context)
             .setView(view)
             .setCancelable(true)
-            .setOnCancelListener { uploadFileTask?.cancel() }
+            .setOnCancelListener { cancel() }
             .create()
 
         dialog?.show()
     }
 
     private fun onProgress(observer: BlockPusher.FileUploadObserver) {
-        context.runOnUiThread {
+        uiHandler.post {
             progressBar.isIndeterminate = false
             progressBar.max = 100
             progressBar.progress = observer.progressPercentage()
@@ -74,25 +83,24 @@ class FileUploadDialog(
     }
 
     private fun onComplete() {
-        context.runOnUiThread {
+        uiHandler.post {
             dialog?.dismiss()
-            context.toast(R.string.toast_upload_complete)
+            Toast.makeText(context, R.string.toast_upload_complete, Toast.LENGTH_SHORT).show()
             onUploadCompleteListener()
+            cancel()
         }
     }
 
     private fun onError() {
-        context.runOnUiThread {
+        uiHandler.post {
             dialog?.dismiss()
-            context.toast(R.string.toast_file_upload_failed)
+            Toast.makeText(context, R.string.toast_file_upload_failed, Toast.LENGTH_SHORT).show()
+            cancel()
         }
     }
 
-    private fun Context.runOnUiThread(action: () -> Unit) {
-        if (this is AppCompatActivity) {
-            runOnUiThread(action)
-        } else {
-            action()
-        }
+    private fun cancel() {
+        uploadFileTask?.cancel()
+        scope.cancel()  // cleanly shuts down coroutines
     }
 }
