@@ -55,4 +55,7 @@ dependencies {
     implementation(project(':syncthing-client'))
     implementation project(':syncthing-repository-android')
     implementation project(':syncthing-temp-repository-encryption')
+
+    def multidex_version = "2.0.1"
+    implementation "androidx.multidex:multidex:$multidex_version"
 }
