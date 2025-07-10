@@ -1,5 +1,6 @@
 package net.syncthing.lite.library
 
+import android.content.Context
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.os.CancellationSignal
@@ -16,6 +17,7 @@ import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.java.core.beans.FolderInfo
 import net.syncthing.lite.R
 import net.syncthing.lite.utils.MimeType
+import java.io.File
 import java.io.FileNotFoundException
 
 class SyncthingProvider : DocumentsProvider() {
@@ -48,10 +50,12 @@ class SyncthingProvider : DocumentsProvider() {
     }
 
     // this instance is not started -> it connects and disconnects on demand
-    private val libraryManager: LibraryManager by lazy { DefaultLibraryManager.with(context) }
+    private val libraryManager: LibraryManager by lazy { DefaultLibraryManager.with(requireContext()) }
 
     override fun queryRoots(projection: Array<String>?): Cursor {
         Log.d(Tag, "queryRoots($projection)")
+
+        val ctx = requireContext()
 
         return runBlocking {
             libraryManager.withLibrary { instance ->
@@ -61,7 +65,7 @@ class SyncthingProvider : DocumentsProvider() {
                             add(Root.COLUMN_ROOT_ID, folder.info.folderId)
                             add(Root.COLUMN_SUMMARY, folder.info.label)
                             add(Root.COLUMN_FLAGS, 0)
-                            add(Root.COLUMN_TITLE, context.getString(R.string.app_name))
+                            add(Root.COLUMN_TITLE, ctx.getString(R.string.app_name))
                             add(Root.COLUMN_DOCUMENT_ID, getDocIdForFile(folder.info))
                             add(Root.COLUMN_ICON, R.mipmap.ic_launcher)
                         }
@@ -126,6 +130,9 @@ class SyncthingProvider : DocumentsProvider() {
             throw NotImplementedError()
         }
 
+        val ctx = requireContext()
+        val cacheDir: File = ctx.externalCacheDir ?: throw IllegalStateException("No externalCacheDir")
+
         return runBlocking {
             libraryManager.withLibrary { instance ->
                 val fileInfo = instance.indexBrowser.getFileInfoByAbsolutePathAllowNull(
@@ -138,7 +145,7 @@ class SyncthingProvider : DocumentsProvider() {
                 }
 
                 val outputFile = DownloadFileTask.downloadFileCoroutine(
-                        externalCacheDir = context.externalCacheDir,
+                        externalCacheDir = cacheDir,
                         syncthingClient = instance.syncthingClient,
                         fileInfo = fileInfo,
                         onProgress = { /* ignore the progress */ }
@@ -173,4 +180,7 @@ class SyncthingProvider : DocumentsProvider() {
     private fun getDocIdForFile(folderInfo: FolderInfo) = folderInfo.folderId + ":"
 
     private fun getDocIdForFile(fileInfo: FileInfo) = fileInfo.folder + ":" + fileInfo.path
+
+    private fun requireContext(): Context =
+        context ?: throw IllegalStateException("Context is not available")
 }

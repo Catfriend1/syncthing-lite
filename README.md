@@ -1,6 +1,6 @@
-Nobody is working on this project anymore. If you’d like to pick up development, please ask about it on https://forum.syncthing.net/ 1, or feel free to fork.
+This is an experiment to revive the Syncthing-Lite App. Let's discuss it on [Syncthing-Forum](https://forum.syncthing.net/).
 
-# Syncthing Lite
+# Syncthing Lite for Android
 
 [![Build Status](https://travis-ci.org/syncthing/syncthing-lite.svg?branch=master)](https://travis-ci.org/syncthing/syncthing-lite)
 [![MPLv2 License](https://img.shields.io/badge/license-MPLv2-blue.svg?style=flat-square)](https://www.mozilla.org/MPL/2.0/)

@@ -1,12 +1,10 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.4.0'
-    ext.support_version = '27.1.1'
+    ext.kotlin_version = '1.7.10'
+    ext.kotlinx_coroutines_version = '1.7.3'
     ext.build_tools_version = '4.0.1'
-    ext.anko_version = '0.10.8'
-    ext.protobuf_lite_version = '3.25.0'
-    ext.log4JVersion = '2.17.0'
+    ext.protobuf_lite_version = '4.31.1'
     repositories {
         mavenLocal()
         jcenter()
@@ -16,7 +14,7 @@ buildscript {
     dependencies {
         classpath "com.android.tools.build:gradle:$build_tools_version"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.11'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.9.5'
     }
 }
 
@@ -27,6 +25,5 @@ allprojects {
         maven {
             url "https://jitpack.io"
         }
-        maven { url "https://artifactory.appodeal.com/appodeal-public/" }
     }
 }

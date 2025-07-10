@@ -5,22 +5,22 @@ import android.net.Uri
 import android.os.Build
 import android.provider.OpenableColumns
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.lite.R
 import net.syncthing.lite.library.LibraryManager
-import org.jetbrains.anko.toast
 import java.io.IOException
 import java.security.InvalidParameterException
 import java.util.Locale
+import android.widget.Toast
 
 object Util {
 
     private fun capitalizeCompat(input: String): String {
         return if (input.isNotEmpty()) {
-            input.substring(0, 1).toUpperCase(Locale.getDefault()) + input.substring(1)
+            input.substring(0, 1).uppercase(Locale.getDefault()) + input.substring(1)
         } else {
             input
         }
@@ -48,21 +48,21 @@ object Util {
 
     @Throws(IOException::class)
     fun importDeviceId(
-            libraryManager: LibraryManager,
-            context: Context,
-            deviceId: String,
-            onComplete: () -> Unit
+        libraryManager: LibraryManager,
+        context: Context,
+        deviceId: String,
+        onComplete: () -> Unit
     ) {
-        val newDeviceId = DeviceId(deviceId.toUpperCase(Locale.US))
+        val newDeviceId = DeviceId(deviceId.uppercase(Locale.getDefault()))
 
-        GlobalScope.launch(Dispatchers.Main) {
+        MainScope().launch(Dispatchers.Main) {
             libraryManager.withLibrary { library ->
                 val didAddDevice = library.configuration.update { oldConfig ->
                     if (oldConfig.peers.any { it.deviceId == newDeviceId }) {
                         oldConfig
                     } else {
                         oldConfig.copy(
-                                peers = oldConfig.peers + DeviceInfo(newDeviceId, newDeviceId.shortId)
+                            peers = oldConfig.peers + DeviceInfo(newDeviceId, newDeviceId.shortId)
                         )
                     }
                 }
@@ -71,10 +71,18 @@ object Util {
                     library.configuration.persistLater()
                     library.syncthingClient.connectToNewlyAddedDevices()
 
-                    context.toast(context.getString(R.string.device_import_success, newDeviceId.shortId))
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.device_import_success, newDeviceId.shortId),
+                        Toast.LENGTH_SHORT
+                    ).show()
                     onComplete()
                 } else {
-                    context.toast(context.getString(R.string.device_already_known, newDeviceId.shortId))
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.device_already_known, newDeviceId.shortId),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }

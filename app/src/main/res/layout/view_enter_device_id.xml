@@ -10,14 +10,14 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp">
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/device_id_holder"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             app:errorEnabled="true">
 
-            <android.support.design.widget.TextInputEditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/device_id"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -25,7 +25,7 @@
                 android:inputType="textNoSuggestions|textMultiLine|textCapCharacters"
                 tools:text="VPNPKMK-VL2SOQN-SS5I2AB-G4BV7ZK-RO5ODEE-Y2G3CZ4-C4FUW4P-ZEMJOAF"/>
 
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <ImageButton
             android:id="@+id/scan_qr_code"
@@ -35,8 +35,8 @@
             android:padding="8dp"
             android:layout_marginBottom="8dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_qr_code_black_24dp"
-            android:background="?android:selectableItemBackgroundBorderless"/>
+            app:srcCompat="@drawable/ic_qr_code_black_24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
 
     </LinearLayout>
 </layout>

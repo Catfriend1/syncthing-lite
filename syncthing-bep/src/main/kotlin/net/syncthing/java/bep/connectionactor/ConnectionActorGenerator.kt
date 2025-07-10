@@ -15,12 +15,17 @@
 package net.syncthing.java.bep.connectionactor
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.*
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.bep.index.IndexHandler
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.configuration.Configuration
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import java.io.IOException
 
 data class Connection (
@@ -32,8 +37,9 @@ data class Connection (
 object ConnectionActorGenerator {
     private val closed = Channel<ConnectionAction>().apply { cancel() }
     private val logger = LoggerFactory.getLogger(ConnectionActorGenerator::class.java)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private fun deviceAddressesGenerator(deviceAddress: ReceiveChannel<DeviceAddress>) = GlobalScope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
+    private fun deviceAddressesGenerator(deviceAddress: ReceiveChannel<DeviceAddress>) = scope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
         val addresses = mutableMapOf<String, DeviceAddress>()
 
         deviceAddress.consumeEach { address ->
@@ -49,7 +55,7 @@ object ConnectionActorGenerator {
         }
     }
 
-    private fun <T> waitForFirstValue(source: ReceiveChannel<T>, time: Long) = GlobalScope.produce<T> {
+    private fun <T> waitForFirstValue(source: ReceiveChannel<T>, time: Long) = scope.produce<T> {
         source.consume {
             val firstValue = source.receive()
             var lastValue = firstValue
@@ -60,8 +66,6 @@ object ConnectionActorGenerator {
                         lastValue = source.receive()
                     }
                 }
-
-                throw IllegalStateException()
             } catch (ex: TimeoutCancellationException) {
                 // this is expected here
             }
@@ -95,7 +99,7 @@ object ConnectionActorGenerator {
             configuration: Configuration,
             indexHandler: IndexHandler,
             requestHandler: (BlockExchangeProtos.Request) -> Deferred<BlockExchangeProtos.Response>
-    ) = GlobalScope.produce<Pair<Connection, ConnectionInfo>> {
+    ) = scope.produce<Pair<Connection, ConnectionInfo>> {
         var currentActor: SendChannel<ConnectionAction> = closed
         var currentClusterConfig = ClusterConfigInfo.dummy
         var currentDeviceAddress: DeviceAddress? = null
@@ -131,7 +135,7 @@ object ConnectionActorGenerator {
             dispatchStatus()
         }
 
-        suspend fun tryConnectingToAddressHandleBaseErrors(deviceAddress: DeviceAddress) = try {
+        suspend fun tryConnectingToAddressHandleBaseErrors(deviceAddress: DeviceAddress): Pair<SendChannel<ConnectionAction>, ClusterConfigInfo>? = try {
             val newActor = ConnectionActor.createInstance(deviceAddress, configuration, indexHandler, requestHandler)
             val clusterConfig = ConnectionActorUtil.waitUntilConnected(newActor)
 
@@ -196,7 +200,7 @@ object ConnectionActorGenerator {
             while (true) {
                 run {
                     // get the new list version if there is any
-                    val newDeviceAddressList = deviceAddressSource.poll()
+                    val newDeviceAddressList = deviceAddressSource.tryReceive().getOrNull()
 
                     if (newDeviceAddressList != null) {
                         currentStatus = currentStatus.copy(addresses = newDeviceAddressList)
@@ -208,7 +212,7 @@ object ConnectionActorGenerator {
                     val deviceAddressList = currentStatus.addresses
 
                     if (deviceAddressList.isNotEmpty()) {
-                        if (reconnectTicker.poll() != null) {
+                        if (reconnectTicker.tryReceive().getOrNull() != null) {
                             if (currentDeviceAddress != deviceAddressList.first()) {
                                 val oldDeviceAddress = currentDeviceAddress!!
 
@@ -239,7 +243,7 @@ object ConnectionActorGenerator {
 
                     // reset countdown before trying other connection if it would be time now
                     // this does not reset if it has not counted down the whole time yet
-                    reconnectTicker.poll()
+                    reconnectTicker.tryReceive().getOrNull()
 
                     // wait for new device address list but not more than 15 seconds before the next iteration
                     val newDeviceAddressList = withTimeoutOrNull(15 * 1000) {
@@ -253,5 +257,9 @@ object ConnectionActorGenerator {
                 }
             }
         }
+    }
+
+    fun shutdown() {
+        scope.cancel()
     }
 }

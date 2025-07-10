@@ -1,12 +1,13 @@
 package net.syncthing.lite.activities
 
-import android.arch.lifecycle.Observer
+import androidx.lifecycle.Observer
 import android.content.Intent
 import androidx.databinding.DataBindingUtil
 import android.os.Build
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
+import android.util.TypedValue
+import androidx.fragment.app.Fragment
+import androidx.core.content.ContextCompat
 import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
@@ -25,8 +26,7 @@ import net.syncthing.lite.databinding.FragmentIntroTwoBinding
 import net.syncthing.lite.fragments.SyncthingFragment
 import net.syncthing.lite.utils.FragmentIntentIntegrator
 import net.syncthing.lite.utils.Util
-import org.jetbrains.anko.defaultSharedPreferences
-import org.jetbrains.anko.intentFor
+import androidx.preference.PreferenceManager
 import java.io.IOException
 
 /**
@@ -35,6 +35,10 @@ import java.io.IOException
  */
 @OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IntroActivity : AppIntro() {
+
+    companion object {
+        const val ENABLE_TEST_DATA: Boolean = true
+    }
 
     /**
      * Initialize fragments and library parameters.
@@ -46,7 +50,10 @@ class IntroActivity : AppIntro() {
         addSlide(IntroFragmentTwo())
         addSlide(IntroFragmentThree())
 
-        setSeparatorColor(ContextCompat.getColor(this, android.R.color.primary_text_dark))
+        val typedValue = TypedValue()
+        theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+        setSeparatorColor(ContextCompat.getColor(this, typedValue.resourceId))
+
         showSkipButton(true)
         isProgressButtonEnabled = true
         pager.isPagingEnabled = false
@@ -57,8 +64,9 @@ class IntroActivity : AppIntro() {
     }
 
     override fun onDonePressed(currentFragment: Fragment) {
-        defaultSharedPreferences.edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
-        startActivity(intentFor<MainActivity>())
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        prefs.edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
+        startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
 
@@ -102,6 +110,12 @@ class IntroActivity : AppIntro() {
                 FragmentIntentIntegrator(this@IntroFragmentTwo).initiateScan()
             }
             binding.enterDeviceId.scanQrCode.setImageResource(R.drawable.ic_qr_code_white_24dp)
+
+            if (ENABLE_TEST_DATA) {
+                binding.enterDeviceId.deviceId.setText("7FA4CR5-LT7RJ6T-AHAENPK-MKWHLUV-ZXR2IX5-AOLOVOT-EENKHYN-2IP34A7")
+                binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+            }
+
             return binding.root
         }
 

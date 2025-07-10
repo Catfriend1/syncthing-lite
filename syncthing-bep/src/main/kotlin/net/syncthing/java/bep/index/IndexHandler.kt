@@ -30,7 +30,8 @@ import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.core.interfaces.IndexRepository
 import net.syncthing.java.core.interfaces.IndexTransaction
 import net.syncthing.java.core.interfaces.TempRepository
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 

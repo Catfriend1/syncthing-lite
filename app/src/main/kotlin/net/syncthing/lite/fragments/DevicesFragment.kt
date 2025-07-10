@@ -1,6 +1,6 @@
 package net.syncthing.lite.fragments
 
-import android.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import androidx.databinding.DataBindingUtil
@@ -40,7 +40,7 @@ class DevicesFragment : SyncthingFragment() {
 
         adapter.listener = object: DeviceAdapterListener {
             override fun onDeviceLongClicked(deviceInfo: DeviceInfo): Boolean {
-                AlertDialog.Builder(context)
+                AlertDialog.Builder(requireContext())
                         .setTitle(getString(R.string.remove_device_title, deviceInfo.name))
                         .setMessage(getString(R.string.remove_device_message, deviceInfo.deviceId.deviceId.substring(0, 7)))
                         .setPositiveButton(android.R.string.yes) { _, _ ->
@@ -99,7 +99,7 @@ class DevicesFragment : SyncthingFragment() {
             imm.showSoftInput(binding.deviceId, InputMethodManager.SHOW_IMPLICIT)
         }
 
-        val dialog = AlertDialog.Builder(context)
+        val dialog = AlertDialog.Builder(requireContext())
                 .setTitle(R.string.device_id_dialog_title)
                 .setView(binding.root)
                 .setPositiveButton(android.R.string.ok, null)
@@ -111,7 +111,7 @@ class DevicesFragment : SyncthingFragment() {
         fun handleAddClick() {
             try {
                 val deviceId = binding.deviceId.text.toString()
-                Util.importDeviceId(libraryHandler.libraryManager, context!!, deviceId, { /* TODO: Is updateDeviceList() still required? */ })
+                Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId, { /* TODO: Is updateDeviceList() still required? */ })
                 dialog.dismiss()
             } catch (e: IOException) {
                 binding.deviceId.error = getString(R.string.invalid_device_id)

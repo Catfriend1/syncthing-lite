@@ -15,6 +15,7 @@
 package net.syncthing.java.discovery.protocol
 
 import com.google.protobuf.ByteString
+import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -25,7 +26,8 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.exception.ExceptionDetailException
 import net.syncthing.java.core.exception.ExceptionDetails
 import net.syncthing.java.core.utils.NetworkUtils
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -41,7 +43,7 @@ object LocalDiscoveryUtil {
 
     private val logger = LoggerFactory.getLogger(LocalDiscoveryUtil::class.java)
 
-    suspend fun listenForAnnounceMessages(): ReceiveChannel<LocalDiscoveryMessage> = GlobalScope.produce {
+    suspend fun listenForAnnounceMessages(): ReceiveChannel<LocalDiscoveryMessage> = CoroutineScope(Dispatchers.IO).produce {
         DatagramSocket(LISTENING_PORT, InetAddress.getByName("0.0.0.0")).use { datagramSocket ->
             invokeOnClose {
                 datagramSocket.close()

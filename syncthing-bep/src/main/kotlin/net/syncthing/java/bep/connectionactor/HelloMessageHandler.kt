@@ -19,7 +19,8 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.utils.NetworkUtils
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream

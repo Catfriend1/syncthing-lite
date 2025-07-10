@@ -20,7 +20,8 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.core.exception.reportExceptions
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 
@@ -32,9 +33,10 @@ internal class LocalDiscoveryHandler(
         private val onMessageFromUnknownDeviceListener: (DeviceId) -> Unit = {}
 ) : Closeable {
     private val job = Job()
+    private val scope = CoroutineScope(job + Dispatchers.IO)
 
     fun sendAnnounceMessage() {
-        GlobalScope.async (Dispatchers.IO) {
+        scope.launch {
             LocalDiscoveryUtil.sendAnnounceMessage(
                     ownDeviceId = configuration.localDeviceId,
                     instanceId = configuration.instanceId
@@ -43,7 +45,7 @@ internal class LocalDiscoveryHandler(
     }
 
     fun startListener() {
-        GlobalScope.async (job) {
+        scope.launch {
             try {
                 LocalDiscoveryUtil.listenForAnnounceMessages().consumeEach { message ->
                     if (message.deviceId == configuration.localDeviceId) {

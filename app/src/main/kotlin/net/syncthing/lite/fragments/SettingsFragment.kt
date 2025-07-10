@@ -3,10 +3,10 @@ package net.syncthing.lite.fragments
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.support.v7.preference.EditTextPreference
-import android.support.v7.preference.PreferenceFragmentCompat
+import androidx.preference.EditTextPreference
+import androidx.preference.PreferenceFragmentCompat
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R
 import net.syncthing.lite.dialogs.ErrorReportDialog
@@ -25,18 +25,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val reportBug       = findPreference("report_bug")
         val libraryManager  = DefaultLibraryManager.with(context!!)
 
-        GlobalScope.launch (Dispatchers.Main) {
+        MainScope().launch(Dispatchers.Main) {
             libraryManager.withLibrary { library ->
                 localDeviceName.text = library.configuration.localDeviceName
             }
         }
 
-        appVersion.summary = context!!.packageManager.getPackageInfo(context!!.packageName, 0)?.versionName
+        appVersion.summary = context!!.packageManager.getPackageInfo(context!!.packageName, 0)?.versionName ?: ""
 
         localDeviceName.setOnPreferenceChangeListener { _, _ ->
             val newDeviceName = localDeviceName.text
 
-            GlobalScope.launch {
+            MainScope().launch {
                 libraryManager.withLibrary { library ->
                     library.configuration.update { it.copy(localDeviceName = newDeviceName) }
                     library.configuration.persistLater()
@@ -53,7 +53,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         lastCrash.setOnPreferenceClickListener {
-            ErrorReportDialog.newInstance(ErrorStorage.getLastErrorReport(context!!)).show(fragmentManager!!)
+            val errorReport = ErrorStorage.getLastErrorReport(context!!) ?: ""
+            ErrorReportDialog.newInstance(errorReport).show(fragmentManager!!)
 
             true
         }

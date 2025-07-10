@@ -1,6 +1,7 @@
 package net.syncthing.lite.utils
 
 import android.webkit.MimeTypeMap
+import java.util.Locale
 import net.syncthing.java.core.utils.PathUtils
 
 object MimeType {
@@ -13,6 +14,6 @@ object MimeType {
     }
 
     fun getFromFilename(path: String) = getFromExtension(
-            PathUtils.getFileExtensionFromFilename(path).toLowerCase()
+            PathUtils.getFileExtensionFromFilename(path).lowercase(Locale.getDefault())
     )
 }

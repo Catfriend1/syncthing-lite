@@ -13,7 +13,8 @@
  */
 package net.syncthing.java.client
 
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import net.syncthing.java.bep.BlockPuller
@@ -49,7 +50,7 @@ class SyncthingClient(
                         source = ConnectionActorGenerator.generateConnectionActors(
                                 deviceAddress = discoveryHandler.devicesAddressesManager.getDeviceAddressManager(deviceId).streamCurrentDeviceAddresses(),
                                 requestHandler = { request ->
-                                    GlobalScope.async {
+                                    CoroutineScope(Dispatchers.Default).async {
                                         requestHandlerRegistry.handleRequest(
                                                 source = deviceId,
                                                 request = request

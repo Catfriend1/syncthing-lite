@@ -2,9 +2,9 @@ package net.syncthing.lite.dialogs
 
 import android.app.Dialog
 import android.os.Bundle
-import android.support.v4.app.FragmentManager
-import android.support.v7.app.AlertDialog
-import android.support.v7.widget.AppCompatCheckBox
+import androidx.fragment.app.FragmentManager
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.AppCompatCheckBox
 import android.view.LayoutInflater
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R

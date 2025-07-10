@@ -14,14 +14,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
-            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+        <androidx.recyclerview.widget.RecyclerView
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/list"
             android:divider="@color/divider"
             android:dividerHeight="2dp">
-        </android.support.v7.widget.RecyclerView>
+        </androidx.recyclerview.widget.RecyclerView>
 
         <TextView
             android:id="@+id/empty"
@@ -32,7 +32,7 @@
             android:textSize="20sp"
             android:visibility="@{safeUnbox(isEmpty) ? View.VISIBLE : View.GONE}" />
 
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/add_device"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
