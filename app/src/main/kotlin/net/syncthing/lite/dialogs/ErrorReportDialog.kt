@@ -37,10 +37,10 @@ class ErrorReportDialog : DialogFragment() {
                 .apply {
                     setOnShowListener {
                         getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
-                            clipboard.primaryClip = ClipData.newPlainText(
+                            clipboard.setPrimaryClip(ClipData.newPlainText(
                                     ctx.getString(R.string.settings_last_error_title),
                                     report
-                            )
+                            ))
 
                             Toast.makeText(context, ctx.getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT)
                                     .show()
