@@ -29,6 +29,20 @@ allprojects {
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
         kotlinOptions {
             jvmTarget = '17'
+        }
+    }
+}
+
+def projectsToApplyOptInTo = [
+    project(":syncthing-bep"),
+    project(":syncthing-client"),
+    project(":syncthing-core"),
+    project(":syncthing-discovery"),
+]
+
+projectsToApplyOptInTo.each { p ->
+    p.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions {
             freeCompilerArgs += [
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
                 "-opt-in=kotlin.RequiresOptIn"
