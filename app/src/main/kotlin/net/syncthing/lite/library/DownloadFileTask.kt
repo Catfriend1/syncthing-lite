@@ -11,7 +11,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import net.syncthing.java.bep.BlockPullerStatus
 import net.syncthing.java.client.SyncthingClient
 import net.syncthing.java.core.beans.FileInfo
-import net.syncthing.lite.BuildConfig
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.io.IOException
@@ -64,9 +63,7 @@ class DownloadFileTask(private val fileStorageDirectory: File,
 
         MainScope().launch(Dispatchers.IO) {
             if (file.targetFile.exists()) {
-                if (BuildConfig.DEBUG) {
-                    Log.d(TAG, "there is already a file")
-                }
+                Log.d(TAG, "there is already a file")
 
                 callComplete(file.targetFile)
 
@@ -90,17 +87,13 @@ class DownloadFileTask(private val fileStorageDirectory: File,
                     file.tempFile.delete()
                 }
 
-                if (BuildConfig.DEBUG) {
-                    Log.i(TAG, "Downloaded file $fileInfo")
-                }
+                Log.i(TAG, "Downloaded file $fileInfo")
 
                 callComplete(file.targetFile)
             } catch (e: Exception) {
                 callError(e)
 
-                if (BuildConfig.DEBUG) {
-                    Log.w(TAG, "Failed to download file $fileInfo", e)
-                }
+                Log.w(TAG, "Failed to download file $fileInfo", e)
             }
         }
     }
@@ -108,9 +101,7 @@ class DownloadFileTask(private val fileStorageDirectory: File,
     private fun callProgress(status: BlockPullerStatus) {
         handler.post {
             if (!doneListenerCalled) {
-                if (BuildConfig.DEBUG) {
-                    Log.i("pullFile", "download progress = $status")
-                }
+                Log.i("pullFile", "download progress = $status")
 
                 onProgress(status)
             }
