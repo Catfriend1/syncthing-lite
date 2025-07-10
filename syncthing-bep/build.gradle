@@ -27,7 +27,3 @@ protobuf {
         }
     }
 }
-
-// Workaround for https://github.com/google/protobuf-gradle-plugin/issues/100
-compileKotlin.dependsOn('generateProto')
-
