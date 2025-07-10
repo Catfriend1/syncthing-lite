@@ -8,8 +8,10 @@ import android.view.Menu
 import android.view.MenuItem
 import kotlinx.coroutines.*
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import net.syncthing.java.bep.index.browser.DirectoryContentListing
 import net.syncthing.java.bep.index.browser.DirectoryListing
 import net.syncthing.java.bep.index.browser.DirectoryNotFoundListing
@@ -26,7 +28,7 @@ import net.syncthing.lite.dialogs.FileUploadDialog
 import net.syncthing.lite.dialogs.ReconnectIssueDialogFragment
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileDialogFragment
 
-@OptIn(ExperimentalCoroutinesApi::class, ObsoleteCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class FolderBrowserActivity : SyncthingActivity() {
 
     companion object {
@@ -37,8 +39,8 @@ class FolderBrowserActivity : SyncthingActivity() {
 
     private lateinit var folder: String
 
-    private val path = ConflatedBroadcastChannel<String>()
-    private val listing = ConflatedBroadcastChannel<DirectoryListing?>(null)
+    private val path = MutableStateFlow("")
+    private val listing = MutableStateFlow<DirectoryListing?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,7 +62,7 @@ class FolderBrowserActivity : SyncthingActivity() {
         adapter.listener = object : FolderContentsListener {
             override fun onItemClicked(fileInfo: FileInfo) {
                 if (fileInfo.isDirectory()) {
-                    path.trySend(fileInfo.path)
+                    path.value = fileInfo.path
                 } else {
                     DownloadFileDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
                 }
@@ -77,29 +79,29 @@ class FolderBrowserActivity : SyncthingActivity() {
         ReconnectIssueDialogFragment.showIfNeeded(this)
 
         folder = intent.getStringExtra(EXTRA_FOLDER_NAME) ?: throw IllegalArgumentException("Missing folder name")
-        path.trySend(if (savedInstanceState == null) IndexBrowser.ROOT_PATH else savedInstanceState.getString(STATUS_PATH) ?: IndexBrowser.ROOT_PATH)
+        path.value = if (savedInstanceState == null) IndexBrowser.ROOT_PATH else savedInstanceState.getString(STATUS_PATH) ?: IndexBrowser.ROOT_PATH
 
         launch {
             var job = Job()
 
-            path.consumeEach { path ->
+            path.collect { path ->
                 job.cancel()
                 job = Job()
 
                 binding.listView.scrollToPosition(0)
 
-                listing.send(null)
+                listing.value = null
 
                 async(job) {
                     libraryHandler.libraryManager.streamDirectoryListing(folder, path).consumeEach {
-                        listing.send(it)
+                        listing.emit(it)
                     }
                 }
             }
         }
 
         launch {
-            listing.openSubscription().consumeEach { listing ->
+            listing.collect { listing ->
                 if (listing == null) {
                     binding.isLoading = true
                 } else {
@@ -137,9 +139,7 @@ class FolderBrowserActivity : SyncthingActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        path.valueOrNull?.let {
-            outState.putString(STATUS_PATH, it)
-        }
+        outState.putString(STATUS_PATH, path.value)
     }
 
     private fun goUp(): Boolean {
@@ -153,7 +153,7 @@ class FolderBrowserActivity : SyncthingActivity() {
         return if (parentPath == null) {
             false
         } else {
-            path.trySend(parentPath)
+            path.value = parentPath
             true
         }
     }
@@ -169,7 +169,7 @@ class FolderBrowserActivity : SyncthingActivity() {
             libraryHandler.syncthingClient { syncthingClient ->
                 MainScope().launch {
                     // FIXME: it would be better if the dialog would use the library handler
-                    val currentPath = path.valueOrNull ?: IndexBrowser.ROOT_PATH
+                    val currentPath = path.value
                     intent?.data?.let { uri ->
                         FileUploadDialog(
                             this@FolderBrowserActivity,

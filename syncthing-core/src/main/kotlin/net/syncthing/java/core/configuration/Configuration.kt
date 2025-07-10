@@ -7,8 +7,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -26,11 +26,11 @@ import java.io.StringWriter
 import java.net.InetAddress
 import java.util.*
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class Configuration(configFolder: File = DefaultConfigFolder) {
     private val modifyLock = Mutex()
     private val saveLock = Mutex()
-    private val configChannel = ConflatedBroadcastChannel<Config>()
+    private val configChannel = MutableStateFlow<Config?>(null)
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -51,8 +51,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
             }
             val keystoreData = KeystoreHandler.Loader().generateKeystore()
             isSaved = false
-            val result = configChannel.trySendBlocking(
-                    Config(peers = setOf(), folders = setOf(),
+            configChannel.value = Config(peers = setOf(), folders = setOf(),
                             localDeviceName = localDeviceName,
                             localDeviceId = keystoreData.first.deviceId,
                             keystoreData = Base64.toBase64String(keystoreData.second),
@@ -60,20 +59,11 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
                             customDiscoveryServers = emptySet(),
                             useDefaultDiscoveryServers = true
                     )
-            )
-            if (result.isFailure) {
-                throw result.exceptionOrNull() ?: IllegalStateException("Failed to send config")
-            }
             runBlocking { persistNow() }
         } else {
-            val result = configChannel.trySendBlocking(
-                    Config.parse(JsonReader(StringReader(configFile.readText())))
-            )
-            if (result.isFailure) {
-                throw result.exceptionOrNull() ?: IllegalStateException("Failed to send config")
-            }
+            configChannel.value = Config.parse(JsonReader(StringReader(configFile.readText())))
         }
-        logger.debug("Loaded Configuration: {}.", configChannel.value)
+        logger.debug("Loaded Configuration: {}.", configChannel.value!!)
     }
 
     companion object {
@@ -86,42 +76,42 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
     val instanceId = Math.abs(Random().nextLong())
 
     val localDeviceId: DeviceId
-        get() = DeviceId(configChannel.value.localDeviceId)
+        get() = DeviceId(configChannel.value!!.localDeviceId)
 
     val discoveryServers: Set<DiscoveryServer>
-        get() = configChannel.value.let { config ->
+        get() = configChannel.value!!.let { config ->
             config.customDiscoveryServers + (if (config.useDefaultDiscoveryServers) DiscoveryServer.defaultDiscoveryServers else emptySet())
         }
 
     val keystoreData: ByteArray
-        get() = Base64.decode(configChannel.value.keystoreData)
+        get() = Base64.decode(configChannel.value!!.keystoreData)
 
     val keystoreAlgorithm: String
-        get() = configChannel.value.keystoreAlgorithm
+        get() = configChannel.value!!.keystoreAlgorithm
 
     val clientName = "syncthing-java"
 
     val clientVersion = javaClass.`package`.implementationVersion ?: "0.0.0"
 
     val peerIds: Set<DeviceId>
-        get() = configChannel.value.peers.map { it.deviceId }.toSet()
+        get() = configChannel.value!!.peers.map { it.deviceId }.toSet()
 
     val localDeviceName: String
-        get() = configChannel.value.localDeviceName
+        get() = configChannel.value!!.localDeviceName
 
     val folders: Set<FolderInfo>
-        get() = configChannel.value.folders
+        get() = configChannel.value!!.folders
 
     val peers: Set<DeviceInfo>
-        get() = configChannel.value.peers
+        get() = configChannel.value!!.peers
 
     suspend fun update(operation: suspend (Config) -> Config): Boolean {
         modifyLock.withLock {
-            val oldConfig = configChannel.value
+            val oldConfig = configChannel.value!!
             val newConfig = operation(oldConfig)
 
             if (oldConfig != newConfig) {
-                configChannel.send(newConfig)
+                configChannel.emit(newConfig)
                 isSaved = false
 
                 return true
@@ -141,7 +131,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
 
     private suspend fun persist() {
         saveLock.withLock {
-            val (config1, isConfig1Saved) = modifyLock.withLock { configChannel.value to isSaved }
+            val (config1, isConfig1Saved) = modifyLock.withLock { configChannel.value!! to isSaved }
 
             if (isConfig1Saved) {
                 return
@@ -160,7 +150,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
             )
 
             modifyLock.withLock {
-                if (config1 === configChannel.value) {
+                if (config1 === configChannel.value!!) {
                     isSaved = true
                 }
             }
@@ -171,7 +161,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
         coroutineScope.cancel()
     }
 
-    fun subscribe() = configChannel.openSubscription()
+    fun subscribe() = configChannel.asStateFlow()
 
     override fun toString() = "Configuration(peers=$peers, folders=$folders, localDeviceName=$localDeviceName, " +
             "localDeviceId=${localDeviceId.deviceId}, discoveryServers=$discoveryServers, instanceId=$instanceId, " +

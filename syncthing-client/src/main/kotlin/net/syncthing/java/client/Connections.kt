@@ -15,8 +15,9 @@ package net.syncthing.java.client
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -24,10 +25,10 @@ import net.syncthing.java.bep.connectionactor.ConnectionActorWrapper
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
 import net.syncthing.java.core.beans.DeviceId
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class Connections(val generate: (DeviceId) -> ConnectionActorWrapper) {
     private val map = mutableMapOf<DeviceId, ConnectionActorWrapper>()
-    private val connectionStatus = ConflatedBroadcastChannel<Map<DeviceId, ConnectionInfo>>(emptyMap())
+    private val connectionStatus = MutableStateFlow<Map<DeviceId, ConnectionInfo>>(emptyMap())
     private val connectionStatusLock = Mutex()
     private val job = Job()
     private val scope = CoroutineScope(job)
@@ -44,9 +45,9 @@ class Connections(val generate: (DeviceId) -> ConnectionActorWrapper) {
                 map[deviceId] = newEntry
 
                 scope.launch {
-                    newEntry.subscribeToConnectionInfo().consumeEach { status ->
+                    newEntry.subscribeToConnectionInfo().collect { status ->
                         connectionStatusLock.withLock {
-                            connectionStatus.send(
+                            connectionStatus.emit(
                                 connectionStatus.value +
                                         mapOf(deviceId to status)
                             )
@@ -79,5 +80,5 @@ class Connections(val generate: (DeviceId) -> ConnectionActorWrapper) {
         }
     }
 
-    fun subscribeToConnectionStatusMap() = connectionStatus.openSubscription()
+    fun subscribeToConnectionStatusMap() = connectionStatus.asStateFlow()
 }
