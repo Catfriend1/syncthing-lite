@@ -6,10 +6,9 @@ buildscript {
     ext.build_tools_version = '4.0.1'
     ext.protobuf_lite_version = '4.31.1'
     repositories {
-        mavenLocal()
-        jcenter()
-        maven { url 'https://jitpack.io' }
         google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
     dependencies {
         classpath "com.android.tools.build:gradle:$build_tools_version"
@@ -21,7 +20,7 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         maven {
             url "https://jitpack.io"
         }
