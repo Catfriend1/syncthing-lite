@@ -4,6 +4,7 @@ apply plugin: 'kotlin-android'
 android {
     compileSdkVersion 34
     buildToolsVersion "34.0.0" 
+    namespace = "net.syncthing.lite"
 
     defaultConfig {
         applicationId "net.syncthing.lite"
