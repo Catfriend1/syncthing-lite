@@ -50,12 +50,12 @@ class SyncthingProvider : DocumentsProvider() {
     }
 
     // this instance is not started -> it connects and disconnects on demand
-    private val libraryManager: LibraryManager by lazy { DefaultLibraryManager.with(requireContext()) }
+    private val libraryManager: LibraryManager by lazy { DefaultLibraryManager.with(requireContextCompat()) }
 
     override fun queryRoots(projection: Array<String>?): Cursor {
         Log.d(Tag, "queryRoots($projection)")
 
-        val ctx = requireContext()
+        val ctx = requireContextCompat()
 
         return runBlocking {
             libraryManager.withLibrary { instance ->
@@ -130,7 +130,7 @@ class SyncthingProvider : DocumentsProvider() {
             throw NotImplementedError()
         }
 
-        val ctx = requireContext()
+        val ctx = requireContextCompat()
         val cacheDir: File = ctx.externalCacheDir ?: throw IllegalStateException("No externalCacheDir")
 
         return runBlocking {
@@ -181,6 +181,6 @@ class SyncthingProvider : DocumentsProvider() {
 
     private fun getDocIdForFile(fileInfo: FileInfo) = fileInfo.folder + ":" + fileInfo.path
 
-    private fun requireContext(): Context =
+    private fun requireContextCompat(): Context =
         context ?: throw IllegalStateException("Context is not available")
 }
