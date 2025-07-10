@@ -2,7 +2,7 @@
 
 buildscript {
     ext.kotlin_version = '1.9.22'
-    ext.kotlinx_coroutines_version = '1.6.4'
+    ext.kotlinx_coroutines_version = '1.7.3'
     ext.build_tools_version = '8.5.0'
     ext.protobuf_lite_version = '4.31.1'
     repositories {
