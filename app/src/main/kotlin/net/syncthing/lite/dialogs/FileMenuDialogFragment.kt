@@ -62,7 +62,7 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
         when (requestCode) {
             REQ_SAVE_AS -> {
                 if (resultCode == AppCompatActivity.RESULT_OK) {
-                    DownloadFileDialogFragment.newInstance(fileSpec, data!!.data!!).show(fragmentManager)
+                    DownloadFileDialogFragment.newInstance(fileSpec, data!!.data!!).show(requireActivity().supportFragmentManager)
                     dismiss()
                 }
             }
@@ -70,7 +70,7 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
         }
     }
 
-    fun show(fragmentManager: FragmentManager?) {
-        show(fragmentManager, TAG)
+    fun show(fragmentManager: FragmentManager) {
+        super.show(fragmentManager, TAG)
     }
 }

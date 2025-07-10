@@ -13,8 +13,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import com.github.paolorotolo.appintro.AppIntro
-import com.github.paolorotolo.appintro.ISlidePolicy
+import com.github.appintro.AppIntro
+import com.github.appintro.SlidePolicy
 import com.google.zxing.integration.android.IntentIntegrator
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
@@ -52,18 +52,17 @@ class IntroActivity : AppIntro() {
 
         val typedValue = TypedValue()
         theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
-        setSeparatorColor(ContextCompat.getColor(this, typedValue.resourceId))
-
-        showSkipButton(true)
-        isProgressButtonEnabled = true
-        pager.isPagingEnabled = false
+        setColorDoneText(ContextCompat.getColor(this, typedValue.resourceId))
+        isSkipButtonEnabled = true
+        isSystemBackButtonLocked = true
+        isWizardMode = false
     }
 
-    override fun onSkipPressed(currentFragment: Fragment) {
+    override fun onSkipPressed(currentFragment: Fragment?) {
         onDonePressed(currentFragment)
     }
 
-    override fun onDonePressed(currentFragment: Fragment) {
+    override fun onDonePressed(currentFragment: Fragment?) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         prefs.edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
         startActivity(Intent(this, MainActivity::class.java))
@@ -91,7 +90,7 @@ class IntroActivity : AppIntro() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val binding = FragmentIntroOneBinding.inflate(inflater, container, false)
 
-            libraryHandler.isListeningPortTaken.observe(this, Observer { binding.listeningPortTaken = it })
+            libraryHandler.isListeningPortTaken.observe(viewLifecycleOwner, Observer { binding.listeningPortTaken = it })
 
             return binding.root
         }
@@ -100,7 +99,7 @@ class IntroActivity : AppIntro() {
     /**
      * Display device ID entry field and QR scanner option.
      */
-    class IntroFragmentTwo : SyncthingFragment(), ISlidePolicy {
+    class IntroFragmentTwo : SyncthingFragment(), SlidePolicy {
 
         private lateinit var binding: FragmentIntroTwoBinding
 
@@ -134,7 +133,7 @@ class IntroActivity : AppIntro() {
         fun isDeviceIdValid(): Boolean {
             return try {
                 val deviceId = binding.enterDeviceId.deviceId.text.toString()
-                Util.importDeviceId(libraryHandler.libraryManager, context!!, deviceId, { })
+                Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId, { })
                 true
             } catch (e: IOException) {
                 binding.enterDeviceId.deviceId.error = getString(R.string.invalid_device_id)
@@ -142,7 +141,8 @@ class IntroActivity : AppIntro() {
             }
         }
 
-        override fun isPolicyRespected() = isDeviceIdValid()
+        override val isPolicyRespected: Boolean
+            get() = isDeviceIdValid()
 
         override fun onUserIllegallyRequestedNextPage() {
             // nothing to do, but some user feedback would be nice
@@ -219,7 +219,7 @@ class IntroActivity : AppIntro() {
             launch {
                 libraryHandler.subscribeToFolderStatusList().consumeEach {
                     if (it.isNotEmpty()) {
-                        (activity as IntroActivity?)?.onDonePressed(this@IntroFragmentThree)
+                        (activity as IntroActivity?)?.onDonePressed(null)
                     }
                 }
             }
