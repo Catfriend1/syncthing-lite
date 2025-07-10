@@ -3,7 +3,6 @@ apply plugin: 'kotlin'
 
 dependencies {
     implementation (project(':syncthing-core')) {
-        exclude group: 'commons-logging', module:'commons-logging'
         exclude group: 'ch.qos.logback'
     }
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
