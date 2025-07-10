@@ -20,7 +20,8 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.core.exception.reportExceptions
-import org.slf4j.LoggerFactory
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 

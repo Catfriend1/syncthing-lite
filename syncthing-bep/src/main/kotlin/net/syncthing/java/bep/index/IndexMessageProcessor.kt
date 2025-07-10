@@ -6,9 +6,8 @@ import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.java.core.beans.FolderStats
 import net.syncthing.java.core.beans.IndexInfo
 import net.syncthing.java.core.interfaces.IndexTransaction
-import org.slf4j.LoggerFactory
-
-import java.lang.RuntimeException
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 
 object IndexMessageProcessor {
     private val logger = LoggerFactory.getLogger(IndexMessageProcessor::class.java)
