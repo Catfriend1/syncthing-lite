@@ -7,11 +7,12 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.produce
 import java.util.concurrent.Executors
 import net.syncthing.java.bep.index.browser.DirectoryListing
 
@@ -115,7 +116,7 @@ class LibraryManager(
 
                 if (instance != null) {
                     async(job) {
-                        instance.indexBrowser.streamDirectoryListing(folder, path).collect {
+                        instance.indexBrowser.streamDirectoryListing(folder, path).consumeEach {
                             send(it)
                         }
                     }

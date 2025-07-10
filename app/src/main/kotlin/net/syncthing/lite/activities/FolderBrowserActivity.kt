@@ -8,6 +8,7 @@ import android.view.Menu
 import android.view.MenuItem
 import kotlinx.coroutines.*
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
@@ -92,7 +93,7 @@ class FolderBrowserActivity : SyncthingActivity() {
                 listing.value = null
 
                 async(job) {
-                    libraryHandler.libraryManager.streamDirectoryListing(folder, path).collect {
+                    libraryHandler.libraryManager.streamDirectoryListing(folder, path).consumeEach {
                         listing.emit(it)
                     }
                 }

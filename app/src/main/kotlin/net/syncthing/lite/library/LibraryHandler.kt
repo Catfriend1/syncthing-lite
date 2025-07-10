@@ -6,12 +6,13 @@ import android.os.Looper
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.channels.BufferOverflow
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
 import net.syncthing.java.bep.folder.FolderBrowser
 import net.syncthing.java.bep.folder.FolderStatus
@@ -78,7 +79,7 @@ class LibraryHandler(private val context: Context) {
             CoroutineScope(job + Dispatchers.IO).launch {
                 libraryInstance.folderBrowser
                     .folderInfoAndStatusStream()
-                    .collect {
+                    .consumeEach {
                         folderStatusList.emit(it)
                     }
             }
