@@ -116,7 +116,7 @@ class IndexBrowser internal constructor(
                     var hadChanges = false
 
                     if (event.folderId == folder) {
-                        event.files.forEach { fileUpdate ->
+                        for (fileUpdate in event.files) {
                             // entry change
                             if (fileUpdate.parent == path) {
                                 hadChanges = true
@@ -124,7 +124,7 @@ class IndexBrowser internal constructor(
                                 entries = entries.filter { it.fileName != fileUpdate.fileName }
 
                                 if (!fileUpdate.isDeleted) {
-                                    entries = entries + listOf(fileUpdate)
+                                    entries = entries.plus(fileUpdate)
                                 }
                             }
 
