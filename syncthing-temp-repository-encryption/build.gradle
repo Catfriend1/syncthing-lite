@@ -8,10 +8,6 @@ java {
 }
 
 dependencies {
-    implementation (project(':syncthing-core')) {
-        exclude group: 'commons-logging', module:'commons-logging'
-        exclude group: 'org.slf4j'
-        exclude group: 'ch.qos.logback'
-    }
+    implementation (project(':syncthing-core'))
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }

@@ -31,7 +31,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
-        appVersion.summary = context!!.packageManager.getPackageInfo(context!!.packageName, 0)?.versionName
+        appVersion.summary = context!!.packageManager.getPackageInfo(context!!.packageName, 0)?.versionName ?: ""
 
         localDeviceName.setOnPreferenceChangeListener { _, _ ->
             val newDeviceName = localDeviceName.text
@@ -53,7 +53,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         lastCrash.setOnPreferenceClickListener {
-            ErrorReportDialog.newInstance(ErrorStorage.getLastErrorReport(context!!)).show(fragmentManager!!)
+            val errorReport = ErrorStorage.getLastErrorReport(context!!) ?: ""
+            ErrorReportDialog.newInstance(errorReport).show(fragmentManager!!)
 
             true
         }

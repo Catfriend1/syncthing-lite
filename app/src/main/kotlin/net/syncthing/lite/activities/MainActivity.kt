@@ -1,13 +1,15 @@
 package net.syncthing.lite.activities
 
-import androidx.appcompat.app.AlertDialog
+import android.content.Intent
 import android.content.res.Configuration
-import androidx.databinding.DataBindingUtil
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.appcompat.app.ActionBarDrawerToggle
 import android.view.Gravity
 import android.view.MenuItem
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
+import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
+import androidx.preference.PreferenceManager
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R
 import net.syncthing.lite.databinding.ActivityMainBinding
@@ -15,8 +17,6 @@ import net.syncthing.lite.dialogs.DeviceIdDialogFragment
 import net.syncthing.lite.fragments.DevicesFragment
 import net.syncthing.lite.fragments.FoldersFragment
 import net.syncthing.lite.fragments.SettingsFragment
-import org.jetbrains.anko.defaultSharedPreferences
-import org.jetbrains.anko.intentFor
 
 class MainActivity : SyncthingActivity() {
 
@@ -30,19 +30,23 @@ class MainActivity : SyncthingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (defaultSharedPreferences.getBoolean(PREF_IS_FIRST_START, true)) {
-            startActivity(intentFor<IntroActivity>())
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        if (prefs.getBoolean(PREF_IS_FIRST_START, true)) {
+            startActivity(Intent(this, IntroActivity::class.java))
             finish()
+            return
         }
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         drawerToggle = ActionBarDrawerToggle(
-                this, binding.drawerLayout, R.string.app_name, R.string.app_name)
+            this, binding.drawerLayout, R.string.app_name, R.string.app_name
+        )
         binding.drawerLayout.addDrawerListener(drawerToggle!!)
-        binding.navigation.setNavigationItemSelectedListener( { onNavigationItemSelectedListener(it) })
-        supportActionBar!!.setHomeButtonEnabled(true)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        binding.navigation.setNavigationItemSelectedListener { onNavigationItemSelectedListener(it) }
+
+        supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
     /**
@@ -51,27 +55,29 @@ class MainActivity : SyncthingActivity() {
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
 
-        drawerToggle!!.syncState()
+        drawerToggle?.syncState()
         val menu = binding.navigation.menu
         val selection = (0 until menu.size())
-                .map { menu.getItem(it) }
-                .find { it.isChecked }
-                ?: menu.getItem(0)
+            .map { menu.getItem(it) }
+            .find { it.isChecked }
+            ?: menu.getItem(0)
         onNavigationItemSelectedListener(selection)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        drawerToggle!!.onConfigurationChanged(newConfig)
+        drawerToggle?.onConfigurationChanged(newConfig)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Pass the event to ActionBarDrawerToggle, if it returns
         // true, then it has handled the app icon touch event
-        return if (drawerToggle!!.onOptionsItemSelected(item)) {
+        return if (drawerToggle?.onOptionsItemSelected(item) == true) {
             true
-        } else super.onOptionsItemSelected(item)
         // Handle your other action bar items...
+        } else {
+            super.onOptionsItemSelected(item)
+        }
     }
 
     private fun onNavigationItemSelectedListener(menuItem: MenuItem): Boolean {
@@ -81,12 +87,12 @@ class MainActivity : SyncthingActivity() {
             R.id.settings -> setContentFragment(SettingsFragment())
             R.id.device_id -> DeviceIdDialogFragment().show(supportFragmentManager)
             R.id.clear_index -> AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.clear_cache_and_index_title))
-                    .setMessage(getString(R.string.clear_cache_and_index_body))
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setPositiveButton(android.R.string.yes) { _, _ -> cleanCacheAndIndex() }
-                    .setNegativeButton(android.R.string.no, null)
-                    .show()
+                .setTitle(getString(R.string.clear_cache_and_index_title))
+                .setMessage(getString(R.string.clear_cache_and_index_body))
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes) { _, _ -> cleanCacheAndIndex() }
+                .setNegativeButton(android.R.string.no, null)
+                .show()
         }
         binding.drawerLayout.closeDrawer(Gravity.START)
         return true
@@ -94,9 +100,9 @@ class MainActivity : SyncthingActivity() {
 
     private fun setContentFragment(fragment: Fragment) {
         supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.content_frame, fragment)
-                .commit()
+            .beginTransaction()
+            .replace(R.id.content_frame, fragment)
+            .commit()
     }
 
     private fun cleanCacheAndIndex() {

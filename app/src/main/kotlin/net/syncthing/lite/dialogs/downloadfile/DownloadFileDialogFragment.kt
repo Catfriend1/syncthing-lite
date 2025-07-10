@@ -11,129 +11,127 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.appcompat.app.AlertDialog
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.ProgressBar
+import android.widget.TextView
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.lite.BuildConfig
 import net.syncthing.lite.R
 import net.syncthing.lite.library.CacheFileProviderUrl
 import net.syncthing.lite.library.LibraryHandler
 import net.syncthing.lite.utils.MimeType
-import org.jetbrains.anko.newTask
-import org.jetbrains.anko.toast
+import android.widget.Toast
 
 class DownloadFileDialogFragment : DialogFragment() {
+
     companion object {
         private const val ARG_FILE_SPEC = "file spec"
         private const val ARG_SAVE_AS_URI = "save as"
         private const val TAG = "DownloadFileDialog"
 
         fun newInstance(fileInfo: FileInfo) = newInstance(DownloadFileSpec(
-                folder = fileInfo.folder,
-                path = fileInfo.path,
-                fileName = fileInfo.fileName
+            folder = fileInfo.folder,
+            path = fileInfo.path,
+            fileName = fileInfo.fileName
         ))
 
-        fun newInstance(
-                fileSpec: DownloadFileSpec,
-                outputUri: Uri? = null
-        ) = DownloadFileDialogFragment().apply {
-            arguments = Bundle().apply {
-                putSerializable(ARG_FILE_SPEC, fileSpec)
-
-                if (outputUri != null) {
-                    putParcelable(ARG_SAVE_AS_URI, outputUri)
+        fun newInstance(fileSpec: DownloadFileSpec, outputUri: Uri? = null) =
+            DownloadFileDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putSerializable(ARG_FILE_SPEC, fileSpec)
+                    outputUri?.let { putParcelable(ARG_SAVE_AS_URI, it) }
                 }
             }
-        }
     }
 
     val model: DownloadFileDialogViewModel by lazy {
         ViewModelProviders.of(this).get(DownloadFileDialogViewModel::class.java)
     }
 
+    private lateinit var progressBar: ProgressBar
+    private lateinit var progressMessage: TextView
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val fileSpec = arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
-        val outputUri = if (arguments!!.containsKey(ARG_SAVE_AS_URI))
-            arguments!!.getParcelable(ARG_SAVE_AS_URI)
-        else
-            null
+        val outputUri = arguments?.getParcelable<Uri>(ARG_SAVE_AS_URI)
 
         model.init(
-                libraryHandler = LibraryHandler(context!!),
-                fileSpec = fileSpec,
-                externalCacheDir = context!!.externalCacheDir,
-                outputUri = outputUri,
-                contentResolver = context!!.contentResolver
+            libraryHandler = LibraryHandler(requireContext()),
+            fileSpec = fileSpec,
+            externalCacheDir = requireNotNull(requireContext().externalCacheDir),
+            outputUri = outputUri,
+            contentResolver = requireContext().contentResolver
         )
 
-        val progressDialog = ProgressDialog(context).apply {
-            setMessage(context.getString(R.string.dialog_downloading_file, fileSpec.fileName))
-            setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
-            isCancelable = true
-            isIndeterminate = true
-            max = DownloadFileStatusRunning.MAX_PROGRESS
-        }
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_download_progress, null)
+        progressBar = dialogView.findViewById(R.id.progress_bar)
+        progressMessage = dialogView.findViewById(R.id.progress_message)
 
-        model.status.observe(this, Observer {
-            status ->
+        progressMessage.text = getString(R.string.dialog_downloading_file, fileSpec.fileName)
+        progressBar.isIndeterminate = true
+        progressBar.max = DownloadFileStatusRunning.MAX_PROGRESS
 
         val alertDialog = AlertDialog.Builder(requireContext())
             .setView(dialogView)
             .setCancelable(true)
             .create()
 
-        model.status.observe(this, androidx.lifecycle.Observer { status ->
+        model.status.observe(this, androidx.lifecycle.Observer<DownloadFileStatus> { status ->
             when (status) {
                 is DownloadFileStatusRunning -> {
-                    progressDialog.apply {
-                        isIndeterminate = false
-                        progress = status.progress
-                    }
+                    progressBar.isIndeterminate = false
+                    progressBar.progress = status.progress
                 }
                 is DownloadFileStatusDone -> {
                     dismissAllowingStateLoss()
-
                     if (outputUri == null) {
+                        val file = status.file
                         val mimeType = MimeType.getFromFilename(fileSpec.fileName)
-
                         try {
-                            context!!.startActivity(
-                                    Intent(Intent.ACTION_VIEW)
-                                            .setDataAndType(
-                                                    CacheFileProviderUrl.fromFile(
-                                                            filename = fileSpec.fileName,
-                                                            mimeType = mimeType,
-                                                            file = status.file,
-                                                            context = context!!
-                                                    ).serialized,
-                                                    mimeType
-                                            )
-                                            .newTask()
-                                            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            startActivity(
+                                Intent(Intent.ACTION_VIEW)
+                                    .setDataAndType(
+                                        CacheFileProviderUrl.fromFile(
+                                            filename = fileSpec.fileName,
+                                            mimeType = mimeType,
+                                            file = file,
+                                            context = requireContext()
+                                        ).serialized,
+                                        mimeType
+                                    )
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             )
                         } catch (e: ActivityNotFoundException) {
                             if (BuildConfig.DEBUG) {
-                                Log.w(TAG, "No handler found for file " + status.file.name, e)
+                                Log.w(TAG, "No handler found for file ${file.name}", e)
                             }
-
-                            context!!.toast(R.string.toast_open_file_failed)
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.toast_open_file_failed),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 }
                 is DownloadFileStatusFailed -> {
                     dismissAllowingStateLoss()
-
-                    context!!.toast(R.string.toast_file_download_failed)
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.toast_file_download_failed),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
                 else -> { /* no-op or log unexpected status */ }
             }
         })
 
-        return progressDialog
+        return alertDialog
     }
 
     override fun onCancel(dialog: DialogInterface?) {
         super.onCancel(dialog)
-
         model.cancel()
     }
 

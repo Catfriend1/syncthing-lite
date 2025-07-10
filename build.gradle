@@ -4,9 +4,7 @@ buildscript {
     ext.kotlin_version = '1.9.22'
     ext.kotlinx_coroutines_version = '1.6.0'
     ext.build_tools_version = '8.5.0'
-    ext.anko_version = '0.10.8'
     ext.protobuf_lite_version = '4.31.1'
-    ext.log4JVersion = '2.17.0'
     repositories {
         jcenter()
         mavenCentral()
@@ -25,7 +23,8 @@ allprojects {
         google()
         jcenter()
         mavenCentral()
-        maven { url "https://jitpack.io" }
-        maven { url "https://artifactory.appodeal.com/appodeal-public/" }
+        maven {
+            url "https://jitpack.io"
+        }
     }
 }

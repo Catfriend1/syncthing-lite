@@ -13,10 +13,8 @@ dependencies {
     implementation project(':syncthing-core')
     implementation "commons-cli:commons-cli:1.9.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation "com.google.protobuf:protobuf-javalite:$protobuf_lite_version"D
-    implementation 'org.slf4j:slf4j-api:2.0.13'
-    implementation 'com.google.code.gson:gson:2.10.1'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
+    implementation "com.google.protobuf:protobuf-javalite:$protobuf_lite_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlin_version"
 }
 
 run {

@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.databinding.DataBindingUtil
 import android.os.Build
 import android.os.Bundle
+import android.util.TypedValue
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
 import android.text.Html
@@ -25,8 +26,7 @@ import net.syncthing.lite.databinding.FragmentIntroTwoBinding
 import net.syncthing.lite.fragments.SyncthingFragment
 import net.syncthing.lite.utils.FragmentIntentIntegrator
 import net.syncthing.lite.utils.Util
-import org.jetbrains.anko.defaultSharedPreferences
-import org.jetbrains.anko.intentFor
+import androidx.preference.PreferenceManager
 import java.io.IOException
 
 /**
@@ -46,7 +46,10 @@ class IntroActivity : AppIntro() {
         addSlide(IntroFragmentTwo())
         addSlide(IntroFragmentThree())
 
-        setSeparatorColor(ContextCompat.getColor(this, android.R.color.primary_text_dark))
+        val typedValue = TypedValue()
+        theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+        setSeparatorColor(ContextCompat.getColor(this, typedValue.resourceId))
+
         showSkipButton(true)
         isProgressButtonEnabled = true
         pager.isPagingEnabled = false
@@ -57,8 +60,9 @@ class IntroActivity : AppIntro() {
     }
 
     override fun onDonePressed(currentFragment: Fragment) {
-        defaultSharedPreferences.edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
-        startActivity(intentFor<MainActivity>())
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        prefs.edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
+        startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
 

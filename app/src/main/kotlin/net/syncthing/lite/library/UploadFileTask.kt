@@ -41,8 +41,15 @@ class UploadFileTask(
 
         MainScope().launch(Dispatchers.IO) {
             try {
+                val input = uploadStream
+                if (input == null) {
+                    Log.e(TAG, "uploadStream is null for $localFile")
+                    handler.post { onError() }
+                    return@launch
+                }
+
                 val blockPusher = syncthingClient.getBlockPusher(folderId = syncthingFolder)
-                val observer = blockPusher.pushFile(uploadStream, syncthingFolder, syncthingPath)
+                val observer = blockPusher.pushFile(input, syncthingFolder, syncthingPath)
 
                 handler.post { onProgress(observer) }
 
@@ -55,7 +62,7 @@ class UploadFileTask(
                     handler.post { onProgress(observer) }
                 }
 
-                IOUtils.closeQuietly(uploadStream)
+                IOUtils.closeQuietly(input)
                 handler.post { onComplete() }
             } catch (ex: Exception) {
                 handler.post { onError() }

@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
@@ -27,6 +26,7 @@ android {
 
     buildFeatures {
         dataBinding true
+        viewBinding true
     }
 
     buildTypes {
@@ -50,34 +50,23 @@ kotlin {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation "org.jetbrains.anko:anko-commons:$anko_version"
-    implementation "org.jetbrains.anko:anko-coroutines:$anko_version"
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.legacy:legacy-preference-v14:1.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_version"
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.legacy:legacy-preference-v14:1.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
-
-    implementation(project(':syncthing-client')) {
-        exclude group: 'commons-logging', module: 'commons-logging'
-        exclude group: 'org.slf4j'
-        exclude group: 'ch.qos.logback'
-    }
-
-    implementation 'org.slf4j:slf4j-android:1.7.36'
     implementation 'com.google.zxing:android-integration:3.3.0'
     implementation 'com.google.zxing:core:3.3.0'
     implementation 'com.github.AppIntro:AppIntro:6.1.0'
 
     implementation project(':syncthing-core')
-    implementation project(':syncthing-client')
     implementation project(':syncthing-bep')
-    implementation project(':syncthing-temp-repository-encryption')
+    implementation(project(':syncthing-client'))
     implementation project(':syncthing-repository-android')
     implementation project(':syncthing-temp-repository-encryption')
     
