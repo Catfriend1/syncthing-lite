@@ -181,6 +181,6 @@ class SyncthingProvider : DocumentsProvider() {
 
     private fun getDocIdForFile(fileInfo: FileInfo) = fileInfo.folder + ":" + fileInfo.path
 
-    private fun requireContext(): Context =
+    override fun requireContext(): Context =
         context ?: throw IllegalStateException("Context is not available")
 }

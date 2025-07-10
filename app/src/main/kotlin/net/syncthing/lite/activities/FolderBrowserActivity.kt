@@ -76,8 +76,8 @@ class FolderBrowserActivity : SyncthingActivity() {
 
         ReconnectIssueDialogFragment.showIfNeeded(this)
 
-        folder = intent.getStringExtra(EXTRA_FOLDER_NAME)
-        path.trySend(if (savedInstanceState == null) IndexBrowser.ROOT_PATH else savedInstanceState.getString(STATUS_PATH))
+        folder = intent.getStringExtra(EXTRA_FOLDER_NAME) ?: throw IllegalArgumentException("Missing folder name")
+        path.trySend(if (savedInstanceState == null) IndexBrowser.ROOT_PATH else savedInstanceState.getString(STATUS_PATH) ?: IndexBrowser.ROOT_PATH)
 
         launch {
             var job = Job()
