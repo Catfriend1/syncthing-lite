@@ -1,2 +1,0 @@
--keep class org.bouncycastle.** { *; }
--keep class net.syncthing.** { *; }

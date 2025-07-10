@@ -15,10 +15,6 @@ android {
         multiDexEnabled true
     }
 
-    dexOptions {
-        preDexLibraries = false
-    }
-
     buildTypes {
         debug {
             minifyEnabled false
