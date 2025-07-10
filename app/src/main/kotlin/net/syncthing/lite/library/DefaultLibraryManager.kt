@@ -5,10 +5,10 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import android.preference.PreferenceManager
 import net.syncthing.lite.BuildConfig
 import net.syncthing.lite.R
 import net.syncthing.lite.error.ErrorStorage
-import org.jetbrains.anko.defaultSharedPreferences
 
 object DefaultLibraryManager {
     private const val LOG_TAG = "DefaultLibraryManager"
@@ -28,8 +28,8 @@ object DefaultLibraryManager {
                     }
 
                     fun scheduleShutdown() {
-                        val shutdownDelay = context.defaultSharedPreferences
-                            .getString("shutdown_delay", null)
+                        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+                        val shutdownDelay = prefs.getString("shutdown_delay", null)
                             ?.toLongOrNull()
                             ?: context.getString(R.string.default_shutdown_delay).toLong()
 

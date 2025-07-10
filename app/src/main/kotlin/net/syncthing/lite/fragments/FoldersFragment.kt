@@ -14,7 +14,7 @@ import net.syncthing.lite.adapters.FolderListAdapterListener
 import net.syncthing.lite.adapters.FoldersListAdapter
 import net.syncthing.lite.databinding.FragmentFoldersBinding
 import net.syncthing.lite.dialogs.FolderInfoDialog
-import org.jetbrains.anko.intentFor
+import android.content.Intent
 
 @OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class FoldersFragment : SyncthingFragment() {
@@ -23,11 +23,10 @@ class FoldersFragment : SyncthingFragment() {
 
         adapter.listener = object : FolderListAdapterListener {
             override fun onFolderClicked(folderInfo: FolderInfo, folderStats: FolderStats) {
-                startActivity(
-                        activity!!.intentFor<FolderBrowserActivity>(
-                                FolderBrowserActivity.EXTRA_FOLDER_NAME to folderInfo.folderId
-                        )
-                )
+                val intent = Intent(activity, FolderBrowserActivity::class.java).apply {
+                    putExtra(FolderBrowserActivity.EXTRA_FOLDER_NAME, folderInfo.folderId)
+                }
+                startActivity(intent)
             }
 
             override fun onFolderLongClicked(folderInfo: FolderInfo): Boolean {

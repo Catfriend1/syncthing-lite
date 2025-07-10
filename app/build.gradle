@@ -35,8 +35,6 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation "org.jetbrains.anko:anko-commons:$anko_version"
-    implementation "org.jetbrains.anko:anko-coroutines:$anko_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version"
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.legacy:legacy-preference-v14:1.0.0'
@@ -44,17 +42,11 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0"
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
 
-    implementation(project(':syncthing-client')) {
-        exclude group: 'commons-logging', module: 'commons-logging'
-        exclude group: 'org.slf4j'
-        exclude group: 'ch.qos.logback'
-    }
-
-    implementation 'sk.baka.slf4j:slf4j-handroid:1.7.26'
     implementation 'com.google.zxing:android-integration:3.3.0'
     implementation 'com.google.zxing:core:3.3.0'
     implementation 'com.github.apl-devs:appintro:v4.2.3'
 
+    implementation(project(':syncthing-client'))
     implementation project(':syncthing-repository-android')
     implementation project(':syncthing-temp-repository-encryption')
 }

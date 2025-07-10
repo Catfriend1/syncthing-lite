@@ -56,11 +56,7 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
 
-    implementation (project(':syncthing-client')) {
-        exclude group: 'commons-logging', module:'commons-logging'
-        exclude group: 'org.slf4j'
-        exclude group: 'ch.qos.logback'
-    }
+    implementation (project(':syncthing-client'))
 
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation "com.google.protobuf:protobuf-javalite:$protobuf_lite_version"

@@ -26,8 +26,8 @@ import net.syncthing.java.core.exception.reportExceptions
 import net.syncthing.java.core.interfaces.IndexRepository
 import net.syncthing.java.core.interfaces.IndexTransaction
 import net.syncthing.java.core.interfaces.TempRepository
-import org.slf4j.LoggerFactory
-import org.apache.logging.log4j.util.Unbox.box
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IndexMessageQueueProcessor (
@@ -134,7 +134,7 @@ class IndexMessageQueueProcessor (
             throw IllegalStateException("Received index update for a folder which is not shared.")
         }
 
-        logger.info("Processing an index message with {} records.", box(message.filesCount))
+        logger.info("Processing an index message with {} records.", message.filesCount)
 
         val (indexResult, wasIndexAcquired) = indexRepository.runInTransaction { indexTransaction ->
             val wasIndexAcquiredBefore = isRemoteIndexAcquired(clusterConfigInfo, peerDeviceId, indexTransaction)
@@ -150,9 +150,9 @@ class IndexMessageQueueProcessor (
             val endTime = System.currentTimeMillis()
 
             logger.info("Processed {} index records, and acquired {} in {} milliseconds",
-                    box(message.filesCount),
-                    box(indexResult.updatedFiles.size),
-                    box(endTime - startTime))
+                    message.filesCount,
+                    indexResult.updatedFiles.size,
+                    endTime - startTime)
 
             logger.debug("New Index Information: {}.", indexResult.newIndexInfo)
 
