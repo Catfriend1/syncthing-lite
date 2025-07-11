@@ -12,7 +12,7 @@ on:
 
 env:
   # template var
-  image: ghcr.io/catfriend1/syncthing-android-builder
+  image: ghcr.io/catfriend1/syncthing-lite-builder
 
 jobs:
   build-image:

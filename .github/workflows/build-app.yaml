@@ -17,22 +17,20 @@ jobs:
   build:
     name: Debug Build
     runs-on: ubuntu-latest
-    container: ghcr.io/catfriend1/syncthing-android-builder
+    container: ghcr.io/catfriend1/syncthing-lite-builder
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
 
-      - name: Get app version from build.gradle.kts
+      - name: Get app version from app/build.gradle.kts
         id: get_version
         run: |
           set -eu
-          VERSION_MAJOR=$(grep 'set("versionMajor"' build.gradle.kts | grep -o '[0-9]\+')
-          VERSION_MINOR=$(grep 'set("versionMinor"' build.gradle.kts | grep -o '[0-9]\+')
-          VERSION_PATCH=$(grep 'set("versionPatch"' build.gradle.kts | grep -o '[0-9]\+')
-          VERSION_WRAPPER=$(grep 'set("versionWrapper"' build.gradle.kts | grep -o '[0-9]\+')
-          VERSION="$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH.$VERSION_WRAPPER"
+          VERSION_NAME=$(grep 'versionName = ' app/build.gradle.kts | grep -o '"[^"]*"' | sed 's/"//g')
+          VERSION_CODE=$(grep 'versionCode = ' app/build.gradle.kts | grep -o '[0-9]\+')
+          VERSION="${VERSION_NAME}.${VERSION_CODE}"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Get commit hash
@@ -60,18 +58,18 @@ jobs:
           set -eu
           git config --system --add safe.directory '*'
           java -version
-          ./gradlew --no-daemon buildNative lintDebug assembleDebug
+          ./gradlew --no-daemon lintDebug assembleDebug
 
       - name: prepare-artifacts
         shell: bash
         run: |
           set -eu
-          mv "app/build/outputs/apk/debug/app-debug.apk" "app/build/outputs/apk/debug/com.github.catfriend1.syncthingandroid_debug_v${{ env.VERSION }}_${{ env.COMMIT_HASH }}.apk"
+          mv "app/build/outputs/apk/debug/app-debug.apk" "app/build/outputs/apk/debug/com.github.catfriend1.syncthinglite_debug_v${{ env.VERSION }}_${{ env.COMMIT_HASH }}.apk"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: com.github.catfriend1.syncthingandroid_debug_v${{ env.VERSION }}_${{ env.COMMIT_HASH }}.apk
-          path: app/build/outputs/apk/debug/com.github.catfriend1.syncthingandroid_debug_v${{ env.VERSION }}_${{ env.COMMIT_HASH }}.apk
+          name: com.github.catfriend1.syncthinglite_debug_v${{ env.VERSION }}_${{ env.COMMIT_HASH }}.apk
+          path: app/build/outputs/apk/debug/com.github.catfriend1.syncthinglite_debug_v${{ env.VERSION }}_${{ env.COMMIT_HASH }}.apk
 
       - uses: actions/upload-artifact@v4
         with:
