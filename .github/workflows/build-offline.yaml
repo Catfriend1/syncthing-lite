@@ -1,0 +1,56 @@
+name: Build with Firewall Workaround
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'gradle/**'
+      - '*.gradle*'
+      - 'app/build.gradle*'
+
+jobs:
+  build-with-cache:
+    name: Build with Pre-cached Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Pre-load dependencies (with internet access)
+        run: |
+          # This runs before firewall restrictions
+          ./scripts/preload-dependencies.sh
+        env:
+          GRADLE_OPTS: '-Dorg.gradle.internal.http.connectionTimeout=60000 -Dorg.gradle.internal.http.socketTimeout=60000'
+
+      - name: Build in offline mode
+        run: |
+          # This can run even with firewall restrictions
+          ./gradlew --offline --no-daemon assembleDebug
+        env:
+          GRADLE_OPTS: '-Xmx4g'
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk-offline-build
+          path: app/build/outputs/apk/debug/*.apk
