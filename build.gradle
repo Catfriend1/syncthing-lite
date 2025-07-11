@@ -45,6 +45,7 @@ projectsToApplyOptInTo.each { p ->
         kotlinOptions {
             freeCompilerArgs += [
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-opt-in=kotlinx.coroutines.DelicateCoroutinesApi",
                 "-opt-in=kotlin.RequiresOptIn"
             ]
         }
