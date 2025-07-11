@@ -52,13 +52,13 @@ class LibraryManager(
     private var userCounter = 0
 
     fun startLibraryUsage(callback: (LibraryInstance) -> Unit) {
-        Log.d(TAG, "startLibraryUsage - called")
+        // Log.d(TAG, "startLibraryUsage - called")
         startStopExecutor.submit {
-            Log.d(TAG, "startLibraryUsage - in executor thread")
+            // Log.d(TAG, "startLibraryUsage - in executor thread")
             val newUserCounter = ++userCounter
-            Log.d(TAG, "startLibraryUsage - incremented userCounter: $newUserCounter")
+            // Log.d(TAG, "startLibraryUsage - incremented userCounter: $newUserCounter")
             handler.post { 
-                Log.d(TAG, "startLibraryUsage - calling userCounterListener on handler thread with value $newUserCounter")
+                // Log.d(TAG, "startLibraryUsage - calling userCounterListener on handler thread with value $newUserCounter")
                 userCounterListener(newUserCounter)
             }
 
@@ -66,45 +66,45 @@ class LibraryManager(
                 instanceStream.value = synchronousInstanceCreator()
                 handler.post { isRunningListener(true) }
             } else {
-                Log.d(TAG, "startLibraryUsage - instance already exists")
+                // Log.d(TAG, "startLibraryUsage - instance already exists")
             }
 
             handler.post { 
-                Log.d(TAG, "startLibraryUsage - invoking callback with instance: ${instanceStream.value}")
+                // Log.d(TAG, "startLibraryUsage - invoking callback with instance: ${instanceStream.value}")
                 callback(instanceStream.value!!)
             }
         }
     }
 
     suspend fun startLibraryUsageCoroutine(): LibraryInstance {
-        Log.d(TAG, "startLibraryUsageCoroutine - called")
+        // Log.d(TAG, "startLibraryUsageCoroutine - called")
         return suspendCoroutine { continuation ->
-            Log.d(TAG, "startLibraryUsageCoroutine - inside suspendCoroutine")
+            // Log.d(TAG, "startLibraryUsageCoroutine - inside suspendCoroutine")
             startLibraryUsage { instance ->
-                Log.d(TAG, "startLibraryUsageCoroutine - startLibraryUsage callback with instance: $instance")
+                // Log.d(TAG, "startLibraryUsageCoroutine - startLibraryUsage callback with instance: $instance")
                 continuation.resume(instance)
             }
         }
     }
 
     suspend fun <T> withLibrary(action: suspend (LibraryInstance) -> T): T {
-        Log.d(TAG, "withLibrary - called")
+        // Log.d(TAG, "withLibrary - called")
         val instance = startLibraryUsageCoroutine()
-        Log.d(TAG, "withLibrary - obtained instance: $instance")
+        // Log.d(TAG, "withLibrary - obtained instance: $instance")
         return try {
             action(instance)
         } finally {
-            Log.d(TAG, "withLibrary - finally: calling stopLibraryUsage")
+            // Log.d(TAG, "withLibrary - finally: calling stopLibraryUsage")
             stopLibraryUsage()
         }
     }
 
     fun stopLibraryUsage() {
-        Log.d(TAG, "stopLibraryUsage - called")
+        // Log.d(TAG, "stopLibraryUsage - called")
         startStopExecutor.submit {
-            Log.d(TAG, "stopLibraryUsage - in executor thread")
+            // Log.d(TAG, "stopLibraryUsage - in executor thread")
             val newUserCounter = --userCounter
-            Log.d(TAG, "stopLibraryUsage - decremented userCounter: $newUserCounter")
+            // Log.d(TAG, "stopLibraryUsage - decremented userCounter: $newUserCounter")
 
             if (newUserCounter < 0) {
                 userCounter = 0
@@ -113,35 +113,35 @@ class LibraryManager(
             }
 
             handler.post { 
-                Log.d(TAG, "stopLibraryUsage - calling userCounterListener on handler thread with value $newUserCounter")
+                // Log.d(TAG, "stopLibraryUsage - calling userCounterListener on handler thread with value $newUserCounter")
                 userCounterListener(newUserCounter)
             }
         }
     }
 
     fun shutdownIfThereAreZeroUsers(listener: (wasShutdownPerformed: Boolean) -> Unit = {}) {
-        Log.d(TAG, "shutdownIfThereAreZeroUsers - called")
+        // Log.d(TAG, "shutdownIfThereAreZeroUsers - called")
         startStopExecutor.submit {
-            Log.d(TAG, "shutdownIfThereAreZeroUsers - in executor thread")
+            // Log.d(TAG, "shutdownIfThereAreZeroUsers - in executor thread")
             if (userCounter == 0) {
-                Log.d(TAG, "shutdownIfThereAreZeroUsers - userCounter == 0, shutting down instance")
+                // Log.d(TAG, "shutdownIfThereAreZeroUsers - userCounter == 0, shutting down instance")
                 runBlocking { 
-                    Log.d(TAG, "shutdownIfThereAreZeroUsers - running shutdown on instanceStream.value")
+                    // Log.d(TAG, "shutdownIfThereAreZeroUsers - running shutdown on instanceStream.value")
                     instanceStream.value?.shutdown()
                 }
                 instanceStream.value = null
                 handler.post { 
-                    Log.d(TAG, "shutdownIfThereAreZeroUsers - calling isRunningListener(false) on handler thread")
+                    // Log.d(TAG, "shutdownIfThereAreZeroUsers - calling isRunningListener(false) on handler thread")
                     isRunningListener(false)
                 }
                 handler.post { 
-                    Log.d(TAG, "shutdownIfThereAreZeroUsers - calling listener(true) on handler thread")
+                    // Log.d(TAG, "shutdownIfThereAreZeroUsers - calling listener(true) on handler thread")
                     listener(true)
                 }
             } else {
-                Log.d(TAG, "shutdownIfThereAreZeroUsers - userCounter != 0 ($userCounter), not shutting down")
+                // Log.d(TAG, "shutdownIfThereAreZeroUsers - userCounter != 0 ($userCounter), not shutting down")
                 handler.post { 
-                    Log.d(TAG, "shutdownIfThereAreZeroUsers - calling listener(false) on handler thread")
+                    // Log.d(TAG, "shutdownIfThereAreZeroUsers - calling listener(false) on handler thread")
                     listener(false)
                 }
             }
@@ -151,18 +151,18 @@ class LibraryManager(
     fun streamDirectoryListing(folder: String, path: String): ReceiveChannel<DirectoryListing> =
         CoroutineScope(Dispatchers.IO).produce {
             var job = Job()
-            Log.d(TAG, "streamDirectoryListing - started for folder=$folder, path=$path")
+            // Log.d(TAG, "streamDirectoryListing - started for folder=$folder, path=$path")
 
             instanceStream.collect { instance ->
-                Log.d(TAG, "streamDirectoryListing - instanceStream collected new value: $instance")
+                // Log.d(TAG, "streamDirectoryListing - instanceStream collected new value: $instance")
                 job.cancel()
                 job = Job()
 
                 if (instance != null) {
-                    Log.d(TAG, "streamDirectoryListing - launching async job for indexBrowser")
+                    // Log.d(TAG, "streamDirectoryListing - launching async job for indexBrowser")
                     async(job) {
                         instance.indexBrowser.streamDirectoryListing(folder, path).consumeEach {
-                            Log.d(TAG, "streamDirectoryListing - sending DirectoryListing: $it")
+                            // Log.d(TAG, "streamDirectoryListing - sending DirectoryListing: $it")
                             send(it)
                         }
                     }
