@@ -42,7 +42,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
     init {
         configFolder.mkdirs()
         databaseFolder.mkdirs()
-        assert(configFolder.isDirectory && configFile.canWrite(), { "Invalid config folder $configFolder" })
+        assert(configFolder.isDirectory && configFolder.canWrite(), { "Invalid config folder $configFolder" })
 
         if (!configFile.exists()) {
             var localDeviceName = InetAddress.getLocalHost().hostName
