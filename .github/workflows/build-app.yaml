@@ -28,9 +28,7 @@ jobs:
         id: get_version
         run: |
           set -eu
-          VERSION_NAME=$(grep 'versionName = ' app/build.gradle.kts | grep -o '"[^"]*"' | sed 's/"//g')
-          VERSION_CODE=$(grep 'versionCode = ' app/build.gradle.kts | grep -o '[0-9]\+')
-          VERSION="${VERSION_NAME}.${VERSION_CODE}"
+          VERSION="$(grep "version-name = " "gradle/libs.versions.toml" | cut -d '"' -f 2)"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Get commit hash
