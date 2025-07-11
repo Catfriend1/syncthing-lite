@@ -32,7 +32,7 @@ jobs:
             exit 1
           fi
 
-      - name: Get app version from app/build.gradle.kts
+      - name: Get app version from gradle/libs.versions.toml
         id: get_version
         run: |
           set -eu
