@@ -14,7 +14,3 @@
 ## What could happen
 
 - thumbnails (<https://github.com/syncthing/syncthing-lite/issues/37>)
-
-## What will not happen
-
-- additional encryption within the App (see <https://github.com/syncthing/syncthing-lite/issues/85>)

@@ -1,8 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
 ::
-call uninstall.cmd
-::
-call update.cmd
+adb uninstall net.syncthing.lite
 ::
 goto :eof
