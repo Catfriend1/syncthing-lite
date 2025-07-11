@@ -54,7 +54,6 @@ dependencies {
     implementation 'com.github.apl-devs:appintro:6.2.0'
 
     implementation project(':syncthing-client')
-    implementation project(':syncthing-core')
     implementation project(':syncthing-repository-android')
     implementation project(':syncthing-temp-repository-encryption')
 }

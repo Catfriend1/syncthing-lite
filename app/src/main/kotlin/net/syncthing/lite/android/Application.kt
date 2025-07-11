@@ -6,8 +6,6 @@ import android.os.Looper
 import android.util.Log
 import net.syncthing.lite.error.ErrorStorage
 
-import net.syncthing.java.core.security.KeystoreHandler
-
 class Application: Application() {
     companion object {
         private const val LOG_TAG = "Application"
@@ -16,13 +14,6 @@ class Application: Application() {
 
     override fun onCreate() {
         super.onCreate()
-
-        try {
-            val result = KeystoreHandler.Loader().generateKeystore()
-            Log.d(LOG_TAG, "Keystore generated: ${result.first}")
-        } catch (t: Throwable) {
-            Log.e(LOG_TAG, "Fehler bei Keystore-Generierung", t)
-        }
 
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         val mainThread = Thread.currentThread()
