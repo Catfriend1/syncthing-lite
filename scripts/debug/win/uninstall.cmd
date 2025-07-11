@@ -1,6 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 ::
-adb uninstall net.syncthing.lite
+:: adb uninstall com.github.catfriend1.syncthingandroid
+adb uninstall "com.github.catfriend1.syncthingandroid.debug"
 ::
 goto :eof

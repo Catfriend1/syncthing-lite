@@ -2,7 +2,6 @@ This is an experiment to revive the Syncthing-Lite App. Let's discuss it on [Syn
 
 # Syncthing Lite for Android
 
-[![Build Status](https://travis-ci.org/syncthing/syncthing-lite.svg?branch=master)](https://travis-ci.org/syncthing/syncthing-lite)
 [![MPLv2 License](https://img.shields.io/badge/license-MPLv2-blue.svg?style=flat-square)](https://www.mozilla.org/MPL/2.0/)
 
 This project is an Android app, that works as a client for a [Syncthing][1] share (accessing 
@@ -22,23 +21,24 @@ Due to the behaviour of this App and the [behaviour of the Syncthing Server](htt
 you can't reconnect for some minutes if the App was killed (due to removing from the recent App list) or the connection was interrupted.
 This does not apply to local discovery connections.
 
-[<img alt="Get it on F-Droid" src="https://f-droid.org/badge/get-it-on.png" height="80">](https://f-droid.org/packages/net.syncthing.lite/)
-[<img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" height="80">](https://play.google.com/store/apps/details?id=net.syncthing.lite)
-
 ## Translations
 
-The project is translated on [Transifex](https://www.transifex.com/syncthing/syncthing-lite/).
-Requests for new languages are always accepted (but this happens manually because there is no option to accept it automatically).
+The project is currently not translated on [Weblate](https://hosted.weblate.org/projects/syncthing/#components), but may be in the future.
 
-## Building
+## Aknowledgements
 
-The project uses a standard Android build, and requires the Android SDK. The easiest option is to
-install [Android Studio][3] and import the project.
+This project was forked from [GitHub/syncthing-lite](https://github.com/syncthing/syncthing-lite).
+
+Special thanks to the former maintainers:
+
+- [l-jonas](https://github.com/l-jonas)
+- [nutomic](https://github.com/nutomic)
+- [davide-imbriaco](https://github.com/davide-imbriaco)
 
 ## License
 All code is licensed under the [MPLv2 License][4].
 
 [1]: https://syncthing.net/
-[2]: https://github.com/syncthing/syncthing-android
+[2]: https://github.com/Catfriend1/syncthing-android
 [3]: https://developer.android.com/studio/index.html
 [4]: LICENSE
