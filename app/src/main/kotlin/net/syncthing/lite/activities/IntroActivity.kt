@@ -9,6 +9,7 @@ import android.util.TypedValue
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
 import android.text.Html
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +17,8 @@ import android.widget.Button
 import com.github.appintro.AppIntro
 import com.github.appintro.SlidePolicy
 import com.google.zxing.integration.android.IntentIntegrator
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.lite.R
@@ -33,11 +35,11 @@ import java.io.IOException
  * Shown when a user first starts the app. Shows some info and helps the user to add their first
  * device and folder.
  */
-@OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class IntroActivity : AppIntro() {
 
     companion object {
-        const val ENABLE_TEST_DATA: Boolean = true
+        private const val ENABLE_TEST_DATA: Boolean = true
+        private const val TAG = "IntroActivity"
     }
 
     /**
@@ -73,16 +75,19 @@ class IntroActivity : AppIntro() {
      * Display some simple welcome text.
      */
     class IntroFragmentOne : SyncthingFragment() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
+        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            super.onViewCreated(view, savedInstanceState)
 
-            launch {
-                libraryHandler.libraryManager.withLibrary { library ->
-                    library.configuration.update { oldConfig ->
-                        oldConfig.copy(localDeviceName = Util.getDeviceName())
+            launch(Dispatchers.IO) {
+                try {
+                    libraryHandler.libraryManager.withLibrary { library ->
+                        library.configuration.update { oldConfig ->
+                            oldConfig.copy(localDeviceName = Util.getDeviceName())
+                        }
+                        library.configuration.persistLater()
                     }
-
-                    library.configuration.persistLater()
+                } catch (e: Exception) {
+                    Log.e(TAG, "onViewCreated::launch", e)
                 }
             }
         }
@@ -200,7 +205,7 @@ class IntroActivity : AppIntro() {
             launch {
                 val ownDeviceId = libraryHandler.libraryManager.withLibrary { it.configuration.localDeviceId }
 
-                libraryHandler.subscribeToConnectionStatus().consumeEach {
+                libraryHandler.subscribeToConnectionStatus().collect {
                     if (it.values.find { it.addresses.isNotEmpty() } != null) {
                         val desc = activity?.getString(R.string.intro_page_three_description, "<b>$ownDeviceId</b>")
                         val spanned = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -217,7 +222,7 @@ class IntroActivity : AppIntro() {
             }
 
             launch {
-                libraryHandler.subscribeToFolderStatusList().consumeEach {
+                libraryHandler.subscribeToFolderStatusList().collect {
                     if (it.isNotEmpty()) {
                         (activity as IntroActivity?)?.onDonePressed(null)
                     }

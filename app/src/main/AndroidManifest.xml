@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="net.syncthing.lite">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
 
@@ -27,7 +27,7 @@
             android:name=".library.CacheFileProvider"
             android:authorities="net.syncthing.lite.fileprovider"
             android:grantUriPermissions="true"
-            android:exported="false" />
+            android:exported="true" />
         <provider
             android:name=".library.SyncthingProvider"
             android:authorities="net.syncthing.lite.documents"

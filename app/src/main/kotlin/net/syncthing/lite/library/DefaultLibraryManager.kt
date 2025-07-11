@@ -6,12 +6,11 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import android.preference.PreferenceManager
-import net.syncthing.lite.BuildConfig
 import net.syncthing.lite.R
 import net.syncthing.lite.error.ErrorStorage
 
 object DefaultLibraryManager {
-    private const val LOG_TAG = "DefaultLibraryManager"
+    private const val LOG_TAG = "DefaultLibraryMan"
 
     private var instance: LibraryManager? = null
     private val lock = Object()
@@ -54,9 +53,7 @@ object DefaultLibraryManager {
                             userCounterListener = {
                                 newUserCounter ->
 
-                                if (BuildConfig.DEBUG) {
-                                    Log.d(LOG_TAG, "user counter updated to $newUserCounter")
-                                }
+                                Log.d(LOG_TAG, "user counter updated to $newUserCounter")
 
                                 val isUsed = newUserCounter > 0
 

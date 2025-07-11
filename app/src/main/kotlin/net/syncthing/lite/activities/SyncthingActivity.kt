@@ -5,7 +5,6 @@ import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import android.view.LayoutInflater
-import net.syncthing.lite.BuildConfig
 import net.syncthing.lite.R
 import net.syncthing.lite.async.CoroutineActivity
 import net.syncthing.lite.databinding.DialogLoadingBinding

@@ -17,7 +17,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import net.syncthing.java.core.beans.FileInfo
-import net.syncthing.lite.BuildConfig
 import net.syncthing.lite.R
 import net.syncthing.lite.library.CacheFileProviderUrl
 import net.syncthing.lite.library.LibraryHandler
@@ -115,9 +114,7 @@ class DownloadFileDialogFragment : DialogFragment() {
                                     .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             )
                         } catch (e: ActivityNotFoundException) {
-                            if (BuildConfig.DEBUG) {
-                                Log.w(TAG, "No handler found for file ${file.name}", e)
-                            }
+                            Log.w(TAG, "No handler found for file ${file.name}", e)
                             Toast.makeText(
                                 requireContext(),
                                 getString(R.string.toast_open_file_failed),
