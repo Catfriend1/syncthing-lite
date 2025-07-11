@@ -27,17 +27,19 @@ import net.syncthing.lite.dialogs.FileMenuDialogFragment
 import net.syncthing.lite.dialogs.FileUploadDialog
 import net.syncthing.lite.dialogs.ReconnectIssueDialogFragment
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileDialogFragment
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FolderBrowserActivity : SyncthingActivity() {
 
     companion object {
-        private const val REQUEST_SELECT_UPLOAD_FILE = 171
         private const val STATUS_PATH = "path"
         const val EXTRA_FOLDER_NAME = "folder_name"
     }
 
     private lateinit var folder: String
+    private lateinit var uploadFileLauncher: ActivityResultLauncher<Intent>
 
     private val path = MutableStateFlow("")
     private val listing = MutableStateFlow<DirectoryListing?>(null)
@@ -45,17 +47,39 @@ class FolderBrowserActivity : SyncthingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        uploadFileLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == AppCompatActivity.RESULT_OK) {
+                libraryHandler.syncthingClient { syncthingClient ->
+                    MainScope().launch {
+                        // FIXME: it would be better if the dialog would use the library handler
+                        val currentPath = path.value
+                        result.data?.data?.let { uri ->
+                            FileUploadDialog(
+                                this@FolderBrowserActivity,
+                                syncthingClient,
+                                uri,
+                                folder,
+                                currentPath,
+                                { /* nothing to do on success */ }
+                            ).show()
+                        }
+                    }
+                }
+            }
+        }
+
         val binding: ActivityFolderBrowserBinding = DataBindingUtil.setContentView(this, R.layout.activity_folder_browser)
         val adapter = FolderContentsAdapter()
 
         binding.listView.adapter = adapter
         binding.mainListViewUploadHereButton.setOnClickListener {
-            startActivityForResult(
+            uploadFileLauncher.launch(
                 Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                     addCategory(Intent.CATEGORY_OPENABLE)
                     type = "*/*"
-                },
-                REQUEST_SELECT_UPLOAD_FILE
+                }
             )
         }
 
@@ -165,26 +189,8 @@ class FolderBrowserActivity : SyncthingActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-        if (requestCode == REQUEST_SELECT_UPLOAD_FILE && resultCode == AppCompatActivity.RESULT_OK) {
-            libraryHandler.syncthingClient { syncthingClient ->
-                MainScope().launch {
-                    // FIXME: it would be better if the dialog would use the library handler
-                    val currentPath = path.value
-                    intent?.data?.let { uri ->
-                        FileUploadDialog(
-                            this@FolderBrowserActivity,
-                            syncthingClient,
-                            uri,
-                            folder,
-                            currentPath,
-                            { /* nothing to do on success */ }
-                        ).show()
-                    }
-                }
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, intent)
-        }
+        // This method is no longer used - replaced by ActivityResultLauncher
+        super.onActivityResult(requestCode, resultCode, intent)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

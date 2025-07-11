@@ -58,8 +58,8 @@ class DownloadFileDialogFragment : DialogFragment() {
         model = ViewModelProvider(this, ViewModelProvider.NewInstanceFactory())
             .get(DownloadFileDialogViewModel::class.java)
 
-        val fileSpec = arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
-        val outputUri = arguments?.getParcelable<Uri>(ARG_SAVE_AS_URI)
+        val fileSpec = arguments!!.getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
+        val outputUri = arguments?.getParcelable(ARG_SAVE_AS_URI, Uri::class.java)
 
         model.init(
             libraryHandler = LibraryHandler(requireContext()),
@@ -71,8 +71,8 @@ class DownloadFileDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val fileSpec = arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
-        val outputUri = arguments?.getParcelable<Uri>(ARG_SAVE_AS_URI)
+        val fileSpec = arguments!!.getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
+        val outputUri = arguments?.getParcelable(ARG_SAVE_AS_URI, Uri::class.java)
 
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_download_progress, null)
         progressBar = dialogView.findViewById(R.id.progress_bar)

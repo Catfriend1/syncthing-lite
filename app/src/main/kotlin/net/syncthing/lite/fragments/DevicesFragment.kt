@@ -19,7 +19,6 @@ import net.syncthing.lite.adapters.DeviceAdapterListener
 import net.syncthing.lite.adapters.DevicesAdapter
 import net.syncthing.lite.databinding.FragmentDevicesBinding
 import net.syncthing.lite.databinding.ViewEnterDeviceIdBinding
-import net.syncthing.lite.utils.FragmentIntentIntegrator
 import net.syncthing.lite.utils.Util
 import java.io.IOException
 
@@ -91,7 +90,8 @@ class DevicesFragment : SyncthingFragment() {
         addDeviceDialogBinding = binding
 
         binding.scanQrCode.setOnClickListener {
-            FragmentIntentIntegrator(this@DevicesFragment).initiateScan()
+            val integrator = IntentIntegrator.forFragment(this@DevicesFragment)
+            integrator.initiateScan()
         }
         binding.deviceId.post {
             val imm = context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

@@ -5,7 +5,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
-import android.preference.PreferenceManager
 import net.syncthing.lite.R
 import net.syncthing.lite.error.ErrorStorage
 
@@ -27,7 +26,7 @@ object DefaultLibraryManager {
                     }
 
                     fun scheduleShutdown() {
-                        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+                        val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
                         val shutdownDelay = prefs.getString("shutdown_delay", null)
                             ?.toLongOrNull()
                             ?: context.getString(R.string.default_shutdown_delay).toLong()

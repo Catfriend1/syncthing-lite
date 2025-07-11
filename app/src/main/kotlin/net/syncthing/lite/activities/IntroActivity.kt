@@ -28,7 +28,8 @@ import net.syncthing.lite.databinding.FragmentIntroTwoBinding
 import net.syncthing.lite.fragments.SyncthingFragment
 import net.syncthing.lite.utils.FragmentIntentIntegrator
 import net.syncthing.lite.utils.Util
-import androidx.preference.PreferenceManager
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import java.io.IOException
 
 /**
@@ -65,8 +66,7 @@ class IntroActivity : AppIntro() {
     }
 
     override fun onDonePressed(currentFragment: Fragment?) {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        prefs.edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
+        getSharedPreferences("default", MODE_PRIVATE).edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
@@ -111,7 +111,8 @@ class IntroActivity : AppIntro() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             binding = DataBindingUtil.inflate(inflater, R.layout.fragment_intro_two, container, false)
             binding.enterDeviceId.scanQrCode.setOnClickListener {
-                FragmentIntentIntegrator(this@IntroFragmentTwo).initiateScan()
+                val integrator = IntentIntegrator.forFragment(this@IntroFragmentTwo)
+                integrator.initiateScan()
             }
             binding.enterDeviceId.scanQrCode.setImageResource(R.drawable.ic_qr_code_white_24dp)
 
