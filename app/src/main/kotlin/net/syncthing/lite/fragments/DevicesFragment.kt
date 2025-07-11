@@ -42,7 +42,7 @@ class DevicesFragment : SyncthingFragment() {
                 AlertDialog.Builder(requireContext())
                         .setTitle(getString(R.string.remove_device_title, deviceInfo.name))
                         .setMessage(getString(R.string.remove_device_message, deviceInfo.deviceId.deviceId.substring(0, 7)))
-                        .setPositiveButton(android.R.string.yes) { _, _ ->
+                        .setPositiveButton(resources.getText(R.string.yes)) { _, _ ->
                             launch {
                                 libraryHandler.libraryManager.withLibrary { library ->
                                     library.configuration.update { oldConfig ->
@@ -60,7 +60,7 @@ class DevicesFragment : SyncthingFragment() {
                                 }
                             }
                         }
-                        .setNegativeButton(android.R.string.no, null)
+                        .setNegativeButton(resources.getText(R.string.no), null)
                         .show()
 
                 return false
