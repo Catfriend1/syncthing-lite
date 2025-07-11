@@ -52,7 +52,7 @@ object LocalDiscoveryUtil {
             withContext(Dispatchers.IO) {
                 val datagramPacket = DatagramPacket(ByteArray(INCOMING_BUFFER_SIZE), INCOMING_BUFFER_SIZE)
 
-                while (!isClosedForSend) {
+                while (!datagramSocket.isClosed) {
                     try {
                         datagramSocket.receive(datagramPacket)
                     } catch (ex: SocketException) {

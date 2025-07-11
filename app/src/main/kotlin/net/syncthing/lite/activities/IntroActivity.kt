@@ -111,7 +111,12 @@ class IntroActivity : AppIntro() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             binding = DataBindingUtil.inflate(inflater, R.layout.fragment_intro_two, container, false)
             binding.enterDeviceId.scanQrCode.setOnClickListener {
-                val integrator = FragmentIntentIntegrator(this@IntroFragmentTwo)
+                val integrator = FragmentIntentIntegrator(this@IntroFragmentTwo) { scanResult ->
+                    if (scanResult != null && scanResult.isNotBlank()) {
+                        binding.enterDeviceId.deviceId.setText(scanResult)
+                        binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                    }
+                }
                 integrator.initiateScan()
             }
             binding.enterDeviceId.scanQrCode.setImageResource(R.drawable.ic_qr_code_white_24dp)
@@ -122,14 +127,6 @@ class IntroActivity : AppIntro() {
             }
 
             return binding.root
-        }
-
-        override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-            val scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent)
-            if (scanResult?.contents != null && scanResult.contents.isNotBlank()) {
-                binding.enterDeviceId.deviceId.setText(scanResult.contents)
-                binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
-            }
         }
 
         /**

@@ -78,11 +78,6 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
         return binding.root
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        // This method is no longer used - replaced by ActivityResultLauncher
-        super.onActivityResult(requestCode, resultCode, data)
-    }
-
     fun show(fragmentManager: FragmentManager) {
         super.show(fragmentManager, TAG)
     }

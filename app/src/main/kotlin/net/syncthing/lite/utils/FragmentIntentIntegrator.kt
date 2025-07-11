@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import com.google.zxing.integration.android.IntentIntegrator
 
 // https://stackoverflow.com/a/22320076/1837158
-class FragmentIntentIntegrator(private val fragment: Fragment) : IntentIntegrator(fragment.activity) {
+class FragmentIntentIntegrator(private val fragment: Fragment, private val onScanResult: (String?) -> Unit) : IntentIntegrator(fragment.activity) {
 
     private var launcher: ActivityResultLauncher<Intent>? = null
 
@@ -18,8 +18,8 @@ class FragmentIntentIntegrator(private val fragment: Fragment) : IntentIntegrato
             // Handle the result using the IntentIntegrator's parsing method
             val scanResult = IntentIntegrator.parseActivityResult(IntentIntegrator.REQUEST_CODE, result.resultCode, result.data)
             if (scanResult != null) {
-                // Trigger the fragment's onActivityResult method to maintain compatibility
-                fragment.onActivityResult(IntentIntegrator.REQUEST_CODE, result.resultCode, result.data)
+                // Pass the result to the callback instead of using deprecated onActivityResult
+                onScanResult(scanResult.contents)
             }
         }
     }

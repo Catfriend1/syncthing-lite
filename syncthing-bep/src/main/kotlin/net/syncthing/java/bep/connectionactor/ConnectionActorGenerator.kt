@@ -188,7 +188,7 @@ object ConnectionActorGenerator {
             return true
         }
 
-        fun isConnected() = !currentActor.isClosedForSend
+        fun isConnected() = currentActor != closed
 
         invokeOnClose {
             currentActor.close()

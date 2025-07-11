@@ -79,19 +79,16 @@ class DevicesFragment : SyncthingFragment() {
         return binding.root
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-        val scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent)
-        if (scanResult?.contents != null && scanResult.contents.isNotBlank()) {
-            addDeviceDialogBinding?.deviceId?.setText(scanResult.contents)
-        }
-    }
-
     private fun showDialog() {
         val binding = ViewEnterDeviceIdBinding.inflate(LayoutInflater.from(context), null, false)
         addDeviceDialogBinding = binding
 
         binding.scanQrCode.setOnClickListener {
-            val integrator = FragmentIntentIntegrator(this@DevicesFragment)
+            val integrator = FragmentIntentIntegrator(this@DevicesFragment) { scanResult ->
+                if (scanResult != null && scanResult.isNotBlank()) {
+                    addDeviceDialogBinding?.deviceId?.setText(scanResult)
+                }
+            }
             integrator.initiateScan()
         }
         binding.deviceId.post {

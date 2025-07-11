@@ -31,7 +31,7 @@ class FoldersFragment : SyncthingFragment() {
             override fun onFolderLongClicked(folderInfo: FolderInfo): Boolean {
                 FolderInfoDialog
                         .newInstance(folderId = folderInfo.folderId)
-                        .show(fragmentManager!!)
+                        .show(parentFragmentManager)
 
                 return true
             }
