@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import com.google.zxing.integration.android.IntentIntegrator
+import net.syncthing.lite.utils.FragmentIntentIntegrator
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
@@ -90,7 +91,7 @@ class DevicesFragment : SyncthingFragment() {
         addDeviceDialogBinding = binding
 
         binding.scanQrCode.setOnClickListener {
-            val integrator = IntentIntegrator.forFragment(this@DevicesFragment)
+            val integrator = FragmentIntentIntegrator(this@DevicesFragment)
             integrator.initiateScan()
         }
         binding.deviceId.post {

@@ -2,6 +2,11 @@ apply plugin: 'java-library'
 apply plugin: 'kotlin'
 apply plugin: 'com.google.protobuf'
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 dependencies {
     api project(':syncthing-core')
     implementation fileTree(dir: 'libs', include: ['*.jar'])

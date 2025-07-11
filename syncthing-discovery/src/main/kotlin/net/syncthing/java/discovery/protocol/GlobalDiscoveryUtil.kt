@@ -23,6 +23,7 @@ import java.io.BufferedInputStream
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
+import java.net.URI
 import java.net.URL
 import java.security.SecureRandom
 import java.security.cert.CertificateException
@@ -42,7 +43,7 @@ object GlobalDiscoveryUtil {
             serverDeviceId: DeviceId?
     ): AnnouncementMessage {
         return withContext(Dispatchers.IO) {
-            val url = URL(queryAnnounceServerUrl(server, requestedDeviceId))
+            val url = URI(queryAnnounceServerUrl(server, requestedDeviceId)).toURL()
             val connection = (url.openConnection() as HttpsURLConnection).apply {
                 hostnameVerifier = HostnameVerifier { _, session ->
                     try {

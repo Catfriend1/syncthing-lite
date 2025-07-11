@@ -1,6 +1,11 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 dependencies {
     api 'commons-codec:commons-codec:1.18.0'
     api "commons-io:commons-io:2.19.0"

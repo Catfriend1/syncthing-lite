@@ -1,5 +1,6 @@
 package net.syncthing.lite.activities
 
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -31,7 +32,7 @@ class MainActivity : SyncthingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val prefs = getSharedPreferences("default", MODE_PRIVATE)
+        val prefs = getSharedPreferences("default", Context.MODE_PRIVATE)
         if (prefs.getBoolean(PREF_IS_FIRST_START, true)) {
             startActivity(Intent(this, IntroActivity::class.java))
             finish()

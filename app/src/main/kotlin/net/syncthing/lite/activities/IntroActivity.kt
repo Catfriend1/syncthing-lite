@@ -1,6 +1,7 @@
 package net.syncthing.lite.activities
 
 import androidx.lifecycle.Observer
+import android.content.Context
 import android.content.Intent
 import androidx.databinding.DataBindingUtil
 import android.os.Build
@@ -17,6 +18,7 @@ import android.widget.Button
 import com.github.appintro.AppIntro
 import com.github.appintro.SlidePolicy
 import com.google.zxing.integration.android.IntentIntegrator
+import net.syncthing.lite.utils.FragmentIntentIntegrator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -64,7 +66,7 @@ class IntroActivity : AppIntro() {
     }
 
     override fun onDonePressed(currentFragment: Fragment?) {
-        getSharedPreferences("default", MODE_PRIVATE).edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
+        getSharedPreferences("default", Context.MODE_PRIVATE).edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
@@ -109,7 +111,7 @@ class IntroActivity : AppIntro() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             binding = DataBindingUtil.inflate(inflater, R.layout.fragment_intro_two, container, false)
             binding.enterDeviceId.scanQrCode.setOnClickListener {
-                val integrator = IntentIntegrator.forFragment(this@IntroFragmentTwo)
+                val integrator = FragmentIntentIntegrator(this@IntroFragmentTwo)
                 integrator.initiateScan()
             }
             binding.enterDeviceId.scanQrCode.setImageResource(R.drawable.ic_qr_code_white_24dp)
