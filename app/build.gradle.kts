@@ -9,7 +9,7 @@ android {
     namespace = "net.syncthing.lite"
 
     defaultConfig {
-        applicationId = "net.syncthing.lite"
+        applicationId = "com.github.catfriend1.syncthinglite"
         minSdk = libs.versions.min.sdk.get().toInt()
         targetSdk = libs.versions.target.sdk.get().toInt()
         versionCode = libs.versions.version.code.get().toInt()
