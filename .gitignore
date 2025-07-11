@@ -8,12 +8,21 @@
 # Java class files
 *.class
 
+# Kotlin
+.kotlin/
+
 # generated files
 bin/
 build/
 gen/
 obj/
 .gradle/
+
+# gradle-play-publisher
+.android/
+*.keystore
+*.jks
+keys.json
 
 # Local configuration file (sdk path, etc)
 local.properties

@@ -3,7 +3,7 @@ package net.syncthing.lite.error
 import android.content.Context
 
 object ErrorStorage {
-    private const val PREF_KEY = "last_error"
+    private const val PREF_KEY = "LAST_ERROR"
 
     fun reportError(context: Context, error: String) {
         // this uses commit because the App could be quit directly after that

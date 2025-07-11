@@ -22,7 +22,7 @@ import net.syncthing.lite.fragments.SettingsFragment
 class MainActivity : SyncthingActivity() {
 
     companion object {
-        const val PREF_IS_FIRST_START = "net.syncthing.lite.activities.MainActivity.IS_FIRST_START"
+        const val PREF_IS_FIRST_START = "IS_FIRST_START"
         private const val TAG = "MainActivity"
     }
 

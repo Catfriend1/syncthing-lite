@@ -25,12 +25,12 @@
             android:parentActivityName=".activities.MainActivity"/>
         <provider
             android:name=".library.CacheFileProvider"
-            android:authorities="net.syncthing.lite.fileprovider"
+            android:authorities="${applicationId}.fileprovider"
             android:grantUriPermissions="true"
             android:exported="true" />
         <provider
             android:name=".library.SyncthingProvider"
-            android:authorities="net.syncthing.lite.documents"
+            android:authorities="${applicationId}.documents"
             android:grantUriPermissions="true"
             android:exported="true"
             android:permission="android.permission.MANAGE_DOCUMENTS">
