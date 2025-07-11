@@ -9,6 +9,7 @@ import android.util.TypedValue
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
 import android.text.Html
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,6 +38,7 @@ class IntroActivity : AppIntro() {
 
     companion object {
         private const val ENABLE_TEST_DATA: Boolean = true
+        private const val TAG = "IntroActivity"
     }
 
     /**
