@@ -1,1 +1,1 @@
-Syncthing Lite
+Syncthing-Lite
