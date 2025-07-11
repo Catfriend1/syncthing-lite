@@ -23,18 +23,18 @@ dependencies {
     api("com.google.protobuf:protobuf-javalite:$protobuf_lite_version")
 }
 
-// protobuf {
-//     protoc {
-//         artifact = "com.google.protobuf:protoc:${rootProject.extra["protobuf_lite_version"]}"
-//     }
-// 
-//     generateProtoTasks {
-//         all().configureEach {
-//             builtins {
-//                 java {
-//                     option("lite")
-//                 }
-//             }
-//         }
-//     }
-// }
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${rootProject.extra["protobuf_lite_version"]}"
+    }
+
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                named("java") {
+                    option("lite")
+                }
+            }
+        }
+    }
+}
