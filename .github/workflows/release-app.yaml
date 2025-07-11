@@ -1,0 +1,80 @@
+name: Release App
+
+permissions:
+  contents: write
+  packages: read
+
+on:
+  push:
+    # Cannot filter on both branches (release) and tags - it's ORed
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc\.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc\.[0-9]+\.[0-9]+'
+
+jobs:
+  release:
+    name: Release Build and Publish
+    runs-on: ubuntu-latest
+    container: ghcr.io/catfriend1/syncthing-lite-builder
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Ensure release branch
+        run: |
+          git config --system --add safe.directory '*'
+          if ! git branch -a --contains $(git rev-parse HEAD) | grep release >/dev/null; then
+            echo "Tag is not part of release branch - aborting..."
+            exit 1
+          fi
+
+      - name: Get app version from gradle/libs.versions.toml
+        id: get_version
+        run: |
+          set -eu
+          VERSION="$(grep "version-name = " "gradle/libs.versions.toml" | cut -d '"' -f 2)"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Get commit hash
+        id: get_commit_hash
+        run: |
+          set -eu
+          COMMIT_HASH=$(git rev-parse --short --verify HEAD)
+          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+
+      - name: build_release
+        env:
+          SYNCTHING_RELEASE_KEY_ALIAS: Syncthing-Fork
+          SIGNING_PASSWORD: '${{ secrets.SIGNING_PASSWORD }}'
+          SYNCTHING_RELEASE_STORE_FILE: '${{ runner.temp }}/signing-keystore.jks'
+        shell: bash
+        run: |
+          set -eu
+          echo '${{ secrets.SIGNING_KEYSTORE_JKS_BASE64 }}' | base64 -d > "$SYNCTHING_RELEASE_STORE_FILE"
+          java -version
+          ./gradlew --no-daemon lintRelease assembleRelease
+          rm "$SYNCTHING_RELEASE_STORE_FILE"
+
+      - name: prepare-artifacts
+        shell: bash
+        run: |
+          set -eu
+          #
+          mv "app/build/outputs/apk/release/app-release.apk" "app/build/outputs/apk/release/com.github.catfriend1.syncthinglite_release_v${{ env.VERSION }}_${{ env.COMMIT_HASH }}.apk"
+          #
+          cd "app/build/outputs/apk/release"
+          echo '${{ secrets.GNUPG_SIGNING_KEY_BASE64 }}' | base64 -d | gpg --import
+          sha256sum "com.github.catfriend1.syncthinglite_release_v${{ env.VERSION }}_${{ env.COMMIT_HASH }}.apk" | gpg --clearsign > sha256sum.txt.asc
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "app/build/outputs/apk/release/*.apk,app/build/outputs/apk/release/*.asc"
+          artifactErrorsFailBuild: true
+          name: Syncthing-Lite v${{ env.VERSION }}
+          bodyFile: "app/src/main/play/release-notes/en-US/default.txt"
+          prerelease: ${{ contains('-rc.', github.ref_name) }}
+          draft: true

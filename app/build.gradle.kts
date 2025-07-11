@@ -17,6 +17,15 @@ android {
         multiDexEnabled = true
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = System.getenv("SYNCTHING_RELEASE_STORE_FILE")?.let(::file)
+            storePassword = System.getenv("SIGNING_PASSWORD")
+            keyAlias = System.getenv("SYNCTHING_RELEASE_KEY_ALIAS")
+            keyPassword = System.getenv("SIGNING_PASSWORD")
+        }
+    }
+
     lint {
         abortOnError = false
         targetSdk = libs.versions.target.sdk.get().toInt()
@@ -25,6 +34,12 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
+        }
+        release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.runCatching { getByName("release") }
+                .getOrNull()
+                .takeIf { it?.storeFile != null }
         }
     }
 
@@ -51,6 +66,18 @@ android {
     buildFeatures {
         dataBinding = true
         viewBinding = true
+    }
+
+    bundle {
+        language {
+            enableSplit = false
+        }
+        density {
+            enableSplit = true
+        }
+        abi {
+            enableSplit = true
+        }
     }
 }
 
