@@ -5,10 +5,7 @@ FROM eclipse-temurin:21-jdk-jammy
 ARG ANDROID_SDK_FILENAME=commandlinetools-linux-11076708_latest.zip
 WORKDIR /opt
 
-# The '--reinstall' combined with 'build-essentials' is necessary for cgo
-# compilation of go std libs to work. A terrible, arcane hack to solve arkane
-# cgo issues - almost fitting.
-RUN apt-get update && apt-get install --reinstall --no-install-recommends -y build-essential gcc unzip git gnupg python3
+RUN apt-get update && apt-get install --reinstall --no-install-recommends -y unzip git gnupg
 
 # Install Android SDK manager
 RUN mkdir -p /opt/android-sdk && cd /opt/android-sdk && \
@@ -23,11 +20,10 @@ ARG SDKMANAGER="${ANDROID_HOME}/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROI
 RUN yes | $SDKMANAGER --licenses > /dev/null
 
 # NDK version
-ENV NDK_VERSION=28.0.13004108
-ENV TARGET_SDK_VERSION=36
+ENV BUILD_TOOLS_VERSION=34
 
 # Install other android packages, including NDK
-RUN $SDKMANAGER tools platform-tools "build-tools;${TARGET_SDK_VERSION}.0.0" "platforms;android-${TARGET_SDK_VERSION}" "extras;android;m2repository" "ndk;${NDK_VERSION}"
+RUN $SDKMANAGER tools platform-tools "build-tools;${BUILD_TOOLS_VERSION}.0.0" "platforms;android-${BUILD_TOOLS_VERSION}" "extras;android;m2repository"
 
 # Accept licenses of newly installed packages
 RUN yes | $SDKMANAGER --licenses
