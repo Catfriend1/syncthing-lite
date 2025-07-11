@@ -39,6 +39,6 @@ Special thanks to the former maintainers:
 All code is licensed under the [MPLv2 License][4].
 
 [1]: https://syncthing.net/
-[2]: https://github.com/syncthing/syncthing-android
+[2]: https://github.com/Catfriend1/syncthing-android
 [3]: https://developer.android.com/studio/index.html
 [4]: LICENSE
