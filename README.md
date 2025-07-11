@@ -23,7 +23,7 @@ This does not apply to local discovery connections.
 
 ## Translations
 
-The project is currently not translated on Weblate, but may be in the future.
+The project is currently not translated on [Weblate](https://hosted.weblate.org/projects/syncthing/#components), but may be in the future.
 
 ## Aknowledgements
 
