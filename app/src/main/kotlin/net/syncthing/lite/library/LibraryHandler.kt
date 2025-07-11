@@ -6,10 +6,13 @@ import android.os.Looper
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
 import net.syncthing.java.bep.folder.FolderBrowser
 import net.syncthing.java.bep.folder.FolderStatus
@@ -24,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * It's possible to do multiple start and stop cycles with one instance of this class.
  */
-@OptIn(ExperimentalCoroutinesApi::class, ObsoleteCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class LibraryHandler(private val context: Context) {
 
     companion object {
@@ -35,9 +38,9 @@ class LibraryHandler(private val context: Context) {
     val libraryManager = DefaultLibraryManager.with(context)
     private val isStarted = AtomicBoolean(false)
     private val isListeningPortTakenInternal = MutableLiveData<Boolean>().apply { postValue(false) }
-    private val indexUpdateCompleteMessages = BroadcastChannel<String>(capacity = 16)
-    private val folderStatusList = BroadcastChannel<List<FolderStatus>>(capacity = Channel.CONFLATED)
-    private val connectionStatus = ConflatedBroadcastChannel<Map<DeviceId, ConnectionInfo>>()
+    private val indexUpdateCompleteMessages = MutableSharedFlow<String>(extraBufferCapacity = 16)
+    private val folderStatusList = MutableSharedFlow<List<FolderStatus>>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val connectionStatus = MutableStateFlow<Map<DeviceId, ConnectionInfo>>(emptyMap())
     private var job: Job = Job()
 
     val isListeningPortTaken: LiveData<Boolean> = isListeningPortTakenInternal
@@ -68,8 +71,8 @@ class LibraryHandler(private val context: Context) {
             CoroutineScope(job + Dispatchers.IO).launch {
                 libraryInstance.syncthingClient.indexHandler
                     .subscribeToOnFullIndexAcquiredEvents()
-                    .consumeEach {
-                        indexUpdateCompleteMessages.send(it)
+                    .collect {
+                        indexUpdateCompleteMessages.emit(it)
                     }
             }
 
@@ -77,15 +80,15 @@ class LibraryHandler(private val context: Context) {
                 libraryInstance.folderBrowser
                     .folderInfoAndStatusStream()
                     .consumeEach {
-                        folderStatusList.send(it)
+                        folderStatusList.emit(it)
                     }
             }
 
             CoroutineScope(job + Dispatchers.IO).launch {
                 libraryInstance.syncthingClient
                     .subscribeToConnectionStatus()
-                    .consumeEach {
-                        connectionStatus.send(it)
+                    .collect {
+                        connectionStatus.emit(it)
                     }
             }
         }
@@ -162,7 +165,7 @@ class LibraryHandler(private val context: Context) {
         messageFromUnknownDeviceListeners.remove(listener)
     }
 
-    fun subscribeToOnFullIndexAcquiredEvents() = indexUpdateCompleteMessages.openSubscription()
-    fun subscribeToFolderStatusList() = folderStatusList.openSubscription()
-    fun subscribeToConnectionStatus() = connectionStatus.openSubscription()
+    fun subscribeToOnFullIndexAcquiredEvents() = indexUpdateCompleteMessages.asSharedFlow()
+    fun subscribeToFolderStatusList() = folderStatusList.asSharedFlow()
+    fun subscribeToConnectionStatus() = connectionStatus.asStateFlow()
 }

@@ -3,14 +3,13 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 34
+    buildToolsVersion "34.0.0"
+    namespace = "net.syncthing.repository.android"
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 33
-
-        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-
     }
 
     buildTypes {
@@ -21,12 +20,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
 
     kapt {
@@ -34,28 +29,18 @@ android {
             arg("room.schemaLocation", "$projectDir/schemas".toString())
         }
     }
-
-    lintOptions {
-        abortOnError false
-    }
 }
 
 dependencies {
-    def room_version = "2.3.0"
+    def room_version = "2.6.1"
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
-
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-
-    implementation "androidx.room:room-runtime:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
-
     implementation (project(':syncthing-client'))
-
+    implementation "androidx.room:room-runtime:$room_version"
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation "com.google.protobuf:protobuf-javalite:$protobuf_lite_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    kapt "androidx.room:room-compiler:$room_version"
 }

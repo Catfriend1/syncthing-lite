@@ -15,8 +15,9 @@
 package net.syncthing.java.bep.index
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.consume
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import net.syncthing.java.bep.BlockExchangeProtos
@@ -35,16 +36,16 @@ import net.syncthing.java.core.utils.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class IndexHandler(
         configuration: Configuration,
         val indexRepository: IndexRepository,
         tempRepository: TempRepository,
         exceptionReportHandler: (ExceptionReport) -> Unit
 ) : Closeable {
-    private val indexInfoUpdateEvents = BroadcastChannel<IndexInfoUpdateEvent>(capacity = 16)
-    private val onFullIndexAcquiredEvents = BroadcastChannel<String>(capacity = 16)
-    private val onFolderStatsUpdatedEvents = BroadcastChannel<FolderStatsChangedEvent>(capacity = 16)
+    private val indexInfoUpdateEvents = MutableSharedFlow<IndexInfoUpdateEvent>(extraBufferCapacity = 16)
+    private val onFullIndexAcquiredEvents = MutableSharedFlow<String>(extraBufferCapacity = 16)
+    private val onFolderStatsUpdatedEvents = MutableSharedFlow<FolderStatsChangedEvent>(extraBufferCapacity = 16)
 
     private val indexMessageProcessor = IndexMessageQueueProcessor(
             indexRepository = indexRepository,
@@ -56,9 +57,9 @@ class IndexHandler(
             exceptionReportHandler = exceptionReportHandler
     )
 
-    fun subscribeToOnFullIndexAcquiredEvents() = onFullIndexAcquiredEvents.openSubscription()
-    fun subscribeToOnIndexUpdateEvents() = indexInfoUpdateEvents.openSubscription()
-    fun subscribeFolderStatsUpdatedEvents() = onFolderStatsUpdatedEvents.openSubscription()
+    fun subscribeToOnFullIndexAcquiredEvents() = onFullIndexAcquiredEvents.asSharedFlow()
+    fun subscribeToOnIndexUpdateEvents() = indexInfoUpdateEvents.asSharedFlow()
+    fun subscribeFolderStatsUpdatedEvents() = onFolderStatsUpdatedEvents.asSharedFlow()
 
     fun getNextSequenceNumber() = indexRepository.runInTransaction { it.getSequencer().nextSequence() }
 
@@ -67,8 +68,8 @@ class IndexHandler(
             indexRepository.runInTransaction { it.clearIndex() }
         }
 
-        onFolderStatsUpdatedEvents.send(FolderStatsResetEvent)
-        indexInfoUpdateEvents.send(IndexInfoClearedEvent)
+        onFolderStatsUpdatedEvents.tryEmit(FolderStatsResetEvent)
+        indexInfoUpdateEvents.tryEmit(IndexInfoClearedEvent)
     }
 
     private fun isRemoteIndexAcquiredWithoutTransaction(clusterConfigInfo: ClusterConfigInfo, peerDeviceId: DeviceId): Boolean {
@@ -102,20 +103,16 @@ class IndexHandler(
     }
 
     suspend fun waitForRemoteIndexAcquiredWithoutTimeout(connectionHandler: ConnectionActorWrapper) {
-        val events = onFullIndexAcquiredEvents.openSubscription()
+        val events = onFullIndexAcquiredEvents.asSharedFlow()
 
-        events.consume {
-            fun isDone() = isRemoteIndexAcquiredWithoutTransaction(connectionHandler.getClusterConfig(), connectionHandler.deviceId)
+        fun isDone() = isRemoteIndexAcquiredWithoutTransaction(connectionHandler.getClusterConfig(), connectionHandler.deviceId)
 
-            if (isDone()) {
-                return
-            }
+        if (isDone()) {
+            return
+        }
 
-            for (event in events) {
-                if (isDone()) {
-                    return
-                }
-            }
+        events.first { 
+            isDone()
         }
     }
 
@@ -140,7 +137,7 @@ class IndexHandler(
         }
 
         updatedIndexInfos.forEach {
-            indexInfoUpdateEvents.send(
+            indexInfoUpdateEvents.tryEmit(
                     IndexRecordAcquiredEvent(
                             folderId = it.folderId,
                             indexInfo = it,
@@ -181,12 +178,10 @@ class IndexHandler(
     val indexBrowser = IndexBrowser(indexRepository, this)
 
     suspend fun sendFolderStatsUpdate(event: FolderStats) {
-        onFolderStatsUpdatedEvents.send(FolderStatsUpdatedEvent(event))
+        onFolderStatsUpdatedEvents.emit(FolderStatsUpdatedEvent(event))
     }
 
     override fun close() {
-        indexInfoUpdateEvents.close()
-        onFullIndexAcquiredEvents.close()
         indexMessageProcessor.stop()
     }
 
