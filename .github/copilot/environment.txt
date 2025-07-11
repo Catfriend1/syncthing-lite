@@ -1,0 +1,2 @@
+COPILOT_AGENT_FIREWALL_ALLOW_LIST_ADDITIONS
+    dl.google.com,maven.org,jitpack.io,services.gradle.org
