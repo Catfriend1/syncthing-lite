@@ -9,7 +9,6 @@ import androidx.core.os.CancellationSignal
 import android.util.Log
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import net.syncthing.lite.BuildConfig
 import net.syncthing.lite.library.DownloadFileTask
 import net.syncthing.lite.library.LibraryHandler
 import org.apache.commons.io.FileUtils
@@ -78,10 +77,7 @@ class DownloadFileDialogViewModel : ViewModel() {
 
                                     statusInternal.postValue(DownloadFileStatusDone(file))
                                 } catch (ex: Exception) {
-                                    if (BuildConfig.DEBUG) {
-                                        Log.w(TAG, "downloading file failed", ex)
-                                    }
-
+                                    Log.w(TAG, "downloading file failed", ex)
                                     statusInternal.postValue(DownloadFileStatusFailed)
                                 }
                             }
@@ -97,10 +93,7 @@ class DownloadFileDialogViewModel : ViewModel() {
                     task.cancel()
                 }
             } catch (ex: Exception) {
-                if (BuildConfig.DEBUG) {
-                    Log.w(TAG, "downloading file failed", ex)
-                }
-
+                Log.w(TAG, "downloading file failed", ex)
                 statusInternal.postValue(DownloadFileStatusFailed)
             }
         }

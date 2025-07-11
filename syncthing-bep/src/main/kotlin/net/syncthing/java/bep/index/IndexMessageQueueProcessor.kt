@@ -18,6 +18,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.flow.MutableSharedFlow
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.bep.connectionactor.ClusterConfigInfo
 import net.syncthing.java.core.beans.DeviceId
@@ -29,13 +30,13 @@ import net.syncthing.java.core.interfaces.TempRepository
 import net.syncthing.java.core.utils.Logger
 import net.syncthing.java.core.utils.LoggerFactory
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class IndexMessageQueueProcessor (
         private val indexRepository: IndexRepository,
         private val tempRepository: TempRepository,
-        private val onIndexRecordAcquiredEvents: BroadcastChannel<IndexInfoUpdateEvent>,
-        private val onFullIndexAcquiredEvents: BroadcastChannel<String>,
-        private val onFolderStatsUpdatedEvents: BroadcastChannel<FolderStatsChangedEvent>,
+        private val onIndexRecordAcquiredEvents: MutableSharedFlow<IndexInfoUpdateEvent>,
+        private val onFullIndexAcquiredEvents: MutableSharedFlow<String>,
+        private val onFolderStatsUpdatedEvents: MutableSharedFlow<FolderStatsChangedEvent>,
         private val isRemoteIndexAcquired: (ClusterConfigInfo, DeviceId, IndexTransaction) -> Boolean,
         exceptionReportHandler: (ExceptionReport) -> Unit
 ) {
@@ -160,14 +161,14 @@ class IndexMessageQueueProcessor (
         }
 
         if (indexResult.updatedFiles.isNotEmpty()) {
-            onIndexRecordAcquiredEvents.send(IndexRecordAcquiredEvent(message.folder, indexResult.updatedFiles, indexResult.newIndexInfo))
+            onIndexRecordAcquiredEvents.tryEmit(IndexRecordAcquiredEvent(message.folder, indexResult.updatedFiles, indexResult.newIndexInfo))
         }
 
-        onFolderStatsUpdatedEvents.send(FolderStatsUpdatedEvent(indexResult.newFolderStats))
+        onFolderStatsUpdatedEvents.tryEmit(FolderStatsUpdatedEvent(indexResult.newFolderStats))
 
         if (wasIndexAcquired) {
             logger.debug("Index acquired successfully.")
-            onFullIndexAcquiredEvents.send(message.folder)
+            onFullIndexAcquiredEvents.tryEmit(message.folder)
         }
     }
 

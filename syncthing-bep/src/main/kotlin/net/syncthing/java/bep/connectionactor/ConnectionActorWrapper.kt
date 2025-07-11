@@ -19,7 +19,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
@@ -39,17 +40,17 @@ class ConnectionActorWrapper (
     private val scope = CoroutineScope(job + Dispatchers.Default)
 
     private var connection: Connection? = null
-    private val connectionInfo = ConflatedBroadcastChannel<ConnectionInfo>(ConnectionInfo.empty)
+    private val connectionInfo = MutableStateFlow<ConnectionInfo>(ConnectionInfo.empty)
 
     val isConnected: Boolean
-        get() = connectionInfo.valueOrNull?.status == ConnectionStatus.Connected
+        get() = connectionInfo.value.status == ConnectionStatus.Connected
 
     init {
         // consume updates from the upstream connection generator
         scope.launch {
             source.consumeEach { (connection, info) ->
                 this@ConnectionActorWrapper.connection = connection
-                this@ConnectionActorWrapper.connectionInfo.send(info)
+                this@ConnectionActorWrapper.connectionInfo.emit(info)
             }
         }.reportExceptions("ConnectionActorWrapper(${deviceId.deviceId})", exceptionReportHandler)
     }
@@ -69,9 +70,8 @@ class ConnectionActorWrapper (
     fun getClusterConfig() = connection?.clusterConfigInfo ?: throw IOException("Not connected.")
 
     fun shutdown() {
-        // closes the scope and the subscription channel
+        // closes the scope
         scope.cancel()
-        connectionInfo.close()
     }
 
     // this triggers a disconnection
@@ -86,5 +86,5 @@ class ConnectionActorWrapper (
         }
     }
 
-    fun subscribeToConnectionInfo(): ReceiveChannel<ConnectionInfo> = connectionInfo.openSubscription()
+    fun subscribeToConnectionInfo() = connectionInfo.asStateFlow()
 }

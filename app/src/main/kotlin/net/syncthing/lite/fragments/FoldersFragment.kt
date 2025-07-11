@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.FolderInfo
 import net.syncthing.java.core.beans.FolderStats
@@ -16,7 +16,6 @@ import net.syncthing.lite.databinding.FragmentFoldersBinding
 import net.syncthing.lite.dialogs.FolderInfoDialog
 import android.content.Intent
 
-@OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class FoldersFragment : SyncthingFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val adapter = FoldersListAdapter()
@@ -43,7 +42,7 @@ class FoldersFragment : SyncthingFragment() {
         libraryHandler.isListeningPortTaken.observe(this, Observer { binding.listeningPortTaken = it })
 
         launch {
-            libraryHandler.subscribeToFolderStatusList().consumeEach {
+            libraryHandler.subscribeToFolderStatusList().collect {
                 adapter.data = it
                 binding.isEmpty = it.isEmpty()
             }

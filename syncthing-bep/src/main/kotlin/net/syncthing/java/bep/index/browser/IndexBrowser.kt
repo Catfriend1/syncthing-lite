@@ -17,8 +17,8 @@ package net.syncthing.java.bep.index.browser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.consume
 import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 import net.syncthing.java.bep.index.FolderStatsUpdatedEvent
 import net.syncthing.java.bep.index.IndexHandler
@@ -30,7 +30,7 @@ import net.syncthing.java.core.interfaces.IndexTransaction
 import net.syncthing.java.core.utils.PathUtils
 import java.util.Locale
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class IndexBrowser internal constructor(
         private val indexRepository: IndexRepository,
         private val indexHandler: IndexHandler
@@ -70,7 +70,6 @@ class IndexBrowser internal constructor(
 
     fun streamDirectoryListing(folder: String, path: String): ReceiveChannel<DirectoryListing> =
         CoroutineScope(Dispatchers.IO).produce {
-        indexHandler.subscribeToOnIndexUpdateEvents().consume {
             val directoryName = PathUtils.getFileName(path)
             val parentPath = if (PathUtils.isRoot(path)) null else PathUtils.getParentPath(path)
             val parentDirectoryName = if (parentPath != null) PathUtils.getFileName(parentPath) else null
@@ -112,12 +111,12 @@ class IndexBrowser internal constructor(
             dispatch()
 
             // handle updates
-            for (event in this) {
+            indexHandler.subscribeToOnIndexUpdateEvents().collect { event ->
                 if (event is IndexRecordAcquiredEvent) {
                     var hadChanges = false
 
                     if (event.folderId == folder) {
-                        event.files.forEach { fileUpdate ->
+                        for (fileUpdate in event.files) {
                             // entry change
                             if (fileUpdate.parent == path) {
                                 hadChanges = true
@@ -125,7 +124,7 @@ class IndexBrowser internal constructor(
                                 entries = entries.filter { it.fileName != fileUpdate.fileName }
 
                                 if (!fileUpdate.isDeleted) {
-                                    entries += listOf(fileUpdate)
+                                    entries = entries.plus(fileUpdate)
                                 }
                             }
 
@@ -149,7 +148,6 @@ class IndexBrowser internal constructor(
                 }
             }
         }
-    }
 
     fun getFileInfoByAbsolutePath(folder: String, path: String): FileInfo = getFileInfoByAbsolutePathAllowNull(folder, path)
             ?: error("file not found for path = $path")

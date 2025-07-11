@@ -15,9 +15,10 @@
 package net.syncthing.java.bep.folder
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -26,17 +27,14 @@ import net.syncthing.java.core.beans.FolderStats
 import net.syncthing.java.core.configuration.Configuration
 import java.io.Closeable
 
-@OptIn(
-    ExperimentalCoroutinesApi::class,
-    ObsoleteCoroutinesApi::class
-)
+@OptIn(ExperimentalCoroutinesApi::class)
 class FolderBrowser internal constructor(
     private val indexHandler: IndexHandler,
     private val configuration: Configuration
 ) : Closeable {
     private val job = Job()
     private val scope = CoroutineScope(job + Dispatchers.Default)
-    private val foldersStatus = ConflatedBroadcastChannel<Map<String, FolderStatus>>()
+    private val foldersStatus = MutableStateFlow<Map<String, FolderStatus>>(emptyMap())
 
     init {
         scope.launch {
@@ -56,7 +54,7 @@ class FolderBrowser internal constructor(
 
             // send status
             suspend fun dispatch() {
-                foldersStatus.send(
+                foldersStatus.emit(
                         configuration.folders.map { info ->
                             FolderStatus(
                                     info = info,
@@ -73,7 +71,7 @@ class FolderBrowser internal constructor(
             val updateLock = Mutex()
 
             launch {
-                indexHandler.subscribeFolderStatsUpdatedEvents().consumeEach { event ->
+                indexHandler.subscribeFolderStatsUpdatedEvents().collect { event ->
                     updateLock.withLock {
                         when (event) {
                             is FolderStatsUpdatedEvent -> currentFolderStats[event.folderStats.folderId] = event.folderStats
@@ -85,7 +83,7 @@ class FolderBrowser internal constructor(
             }
 
             launch {
-                indexHandler.subscribeToOnIndexUpdateEvents().consumeEach { event ->
+                indexHandler.subscribeToOnIndexUpdateEvents().collect { event ->
                     updateLock.withLock {
                         when (event) {
                             is IndexRecordAcquiredEvent -> {
@@ -103,7 +101,7 @@ class FolderBrowser internal constructor(
             }
 
             launch {
-                configuration.subscribe().consumeEach {
+                configuration.subscribe().collect {
                     dispatch()
                 }
             }
@@ -111,7 +109,7 @@ class FolderBrowser internal constructor(
     }
 
     fun folderInfoAndStatusStream(): ReceiveChannel<List<FolderStatus>> = scope.produce {
-        foldersStatus.openSubscription().consumeEach { folderStats ->
+        foldersStatus.collect { folderStats ->
             send(folderStats.values.sortedBy { it.info.label })
         }
     }
@@ -121,8 +119,7 @@ class FolderBrowser internal constructor(
     }
 
     suspend fun getFolderStatus(folder: String): FolderStatus {
-        val statusMap = foldersStatus.openSubscription().receive()
-        return getFolderStatus(folder, statusMap)
+        return getFolderStatus(folder, foldersStatus.value)
     }
 
     fun getFolderStatusSync(folder: String): FolderStatus = runBlocking { getFolderStatus(folder) }

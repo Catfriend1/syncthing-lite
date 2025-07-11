@@ -21,7 +21,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.async
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.syncthing.java.bep.BlockExchangeProtos.Vector
@@ -49,7 +49,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 // TODO: refactor this
-@OptIn(kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class BlockPusher(private val localDeviceId: DeviceId,
                   private val connectionHandler: ConnectionActorWrapper,
                   private val indexHandler: IndexHandler,
@@ -117,7 +116,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
         logger.debug("Send index update for this file: {}.", targetPath)
         val indexListenerStream = indexHandler.subscribeToOnIndexUpdateEvents()
         scope.launch {
-            indexListenerStream.consumeEach { event ->
+            indexListenerStream.collect { event ->
                 if (event is IndexRecordAcquiredEvent) {
                     val (indexFolderId, newRecords, _) = event
 
@@ -154,7 +153,6 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 logger.debug("Closing the upload process.")
                 scope.cancel()
                 monitoringProcessExecutorService.shutdown()
-                indexListenerStream.cancel()
                 requestHandlerRegistry.unregisterListener(requestFilter)
                 //TODO: Rename fileInfo1 and fileInfo
                 val (fileInfo1, folderStatsUpdate) = indexHandler.indexRepository.runInTransaction {
