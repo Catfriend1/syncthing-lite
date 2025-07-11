@@ -3,6 +3,7 @@ package net.syncthing.lite.activities
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -21,6 +22,7 @@ class MainActivity : SyncthingActivity() {
 
     companion object {
         const val PREF_IS_FIRST_START = "net.syncthing.lite.activities.MainActivity.IS_FIRST_START"
+        private const val TAG = "MainActivity"
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -89,8 +91,8 @@ class MainActivity : SyncthingActivity() {
                 .setTitle(getString(R.string.clear_cache_and_index_title))
                 .setMessage(getString(R.string.clear_cache_and_index_body))
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton(android.R.string.yes) { _, _ -> cleanCacheAndIndex() }
-                .setNegativeButton(android.R.string.no, null)
+                .setPositiveButton(resources.getText(R.string.yes)) { _, _ -> cleanCacheAndIndex() }
+                .setNegativeButton(resources.getText(R.string.no), null)
                 .show()
         }
         binding.drawerLayout.closeDrawer(Gravity.START)
@@ -105,6 +107,7 @@ class MainActivity : SyncthingActivity() {
     }
 
     private fun cleanCacheAndIndex() {
+        Log.d(TAG, "cleanCacheAndIndex")
         launch {
             libraryHandler.libraryManager.withLibrary {
                 it.syncthingClient.clearCacheAndIndex()

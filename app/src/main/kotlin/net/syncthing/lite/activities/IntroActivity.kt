@@ -37,6 +37,7 @@ class IntroActivity : AppIntro() {
 
     companion object {
         private const val ENABLE_TEST_DATA: Boolean = true
+        private const val TEST_DEVICE_ID: String = "RF2FVSV-DGNA7O7-UM2N4IU-YB6S6CA-5YXBHSV-BGS3M53-PVCCOA4-FHTQOQC"
         private const val TAG = "IntroActivity"
     }
 
@@ -114,7 +115,7 @@ class IntroActivity : AppIntro() {
             binding.enterDeviceId.scanQrCode.setImageResource(R.drawable.ic_qr_code_white_24dp)
 
             if (ENABLE_TEST_DATA) {
-                binding.enterDeviceId.deviceId.setText("7FA4CR5-LT7RJ6T-AHAENPK-MKWHLUV-ZXR2IX5-AOLOVOT-EENKHYN-2IP34A7")
+                binding.enterDeviceId.deviceId.setText(TEST_DEVICE_ID)
                 binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
             }
 
