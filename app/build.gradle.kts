@@ -35,6 +35,9 @@ android {
     }
 
     packaging {
+        jniLibs {
+            excludes.add("META-INF/*")
+        }
         resources {
             excludes.add("META-INF/*")
         }
