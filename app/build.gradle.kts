@@ -1,19 +1,19 @@
 plugins {
-    id("com.android.application")
-    kotlin("android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
-    compileSdk = 34
-    buildToolsVersion = "34.0.0"
+    compileSdk = libs.versions.compile.sdk.get().toInt()
+    buildToolsVersion = libs.versions.build.tools.get()
     namespace = "net.syncthing.lite"
 
     defaultConfig {
         applicationId = "net.syncthing.lite"
-        minSdk = 21
-        targetSdk = 33
-        versionCode = 22
-        versionName = "0.3.12"
+        minSdk = libs.versions.min.sdk.get().toInt()
+        targetSdk = libs.versions.target.sdk.get().toInt()
+        versionCode = libs.versions.version.code.get().toInt()
+        versionName = libs.versions.version.name.get()
         multiDexEnabled = true
     }
 
@@ -47,20 +47,17 @@ android {
 }
 
 dependencies {
-    val kotlin_version: String by rootProject.extra
-    val kotlinx_coroutines_version: String by rootProject.extra
-    
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version")
-    implementation("com.google.android.material:material:1.0.0")
-    implementation("androidx.legacy:legacy-preference-v14:1.0.0")
-    implementation("androidx.legacy:legacy-support-v4:1.0.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.2.0")
-    implementation("androidx.recyclerview:recyclerview:1.0.0")
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.material)
+    implementation(libs.legacy.preference.v14)
+    implementation(libs.legacy.support.v4)
+    implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.recyclerview)
 
-    implementation("com.google.zxing:android-integration:3.3.0")
-    implementation("com.google.zxing:core:3.3.0")
-    implementation("com.github.apl-devs:appintro:6.3.1")
+    implementation(libs.zxing.integration)
+    implementation(libs.zxing.core)
+    implementation(libs.appintro)
 
     implementation(project(":syncthing-client"))
     implementation(project(":syncthing-repository-android"))

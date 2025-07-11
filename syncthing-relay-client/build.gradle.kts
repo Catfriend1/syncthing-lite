@@ -1,6 +1,6 @@
 plugins {
     id("java-library")
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
 }
 
 java {
@@ -9,8 +9,6 @@ java {
 }
 
 dependencies {
-    val kotlin_version: String by rootProject.extra
-
     implementation(project(":syncthing-core"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version")
+    implementation(libs.kotlin.stdlib)
 }

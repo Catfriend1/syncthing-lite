@@ -1,7 +1,7 @@
 plugins {
     application
-    kotlin("jvm")
-    id("com.google.protobuf")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.protobuf)
 }
 
 java {
@@ -14,15 +14,11 @@ application {
 }
 
 dependencies {
-    val kotlin_version: String by rootProject.extra
-    val protobuf_lite_version: String by rootProject.extra
-    val kotlinx_coroutines_version: String by rootProject.extra
-
     implementation(project(":syncthing-core"))
-    implementation("commons-cli:commons-cli:1.9.0")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version")
-    implementation("com.google.protobuf:protobuf-javalite:$protobuf_lite_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version")
+    implementation(libs.commons.cli)
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.protobuf.javalite)
+    implementation(libs.kotlinx.coroutines.core)
 }
 
 tasks.named<JavaExec>("run") {
@@ -33,7 +29,7 @@ tasks.named<JavaExec>("run") {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:${rootProject.extra["protobuf_lite_version"]}"
+        artifact = libs.protobuf.protoc.get().toString()
     }
 
     generateProtoTasks {

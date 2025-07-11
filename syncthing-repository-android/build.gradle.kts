@@ -1,17 +1,17 @@
 plugins {
-    id("com.android.library")
-    kotlin("android")
-    kotlin("kapt")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
-    compileSdk = 34
-    buildToolsVersion = "34.0.0"
+    compileSdk = libs.versions.compile.sdk.get().toInt()
+    buildToolsVersion = libs.versions.build.tools.get()
     namespace = "net.syncthing.repository.android"
 
     defaultConfig {
-        minSdk = 21
-        targetSdk = 33
+        minSdk = libs.versions.min.sdk.get().toInt()
+        targetSdk = libs.versions.target.sdk.get().toInt()
     }
 
     buildTypes {
@@ -34,17 +34,13 @@ android {
 }
 
 dependencies {
-    val roomVersion = "2.6.1"
-    val kotlin_version: String by rootProject.extra
-    val protobuf_lite_version: String by rootProject.extra
-
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     implementation(project(":syncthing-client"))
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("com.android.support:appcompat-v7:28.0.0")
-    implementation("com.google.protobuf:protobuf-javalite:$protobuf_lite_version")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version")
+    implementation(libs.room.runtime)
+    implementation(libs.appcompat.v7)
+    implementation(libs.protobuf.javalite)
+    implementation(libs.kotlin.stdlib)
 
-    kapt("androidx.room:room-compiler:$roomVersion")
+    kapt(libs.room.compiler)
 }
