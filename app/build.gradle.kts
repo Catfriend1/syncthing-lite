@@ -47,11 +47,11 @@ android {
 }
 
 dependencies {
-    val kotlinVersion: String by rootProject.extra
-    val kotlinxCoroutinesVersion: String by rootProject.extra
+    val kotlin_version: String by rootProject.extra
+    val kotlinx_coroutines_version: String by rootProject.extra
     
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinxCoroutinesVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinx_coroutines_version")
     implementation("com.google.android.material:material:1.0.0")
     implementation("androidx.legacy:legacy-preference-v14:1.0.0")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
