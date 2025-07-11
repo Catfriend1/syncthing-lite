@@ -37,7 +37,12 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
     private lateinit var saveAsLauncher: ActivityResultLauncher<Intent>
 
     val fileSpec: DownloadFileSpec by lazy {
-        arguments!!.getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            arguments!!.getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
+        } else {
+            @Suppress("DEPRECATION")
+            arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

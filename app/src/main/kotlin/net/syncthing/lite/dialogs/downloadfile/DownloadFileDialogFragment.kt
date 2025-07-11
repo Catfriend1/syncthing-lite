@@ -58,8 +58,18 @@ class DownloadFileDialogFragment : DialogFragment() {
         model = ViewModelProvider(this, ViewModelProvider.NewInstanceFactory())
             .get(DownloadFileDialogViewModel::class.java)
 
-        val fileSpec = arguments!!.getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
-        val outputUri = arguments?.getParcelable(ARG_SAVE_AS_URI, Uri::class.java)
+        val fileSpec = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            arguments!!.getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
+        } else {
+            @Suppress("DEPRECATION")
+            arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
+        }
+        val outputUri = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getParcelable(ARG_SAVE_AS_URI, Uri::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            arguments?.getParcelable<Uri>(ARG_SAVE_AS_URI)
+        }
 
         model.init(
             libraryHandler = LibraryHandler(requireContext()),
@@ -71,8 +81,18 @@ class DownloadFileDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val fileSpec = arguments!!.getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
-        val outputUri = arguments?.getParcelable(ARG_SAVE_AS_URI, Uri::class.java)
+        val fileSpec = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            arguments!!.getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
+        } else {
+            @Suppress("DEPRECATION")
+            arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
+        }
+        val outputUri = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getParcelable(ARG_SAVE_AS_URI, Uri::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            arguments?.getParcelable<Uri>(ARG_SAVE_AS_URI)
+        }
 
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_download_progress, null)
         progressBar = dialogView.findViewById(R.id.progress_bar)

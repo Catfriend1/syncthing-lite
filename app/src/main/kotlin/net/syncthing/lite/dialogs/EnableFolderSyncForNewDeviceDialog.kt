@@ -38,7 +38,12 @@ class EnableFolderSyncForNewDeviceDialog : SyncthingDialogFragment() {
         val folderId = arguments?.getString(FOLDER_ID).orEmpty()
         val folderName = arguments?.getString(FOLDER_NAME).orEmpty()
 
-        devices = (arguments?.getSerializable(DEVICES, ArrayList::class.java) as? ArrayList<DeviceInfo>) ?: arrayListOf()
+        devices = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            (arguments?.getSerializable(DEVICES, ArrayList::class.java) as? ArrayList<DeviceInfo>) ?: arrayListOf()
+        } else {
+            @Suppress("DEPRECATION")
+            (arguments?.getSerializable(DEVICES) as? ArrayList<DeviceInfo>) ?: arrayListOf()
+        }
 
         if (savedInstanceState != null) {
             currentDeviceId = savedInstanceState.getInt(STATUS_CURRENT_DEVICE_ID)
