@@ -10,7 +10,7 @@ import net.syncthing.lite.R
 import net.syncthing.lite.error.ErrorStorage
 
 object DefaultLibraryManager {
-    private const val LOG_TAG = "DefaultLibraryManager"
+    private const val LOG_TAG = "DefaultLibraryMan"
 
     private var instance: LibraryManager? = null
     private val lock = Object()
