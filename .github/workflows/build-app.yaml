@@ -11,6 +11,7 @@ on:
       - fdroid
       - main
       - release
+  workflow_dispatch:
 
 jobs:
   build:
