@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lint>
+	<!-- Ignore notices about updating gradle dependencies -->
+	<issue id="GradleDependency" severity="ignore" />
 	<!-- Issues to be resolved in the future -->
 	<issue id="TrustAllX509TrustManager" severity="ignore" />
 </lint>
