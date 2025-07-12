@@ -120,8 +120,11 @@ class IntroActivity : AppIntro() {
             qrCodeLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 val scanResult = IntentIntegrator.parseActivityResult(IntentIntegrator.REQUEST_CODE, result.resultCode, result.data)
                 if (scanResult != null && scanResult.contents != null && scanResult.contents.isNotBlank()) {
-                    binding.enterDeviceId.deviceId.setText(scanResult.contents)
-                    binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                    // Check if binding is initialized before using it
+                    if (::binding.isInitialized) {
+                        binding.enterDeviceId.deviceId.setText(scanResult.contents)
+                        binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                    }
                 }
             }
         }
