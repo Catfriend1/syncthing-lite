@@ -11,7 +11,7 @@
     <string name="dialog_uploading_file">Качване на файла %1$s</string>
     <string name="clear_cache_and_index_title">Изчистване на локалния кеш/индекс?</string>
     <string name="clear_cache_and_index_body">Да бъдат ли изтрити всички локално кеширани данни и индекси?</string>
-    <string name="loading_config_starting_syncthing_client">Зареждане на настройките, стартиране на Syncthing клиента...</string>
+    <string name="loading_config_starting_syncthing_client">Зареждане на настройките, стартиране на Syncthing клиента…</string>
     <string name="last_modified_time">Последна промяна: %1$s</string>
     <string name="remove_device_title">Изтриване на устройството %1$s\?</string>
     <string name="remove_device_message">Да бъде ли премахнато устройството %1$s от списъка с познати устройства?</string>
