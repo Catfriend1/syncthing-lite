@@ -12,9 +12,6 @@ import java.io.File
 import java.io.IOException
 
 class CacheFileProvider: ContentProvider() {
-    companion object {
-        const val AUTHORITY = "net.syncthing.lite.fileprovider"
-    }
 
     override fun onCreate() = true
 
@@ -32,7 +29,9 @@ class CacheFileProvider: ContentProvider() {
 
     override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor {
         val ctx = requireContextCompat()
-        val url = CacheFileProviderUrl.fromUri(uri)
+        // When creating CacheFileProviderUrl from a URI, we pass the application's package name.
+        // This package name serves as the base for the dynamic Authority.
+        val url = CacheFileProviderUrl.fromUri(uri, ctx.packageName)
         val file = url.getFile(ctx)
 
         val resultProjection = projection ?: arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE)
@@ -53,12 +52,15 @@ class CacheFileProvider: ContentProvider() {
         return resultCursor
     }
 
-    override fun getType(uri: Uri): String = CacheFileProviderUrl.fromUri(uri).mimeType
+    override fun getType(uri: Uri): String {
+        val ctx = requireContextCompat()
+        return CacheFileProviderUrl.fromUri(uri, ctx.packageName).mimeType
+    }
 
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
         if (mode == "r") {
             val ctx = requireContextCompat()
-            val url = CacheFileProviderUrl.fromUri(uri)
+            val url = CacheFileProviderUrl.fromUri(uri, ctx.packageName)
             val file = url.getFile(ctx)
 
             return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
@@ -74,30 +76,61 @@ class CacheFileProvider: ContentProvider() {
 data class CacheFileProviderUrl(
         val pathInCacheDirectory: String,
         val filename: String,
-        val mimeType: String
+        val mimeType: String,
+        val applicationId: String
 ) {
     companion object {
         private const val PATH = "path"
         private const val FILENAME = "filename"
         private const val MIME_TYPE = "mimeType"
+        private const val AUTHORITY_SUFFIX = ".fileprovider"
 
-        fun fromUri(uri: Uri) = CacheFileProviderUrl(
+        /**
+         * Creates a CacheFileProviderUrl from a received URI.
+         * Validates if the URI's authority matches the expected authority of the current app.
+         * @param uri The incoming URI.
+         * @param currentApplicationId The package name (applicationId) of the current app.
+         */
+        fun fromUri(uri: Uri, currentApplicationId: String): CacheFileProviderUrl {
+            // The expected authority is formed from the package name and the suffix.
+            val expectedAuthority = currentApplicationId + AUTHORITY_SUFFIX
+            // Check if the URI's authority matches the expected authority.
+            if (uri.authority != expectedAuthority) {
+                throw IllegalArgumentException("Invalid authority: ${uri.authority}. Expected: $expectedAuthority")
+            }
+
+            return CacheFileProviderUrl(
                 pathInCacheDirectory = uri.getQueryParameter(PATH) ?: throw IllegalArgumentException("Missing path"),
                 filename = uri.getQueryParameter(FILENAME) ?: throw IllegalArgumentException("Missing filename"),
-                mimeType = uri.getQueryParameter(MIME_TYPE) ?: throw IllegalArgumentException("Missing mimeType")
-        )
+                mimeType = uri.getQueryParameter(MIME_TYPE) ?: throw IllegalArgumentException("Missing mimeType"),
+                applicationId = currentApplicationId
+            )
+        }
 
+        /**
+         * Creates a CacheFileProviderUrl from a File.
+         * Retrieves the package name (applicationId) directly from the provided Context.
+         * @param file The file for which the URL should be created.
+         * @param filename The file name.
+         * @param mimeType The MIME type of the file.
+         * @param context The Context to access the package name and cache directory.
+         */
         fun fromFile(file: File, filename: String, mimeType: String, context: Context) = CacheFileProviderUrl(
                 filename = filename,
                 mimeType = mimeType,
-                pathInCacheDirectory = file.toRelativeString(context.externalCacheDir ?: throw IllegalStateException("No external cache dir"))
+                pathInCacheDirectory = file.toRelativeString(context.externalCacheDir ?: throw IllegalStateException("No external cache dir")),
+                applicationId = context.packageName
         )
     }
 
+    /**
+     * Creates the serialized URI for this CacheFileProviderUrl.
+     * The Authority is dynamically formed from the stored applicationId.
+     */
     val serialized: Uri by lazy {
         Uri.Builder()
                 .scheme("content")
-                .authority(CacheFileProvider.AUTHORITY)
+                .authority(applicationId + AUTHORITY_SUFFIX) // Uses the stored applicationId for the Authority
                 .appendQueryParameter(PATH, pathInCacheDirectory)
                 .appendQueryParameter(FILENAME, filename)
                 .appendQueryParameter(MIME_TYPE, mimeType)
