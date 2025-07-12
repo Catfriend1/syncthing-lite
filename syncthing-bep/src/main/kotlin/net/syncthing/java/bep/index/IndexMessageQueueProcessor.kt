@@ -116,8 +116,7 @@ class IndexMessageQueueProcessor (
     private suspend fun doHandleIndexMessageReceivedEvent(action: IndexUpdateAction) {
         val (message, clusterConfigInfo, peerDeviceId) = action
 
-        logger.debug("📦 IndexUpdate folderId: ${message.folder}")
-        logger.debug("📦 IndexUpdate filesCount: ${message.filesCount}")
+        logger.debug("📦 IndexUpdate folderId: ${message.folder}, filesCount: ${message.filesCount}")
         /*
         message.filesList.forEachIndexed { i, file ->
             val versionInfo = file.version.countersList.joinToString { "id=${it.id}, value=${it.value}" }
