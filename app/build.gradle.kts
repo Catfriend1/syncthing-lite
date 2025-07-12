@@ -27,7 +27,7 @@ android {
     }
 
     lint {
-        abortOnError = false
+        abortOnError = true
         targetSdk = libs.versions.target.sdk.get().toInt()
     }
 
