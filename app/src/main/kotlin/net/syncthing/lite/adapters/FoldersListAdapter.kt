@@ -1,6 +1,7 @@
 package net.syncthing.lite.adapters
 
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.DiffUtil
 import android.text.format.DateUtils
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,8 +14,9 @@ import net.syncthing.lite.databinding.ListviewFolderBinding
 import kotlin.properties.Delegates
 
 class FoldersListAdapter: RecyclerView.Adapter<FolderListViewHolder>() {
-    var data: List<FolderStatus> by Delegates.observable(listOf()) {
-        _, _, _ -> notifyDataSetChanged()
+    var data: List<FolderStatus> by Delegates.observable(listOf()) { _, old, new ->
+        val diffResult = DiffUtil.calculateDiff(FoldersDiffCallback(old, new))
+        diffResult.dispatchUpdatesTo(this)
     }
 
     var listener: FolderListAdapterListener? = null
@@ -67,4 +69,29 @@ class FolderListViewHolder(val binding: ListviewFolderBinding): RecyclerView.Vie
 interface FolderListAdapterListener {
     fun onFolderClicked(folderInfo: FolderInfo, folderStats: FolderStats)
     fun onFolderLongClicked(folderInfo: FolderInfo): Boolean
+}
+
+class FoldersDiffCallback(
+    private val oldList: List<FolderStatus>,
+    private val newList: List<FolderStatus>
+) : DiffUtil.Callback() {
+    
+    override fun getOldListSize(): Int = oldList.size
+    
+    override fun getNewListSize(): Int = newList.size
+    
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return oldList[oldItemPosition].info.folderId == newList[newItemPosition].info.folderId
+    }
+    
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        val old = oldList[oldItemPosition]
+        val new = newList[newItemPosition]
+        return old.info.label == new.info.label &&
+               old.stats.lastUpdate == new.stats.lastUpdate &&
+               old.stats.fileCount == new.stats.fileCount &&
+               old.stats.dirCount == new.stats.dirCount &&
+               old.stats.sizeDescription == new.stats.sizeDescription &&
+               old.missingIndexUpdates == new.missingIndexUpdates
+    }
 }

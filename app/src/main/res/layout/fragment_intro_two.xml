@@ -17,15 +17,12 @@
             android:textSize="24sp"
             android:text="@string/intro_page_two_title"/>
 
-        <FrameLayout
+        <ScrollView
             android:layout_weight="1"
+            android:layout_gravity="center"
+            android:id="@+id/scroll"
             android:layout_width="match_parent"
             android:layout_height="0dp">
-            <ScrollView
-                android:layout_gravity="center"
-                android:id="@+id/scroll"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
                 <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="match_parent"
@@ -55,7 +52,6 @@
 
                 </LinearLayout>
             </ScrollView>
-        </FrameLayout>
 
         <TextView
             android:id="@+id/description"
