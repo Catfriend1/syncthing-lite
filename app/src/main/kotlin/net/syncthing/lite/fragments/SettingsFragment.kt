@@ -60,7 +60,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         reportBug.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/Catfriend1/syncthing-lite/issues/new".toUri()))
+            startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/Catfriend1/syncthing-lite/issues".toUri()))
             true
         }
     }
