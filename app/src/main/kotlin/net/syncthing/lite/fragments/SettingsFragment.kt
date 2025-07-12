@@ -61,7 +61,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         reportBug.setOnPreferenceClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/syncthing/syncthing-lite/issues".toUri()))
+            startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/Catfriend1/syncthing-lite/issues/new".toUri()))
 
             true
         }
