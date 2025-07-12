@@ -27,7 +27,7 @@
             android:name=".library.CacheFileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:grantUriPermissions="true"
-            android:exported="true" />
+            android:exported="false" />
         <provider
             android:name=".library.SyncthingProvider"
             android:authorities="${applicationId}.documents"
