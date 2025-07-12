@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -30,10 +30,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    kapt {
-        arguments {
-            arg("room.schemaLocation", "$projectDir/schemas")
-        }
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
     }
 }
 
@@ -46,5 +44,5 @@ dependencies {
     implementation(libs.protobuf.javalite)
     implementation(libs.kotlin.stdlib)
 
-    kapt(libs.room.compiler)
+    ksp(libs.room.compiler)
 }

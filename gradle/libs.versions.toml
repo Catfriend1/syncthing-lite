@@ -4,6 +4,7 @@ kotlinx-coroutines = "1.7.3"
 android-gradle-plugin = "8.5.2"
 protobuf-lite = "4.31.1"
 protobuf-plugin = "0.9.5"
+ksp = "1.9.22-1.0.17"
 
 # Android SDK versions
 compile-sdk = "34"
@@ -78,4 +79,5 @@ android-library = { id = "com.android.library", version.ref = "android-gradle-pl
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobuf-plugin" }
