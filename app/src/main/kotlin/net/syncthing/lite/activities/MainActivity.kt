@@ -12,6 +12,8 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.core.view.get
+import androidx.core.view.size
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R
 import net.syncthing.lite.databinding.ActivityMainBinding
@@ -60,10 +62,10 @@ class MainActivity : SyncthingActivity() {
 
         drawerToggle?.syncState()
         val menu = binding.navigation.menu
-        val selection = (0 until menu.size())
-            .map { menu.getItem(it) }
+        val selection = (0 until menu.size)
+            .map { menu[it] }
             .find { it.isChecked }
-            ?: menu.getItem(0)
+            ?: menu[0]
         onNavigationItemSelectedListener(selection)
     }
 

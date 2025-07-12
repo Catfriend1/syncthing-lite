@@ -14,6 +14,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
+import androidx.core.graphics.createBitmap
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
 import com.google.zxing.qrcode.QRCodeWriter
@@ -39,7 +40,7 @@ class DeviceIdDialogFragment : SyncthingDialogFragment() {
         binding.deviceId.text = getString(R.string.device_id_placeholder)
         binding.deviceId.visibility = View.INVISIBLE
 
-        binding.qrCode.setImageBitmap(Bitmap.createBitmap(QR_RESOLUTION, QR_RESOLUTION, Bitmap.Config.RGB_565))
+        binding.qrCode.setImageBitmap(createBitmap(QR_RESOLUTION, QR_RESOLUTION, Bitmap.Config.RGB_565))
 
         MainScope().launch {
             libraryHandler.library { configuration, _, _ ->
@@ -94,7 +95,7 @@ class DeviceIdDialogFragment : SyncthingDialogFragment() {
             val bitMatrix = writer.encode(data, BarcodeFormat.QR_CODE, QR_RESOLUTION, QR_RESOLUTION)
             val width = bitMatrix.width
             val height = bitMatrix.height
-            val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+            val bmp = createBitmap(width, height, Bitmap.Config.RGB_565)
             for (x in 0 until width) {
                 for (y in 0 until height) {
                     bmp.setPixel(x, y, if (bitMatrix.get(x, y)) Color.BLACK else Color.WHITE)
@@ -103,7 +104,7 @@ class DeviceIdDialogFragment : SyncthingDialogFragment() {
             bmp
         } catch (e: WriterException) {
             Log.w(TAG, "QR Code generation failed", e)
-            Bitmap.createBitmap(QR_RESOLUTION, QR_RESOLUTION, Bitmap.Config.RGB_565)
+            createBitmap(QR_RESOLUTION, QR_RESOLUTION, Bitmap.Config.RGB_565)
         }
     }
 

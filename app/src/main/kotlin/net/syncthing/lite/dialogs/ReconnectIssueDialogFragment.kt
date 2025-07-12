@@ -4,16 +4,16 @@ import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.edit
 import net.syncthing.lite.R
 
 class ReconnectIssueDialogFragment: DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?) = AlertDialog.Builder(requireContext(), theme)
         .setMessage(R.string.dialog_warning_reconnect_problem)
         .setPositiveButton(android.R.string.ok) { _, _ ->
-            requireContext().getSharedPreferences("default", android.content.Context.MODE_PRIVATE)
-                .edit()
-                .putBoolean(SETTINGS_PARAM, true)
-                .apply()
+            requireContext().getSharedPreferences("default", android.content.Context.MODE_PRIVATE).edit {
+                putBoolean(SETTINGS_PARAM, true)
+            }
         }
         .create()
 

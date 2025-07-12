@@ -91,6 +91,9 @@ dependencies {
     implementation(libs.legacy.support.v4)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.recyclerview)
+    implementation(libs.core.ktx)
+    implementation(libs.collection.ktx)
+    implementation(libs.preference.ktx)
 
     implementation(libs.zxing.integration)
     implementation(libs.zxing.core)

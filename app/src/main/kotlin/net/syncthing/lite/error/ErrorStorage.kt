@@ -2,6 +2,7 @@ package net.syncthing.lite.error
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.core.content.edit
 
 object ErrorStorage {
     private const val PREF_KEY = "LAST_ERROR"
@@ -9,9 +10,9 @@ object ErrorStorage {
     @SuppressLint("ApplySharedPref")
     fun reportError(context: Context, error: String) {
         // this uses commit because the App could be quit directly after that
-        context.getSharedPreferences("default", Context.MODE_PRIVATE).edit()
-            .putString(PREF_KEY, error)
-            .commit()
+        context.getSharedPreferences("default", Context.MODE_PRIVATE).edit(commit = true) {
+            putString(PREF_KEY, error)
+        }
     }
 
     fun getLastErrorReport(context: Context): String? =

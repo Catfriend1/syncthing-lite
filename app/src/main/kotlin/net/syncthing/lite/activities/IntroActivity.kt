@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.TypedValue
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import android.text.Html
 import android.util.Log
 import android.view.LayoutInflater
@@ -66,7 +67,9 @@ class IntroActivity : AppIntro() {
     }
 
     override fun onDonePressed(currentFragment: Fragment?) {
-        getSharedPreferences("default", Context.MODE_PRIVATE).edit().putBoolean(MainActivity.PREF_IS_FIRST_START, false).apply()
+        getSharedPreferences("default", Context.MODE_PRIVATE).edit {
+            putBoolean(MainActivity.PREF_IS_FIRST_START, false)
+        }
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
