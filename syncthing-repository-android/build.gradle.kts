@@ -6,7 +6,6 @@ plugins {
 
 android {
     compileSdk = libs.versions.compile.sdk.get().toInt()
-    buildToolsVersion = libs.versions.build.tools.get()
     namespace = "net.syncthing.repository.android"
 
     defaultConfig {

@@ -1,14 +1,13 @@
 [versions]
-kotlin = "1.9.22"
-kotlinx-coroutines = "1.7.3"
-android-gradle-plugin = "8.5.2"
+kotlin = "2.2.0"
+kotlinx-coroutines = "1.10.2"
+android-gradle-plugin = "8.11.1"
 protobuf-lite = "4.31.1"
 protobuf-plugin = "0.9.5"
 ksp = "1.9.22-1.0.17"
 
 # Android SDK versions
 compile-sdk = "34"
-build-tools = "34.0.0"
 min-sdk = "21"
 target-sdk = "33"
 
@@ -23,7 +22,7 @@ legacy-preference-v14 = "1.0.0"
 legacy-support-v4 = "1.0.0"
 lifecycle-runtime-ktx = "2.2.0"
 recyclerview = "1.0.0"
-room = "2.6.1"
+room = "2.7.2"
 appcompat-v7 = "28.0.0"
 
 # Third-party libraries
