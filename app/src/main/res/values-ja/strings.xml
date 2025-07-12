@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Syncthing Lite</string>
+    <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">フォルダーがありません</string>
     <string name="clear_local_cache_index_label">ローカルキャッシュ/索引をクリア</string>
     <string name="devices_list_view_empty_message">デバイスがありません</string>
@@ -30,7 +30,7 @@
     <string name="share_device_id_chooser">次とデバイス ID を共有</string>
     <string name="other_syncthing_instance_title">別の Syncthing インスタンスが実行中です</string>
     <string name="other_syncthing_instance_message">ローカルの探索は動作しません。他の Syncthing インスタンスを停止して、ローカルの探索を有効にしてください。</string>
-    <string name="intro_page_one_title">Syncthing Lite へようこそ</string>
+    <string name="intro_page_one_title">Syncthing-Lite へようこそ</string>
     <string name="intro_page_one_description">Syncthing は、プロプライエタリな同期およびクラウドサービスを、オープンで信頼性があり、分散化されたものに置き換えます。 あなたのデータはあなただけのものであり、それが第三者と共有され、インターネット経由で送信される場合、保存される場所を選択する必要があります。</string>
     <string name="intro_page_two_title">デバイスを追加</string>
     <string name="intro_page_three_title">フォルダーを共有</string>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Syncthing Lite</string>
+    <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">Carpeta no disponible</string>
     <string name="clear_local_cache_index_label">Limpia caché/índice local</string>
     <string name="devices_list_view_empty_message">Dispositivos no disponibles</string>
@@ -32,7 +32,7 @@
     <string name="share_device_id_chooser">Compartir ID de dispositivo con</string>
     <string name="other_syncthing_instance_title">Otra instancia de Syncthing está siendo ejecutada</string>
     <string name="other_syncthing_instance_message">El descubrimiento local no funcionará. Detenga la otra instancia de Syncthing para habilitar la detección local.</string>
-    <string name="intro_page_one_title">Bienvenido a Syncthing Lite</string>
+    <string name="intro_page_one_title">Bienvenido a Syncthing-Lite</string>
     <string name="intro_page_one_description">Syncthing reemplaza los servicios de sincronización y nube propietarios por algo abierto, fiable y descentralizado. Sus datos son sólo suyos y usted merece elegir dónde se almacenan, si se comparten con terceros y cómo se transmiten a través de Internet.</string>
     <string name="intro_page_two_title">Añadir un dispositivo</string>
     <string name="intro_page_three_title">Compartir tus carpetas</string>
@@ -75,5 +75,5 @@ Debido al comportamiento de esta aplicación y al comportamiento del servidor de
     <string name="dialog_enable_folder_sync_for_new_device_negative">No sincronización</string>
     <string name="dialog_folder_info_device_list">Compartir la carpeta con:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
-    <string name="toast_error">Algo salió mal en Syncthing Lite. Puedes ver los detalles en la configuración de Syncthing Lite.</string>
+    <string name="toast_error">Algo salió mal en Syncthing-Lite. Puedes ver los detalles en la configuración de Syncthing-Lite.</string>
 </resources>

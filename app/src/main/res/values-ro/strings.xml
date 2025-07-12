@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Syncthing Lite</string>
+    <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">Nici un director disponibil</string>
     <string name="clear_local_cache_index_label">Curăță indexul/memoria locală</string>
     <string name="devices_list_view_empty_message">Nici un dispozitiv disponibil</string>
@@ -30,7 +30,7 @@
     <string name="share_device_id_chooser">Partajează ID dispozitiv cu</string>
     <string name="other_syncthing_instance_title">O altă instanță de Syncthing rulează</string>
     <string name="other_syncthing_instance_message">Descoperire locală nu va funcționa. Opriți cealaltă instanță de Syncthing pentru a activa descoperirea locală.</string>
-    <string name="intro_page_one_title">Bine ați venit la Syncthing Lite</string>
+    <string name="intro_page_one_title">Bine ați venit la Syncthing-Lite</string>
     <string name="intro_page_one_description">Syncthing înlocuiește serviciile proprietare de sincronizare și stocare 
 tip cloud cu ceva deschis, de încredere și descentralizat. Datele 
 dumneavoastră vă aparțin în totalitate și meritați să decideți unde vor 
@@ -77,5 +77,5 @@ fi stocate, dacă vor fi partajate cu terțe entități precum și cum vor fi
     <string name="dialog_enable_folder_sync_for_new_device_negative">Nu se sincronizează</string>
     <string name="dialog_folder_info_device_list">Partajează directorul cu:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
-    <string name="toast_error">O eroare s-a produs in Syncthing Lite. Puteți vedea detalii în setările Syncthing Lite.</string>
+    <string name="toast_error">O eroare s-a produs in Syncthing-Lite. Puteți vedea detalii în setările Syncthing-Lite.</string>
 </resources>

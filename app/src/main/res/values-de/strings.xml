@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Syncthing Lite</string>
+    <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">Kein Ordner verfügbar</string>
     <string name="clear_local_cache_index_label">Lokalen Index und Cache löschen</string>
     <string name="devices_list_view_empty_message">Keine Geräte verfügbar</string>
@@ -30,7 +30,7 @@
     <string name="share_device_id_chooser">Teile Geräte ID mit</string>
     <string name="other_syncthing_instance_title">Eine andere Syncthing-Instanz läuft bereits</string>
     <string name="other_syncthing_instance_message">Lokale Auffindung wird nicht funktionieren. Stoppen Sie die andere Syncthing Instanz, um die lokale Auffindung zu ermöglichen.</string>
-    <string name="intro_page_one_title">Willkommen zu Syncthing Lite</string>
+    <string name="intro_page_one_title">Willkommen zu Syncthing-Lite</string>
     <string name="intro_page_one_description">Syncthing ersetzt proprietäre Sync- und Cloud-Services durch etwas Offenes, Vertrauenswürdiges und Dezentrales. Ihre Daten sind allein Ihre Daten, und Sie verdienen es zu wählen, wo sie gespeichert werden, ob sie an Dritte weitergegeben werden und wie sie über das Internet übertragen werden.</string>
     <string name="intro_page_two_title">Ein Gerät hinzufügen</string>
     <string name="intro_page_three_title">Ordner teilen</string>
@@ -69,5 +69,5 @@ Dies gilt nicht für Verbindungen, die per lokaler Gerätesuche hergestellt wurd
     <string name="dialog_enable_folder_sync_for_new_device_negative">Nicht synchronisieren</string>
     <string name="dialog_folder_info_device_list">Ordner teilen mit:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
-    <string name="toast_error">Etwas in Syncthing Lite hat nicht funktioniert. Sie können die Details in den Einstellungen von Syncthing Lite anzeigen.</string>
+    <string name="toast_error">Etwas in Syncthing-Lite hat nicht funktioniert. Sie können die Details in den Einstellungen von Syncthing-Lite anzeigen.</string>
 </resources>

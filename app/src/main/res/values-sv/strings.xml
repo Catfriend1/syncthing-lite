@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Syncthing Lite</string>
+    <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">Ingen mapp tillgänglig</string>
     <string name="clear_local_cache_index_label">Rensa lokala cache/index</string>
     <string name="devices_list_view_empty_message">Inga enheter tillgängliga</string>
@@ -30,7 +30,7 @@
     <string name="share_device_id_chooser">Dela enhets-ID med</string>
     <string name="other_syncthing_instance_title">En annan Syncthing-instans körs</string>
     <string name="other_syncthing_instance_message">Lokal upptäckt kommer inte att fungera. Stoppa den andra Syncthing-instansen för att möjliggöra lokal upptäckt.</string>
-    <string name="intro_page_one_title">Välkommen till Syncthing Lite</string>
+    <string name="intro_page_one_title">Välkommen till Syncthing-Lite</string>
     <string name="intro_page_one_description">Syncthing ersätter proprietära synkroniserings- och molntjänster med något öppet, pålitligt och decentraliserat. Din data är endast din data och du förtjänar att välja var den lagras, om den delas med en tredjepart och hur den överförs över Internet.</string>
     <string name="intro_page_two_title">Lägg till en enhet</string>
     <string name="intro_page_three_title">Dela dina mappar</string>
@@ -73,5 +73,5 @@
     <string name="dialog_enable_folder_sync_for_new_device_negative">Synkronisera inte</string>
     <string name="dialog_folder_info_device_list">Dela mapp med:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
-    <string name="toast_error">Något gick fel i Syncthing Lite. Du kan visa detaljerna från inställningarna för Syncthing Lite.</string>
+    <string name="toast_error">Något gick fel i Syncthing-Lite. Du kan visa detaljerna från inställningarna för Syncthing-Lite.</string>
 </resources>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Syncthing Lite</string>
+    <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">没有可用的文件夹</string>
     <string name="clear_local_cache_index_label">清除本地缓存/索引</string>
     <string name="devices_list_view_empty_message">没有可用的设备</string>
@@ -29,7 +29,7 @@
     <string name="share_device_id_chooser">分享设备 ID 于</string>
     <string name="other_syncthing_instance_title">另一个 Syncthing 实例正在运行</string>
     <string name="other_syncthing_instance_message">本地发现将无法工作。停止其他 Syncthing 实例以启用本地发现。</string>
-    <string name="intro_page_one_title">欢迎使用 Syncthing Lite</string>
+    <string name="intro_page_one_title">欢迎使用 Syncthing-Lite</string>
     <string name="intro_page_one_description">Syncthing 以开放、可靠并去中心化的软件替换掉封闭的云服务。您的数据仍由您拥有，您可以选择它们的存储位置，如果要共享给第三方您还可以选择如何在互联网上传输它们。</string>
     <string name="intro_page_two_title">添加设备</string>
     <string name="intro_page_three_title">共享您的文件夹</string>
