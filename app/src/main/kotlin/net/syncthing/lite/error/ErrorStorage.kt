@@ -6,10 +6,10 @@ object ErrorStorage {
     private const val PREF_KEY = "LAST_ERROR"
 
     fun reportError(context: Context, error: String) {
-        // this uses commit because the App could be quit directly after that
+        // this uses apply() for better performance
         context.getSharedPreferences("default", Context.MODE_PRIVATE).edit()
             .putString(PREF_KEY, error)
-            .commit()
+            .apply()
     }
 
     fun getLastErrorReport(context: Context): String? =

@@ -5,7 +5,7 @@ import net.syncthing.lite.library.LibraryHandler
 
 abstract class SyncthingDialogFragment : CoroutineDialogFragment() {
     val libraryHandler: LibraryHandler by lazy { LibraryHandler(
-            context = context!!
+            context = requireContext()
     )}
 
     override fun onStart() {

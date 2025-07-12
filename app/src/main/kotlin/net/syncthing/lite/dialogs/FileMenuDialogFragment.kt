@@ -38,10 +38,10 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
 
     val fileSpec: DownloadFileSpec by lazy {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            arguments!!.getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
+            requireArguments().getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
         } else {
             @Suppress("DEPRECATION")
-            arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
+            requireArguments().getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
         }
     }
 

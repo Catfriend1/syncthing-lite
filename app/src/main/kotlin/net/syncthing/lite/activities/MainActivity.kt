@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
+import androidx.core.view.GravityCompat
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
@@ -96,7 +97,7 @@ class MainActivity : SyncthingActivity() {
                 .setNegativeButton(resources.getText(R.string.no), null)
                 .show()
         }
-        binding.drawerLayout.closeDrawer(Gravity.START)
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 

@@ -59,10 +59,10 @@ class DownloadFileDialogFragment : DialogFragment() {
             .get(DownloadFileDialogViewModel::class.java)
 
         val fileSpec = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            arguments!!.getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
+            requireArguments().getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
         } else {
             @Suppress("DEPRECATION")
-            arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
+            requireArguments().getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
         }
         val outputUri = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             arguments?.getParcelable(ARG_SAVE_AS_URI, Uri::class.java)
@@ -82,10 +82,10 @@ class DownloadFileDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val fileSpec = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            arguments!!.getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
+            requireArguments().getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
         } else {
             @Suppress("DEPRECATION")
-            arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
+            requireArguments().getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
         }
         val outputUri = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             arguments?.getParcelable(ARG_SAVE_AS_URI, Uri::class.java)

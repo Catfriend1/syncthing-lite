@@ -23,7 +23,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val forceStop       = findPreference("force_stop")
         val lastCrash       = findPreference("last_crash")
         val reportBug       = findPreference("report_bug")
-        val libraryManager  = DefaultLibraryManager.with(context!!)
+        val libraryManager  = DefaultLibraryManager.with(requireContext())
 
         MainScope().launch(Dispatchers.Main) {
             libraryManager.withLibrary { library ->
@@ -31,7 +31,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
-        appVersion.summary = context!!.packageManager.getPackageInfo(context!!.packageName, 0)?.versionName ?: ""
+        appVersion.summary = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)?.versionName ?: ""
 
         localDeviceName.setOnPreferenceChangeListener { _, _ ->
             val newDeviceName = localDeviceName.text
@@ -53,7 +53,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         lastCrash.setOnPreferenceClickListener {
-            val errorReport = ErrorStorage.getLastErrorReport(context!!) ?: ""
+            val errorReport = ErrorStorage.getLastErrorReport(requireContext()) ?: ""
             ErrorReportDialog.newInstance(errorReport).show(parentFragmentManager)
 
             true
