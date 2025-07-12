@@ -20,13 +20,12 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.github.appintro.AppIntro
 import com.github.appintro.SlidePolicy
-import com.google.zxing.integration.android.IntentIntegrator
-import net.syncthing.lite.utils.FragmentIntentIntegrator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.lite.R
+import net.syncthing.lite.activities.QRScannerActivity
 import net.syncthing.lite.databinding.FragmentIntroOneBinding
 import net.syncthing.lite.databinding.FragmentIntroThreeBinding
 import net.syncthing.lite.databinding.FragmentIntroTwoBinding
@@ -118,10 +117,12 @@ class IntroActivity : AppIntro() {
             super.onCreate(savedInstanceState)
             // Register the activity result launcher in onCreate
             qrCodeLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                val scanResult = IntentIntegrator.parseActivityResult(IntentIntegrator.REQUEST_CODE, result.resultCode, result.data)
-                if (scanResult != null && scanResult.contents != null && scanResult.contents.isNotBlank()) {
-                    binding.enterDeviceId.deviceId.setText(scanResult.contents)
-                    binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                if (result.resultCode == android.app.Activity.RESULT_OK) {
+                    val scanResult = result.data?.getStringExtra(QRScannerActivity.SCAN_RESULT)
+                    if (scanResult != null && scanResult.isNotBlank()) {
+                        binding.enterDeviceId.deviceId.setText(scanResult)
+                        binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                    }
                 }
             }
         }
@@ -130,8 +131,8 @@ class IntroActivity : AppIntro() {
             binding = DataBindingUtil.inflate(inflater, R.layout.fragment_intro_two, container, false)
             binding.enterDeviceId.scanQrCode.setOnClickListener {
                 qrCodeLauncher?.let { launcher ->
-                    val integrator = FragmentIntentIntegrator(launcher, activity)
-                    integrator.initiateScan()
+                    val intent = Intent(requireContext(), QRScannerActivity::class.java)
+                    launcher.launch(intent)
                 }
             }
             binding.enterDeviceId.scanQrCode.setImageResource(R.drawable.ic_qr_code_white_24dp)

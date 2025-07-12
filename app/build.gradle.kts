@@ -95,8 +95,7 @@ dependencies {
     implementation(libs.collection.ktx)
     implementation(libs.preference.ktx)
 
-    implementation(libs.zxing.integration)
-    implementation(libs.zxing.core)
+    implementation(libs.zxing.android.embedded)
     implementation(libs.appintro)
 
     implementation(project(":syncthing-client"))

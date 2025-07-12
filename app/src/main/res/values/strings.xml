@@ -74,4 +74,5 @@
     <string name="file_icon">File icon</string>
     <string name="scan_qr_code">Scan QR code</string>
     <string name="device_id_placeholder">XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX</string>
+    <string name="zxing_msg_default_status">Place a QR code inside the viewfinder rectangle to scan it.</string>
 </resources>
