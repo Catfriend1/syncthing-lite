@@ -9,6 +9,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import com.google.zxing.integration.android.IntentIntegrator
 import net.syncthing.lite.utils.FragmentIntentIntegrator
 import kotlinx.coroutines.flow.collect
@@ -29,6 +31,18 @@ class DevicesFragment : SyncthingFragment() {
     private val adapter = DevicesAdapter()
     private var addDeviceDialog: AlertDialog? = null
     private var addDeviceDialogBinding: ViewEnterDeviceIdBinding? = null
+    private var qrCodeLauncher: ActivityResultLauncher<Intent>? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Register the activity result launcher in onCreate
+        qrCodeLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val scanResult = IntentIntegrator.parseActivityResult(IntentIntegrator.REQUEST_CODE, result.resultCode, result.data)
+            if (scanResult != null && scanResult.contents != null && scanResult.contents.isNotBlank()) {
+                addDeviceDialogBinding?.deviceId?.setText(scanResult.contents)
+            }
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -84,12 +98,10 @@ class DevicesFragment : SyncthingFragment() {
         addDeviceDialogBinding = binding
 
         binding.scanQrCode.setOnClickListener {
-            val integrator = FragmentIntentIntegrator(this@DevicesFragment) { scanResult ->
-                if (scanResult != null && scanResult.isNotBlank()) {
-                    addDeviceDialogBinding?.deviceId?.setText(scanResult)
-                }
+            qrCodeLauncher?.let { launcher ->
+                val integrator = FragmentIntentIntegrator(launcher, activity)
+                integrator.initiateScan()
             }
-            integrator.initiateScan()
         }
         binding.deviceId.post {
             val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

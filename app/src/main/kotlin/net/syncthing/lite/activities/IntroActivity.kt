@@ -16,6 +16,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import com.github.appintro.AppIntro
 import com.github.appintro.SlidePolicy
 import com.google.zxing.integration.android.IntentIntegrator
@@ -110,17 +112,27 @@ class IntroActivity : AppIntro() {
     class IntroFragmentTwo : SyncthingFragment(), SlidePolicy {
 
         private lateinit var binding: FragmentIntroTwoBinding
+        private var qrCodeLauncher: ActivityResultLauncher<Intent>? = null
+
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            // Register the activity result launcher in onCreate
+            qrCodeLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                val scanResult = IntentIntegrator.parseActivityResult(IntentIntegrator.REQUEST_CODE, result.resultCode, result.data)
+                if (scanResult != null && scanResult.contents != null && scanResult.contents.isNotBlank()) {
+                    binding.enterDeviceId.deviceId.setText(scanResult.contents)
+                    binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                }
+            }
+        }
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             binding = DataBindingUtil.inflate(inflater, R.layout.fragment_intro_two, container, false)
             binding.enterDeviceId.scanQrCode.setOnClickListener {
-                val integrator = FragmentIntentIntegrator(this@IntroFragmentTwo) { scanResult ->
-                    if (scanResult != null && scanResult.isNotBlank()) {
-                        binding.enterDeviceId.deviceId.setText(scanResult)
-                        binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
-                    }
+                qrCodeLauncher?.let { launcher ->
+                    val integrator = FragmentIntentIntegrator(launcher, activity)
+                    integrator.initiateScan()
                 }
-                integrator.initiateScan()
             }
             binding.enterDeviceId.scanQrCode.setImageResource(R.drawable.ic_qr_code_white_24dp)
 
