@@ -11,7 +11,7 @@
     <string name="dialog_uploading_file">Качване на файла %1$s</string>
     <string name="clear_cache_and_index_title">Изчистване на локалния кеш/индекс?</string>
     <string name="clear_cache_and_index_body">Да бъдат ли изтрити всички локално кеширани данни и индекси?</string>
-    <string name="loading_config_starting_syncthing_client">Зареждане на настройките, стартиране на Syncthing клиента...</string>
+    <string name="loading_config_starting_syncthing_client">Зареждане на настройките, стартиране на Syncthing клиента…</string>
     <string name="last_modified_time">Последна промяна: %1$s</string>
     <string name="remove_device_title">Изтриване на устройството %1$s\?</string>
     <string name="remove_device_message">Да бъде ли премахнато устройството %1$s от списъка с познати устройства?</string>
@@ -20,7 +20,6 @@
     <string name="folders_label">Папки</string>
     <string name="devices_label">Устройства</string>
     <string name="folder_label_format">%1$s (%2$s)</string>
-    <string name="folder_content_info">%1$s, %2$d файла, %3$d директории</string>
     <string name="file_info">%1$s, последна промяна %2$s</string>
     <string name="show_device_id">Идентификатор на устройството</string>
     <string name="device_id">Идентификатор на устройството</string>
@@ -43,14 +42,9 @@
     <string name="copy_to_clipboard">Копирай</string>
     <string name="copied_to_clipboard">Копирано в клипборда</string>
     <string name="device_id_dialog_title">Въведете идентификатор на устройство</string>
-    <string name="settings_shutdown_delay_10_seconds">10 секунди</string>
-    <string name="settings_shutdown_delay_30_seconds">30 секунди</string>
-    <string name="settings_shutdown_delay_1_minute">1 минута</string>
-    <string name="settings_shutdown_delay_5_minutes">5 минути</string>
     <string name="dialog_file_save_as">Запиши като</string>
     <string name="device_status_connecting">Свързване с %s</string>
     <string name="device_status_connected">Осъществена връзка с %s</string>
-    <string name="device_status_disconnected">Скоро ще бъде направен опит за свързване - %d известни адреса</string>
     <string name="device_status_no_address">Устройството няма известен адрес</string>
     <string name="dialog_enable_folder_sync_for_new_device_text">Желаете ли да синхронизирате %1$s с %2$s (%3$s)?</string>
     <string name="dialog_enable_folder_sync_for_new_device_positive">Синхронизирай</string>

@@ -12,8 +12,7 @@
     <string name="dialog_uploading_file">Överför filen %1$s</string>
     <string name="clear_cache_and_index_title">Rensa cache och index lokalt?</string>
     <string name="clear_cache_and_index_body">Rensa all cachedata och indexdata lokalt?</string>
-    <string name="index_update_progress_label">Index uppdatering för mappen %1$s, %2$d%% synkroniserad</string>
-    <string name="loading_config_starting_syncthing_client">Läser in konfiguration, starta synkroniserande klient...</string>
+    <string name="loading_config_starting_syncthing_client">Läser in konfiguration, starta synkroniserande klient…</string>
     <string name="last_modified_time">Senast ändrad: %1$s</string>
     <string name="remove_device_title">Ta bort enheten %1$s\?</string>
     <string name="remove_device_message">Ta bort %1$s från listan över kända enheter?</string>
@@ -22,7 +21,6 @@
     <string name="folders_label">Mappar</string>
     <string name="devices_label">Enheter</string>
     <string name="folder_label_format">%1$s (%2$s)</string>
-    <string name="folder_content_info">%1$s, %2$d filer, %3$d kataloger</string>
     <string name="file_info">%1$s, senast ändrad %2$s</string>
     <string name="show_device_id">Visa enhets-ID</string>
     <string name="device_id">Enhets-ID</string>
@@ -41,8 +39,6 @@
     <string name="settings_app_version_title">Appversion</string>
     <string name="settings_local_device_name">Lokala enhetens namn</string>
     <string name="settings_local_device_summary">Namnet som andra enheter kommer att se för den här enheten</string>
-    <string name="settings_shutdown_delay_title">Avstängningsfördröjning</string>
-    <string name="settings_shutdown_delay_summary">Tid innan du stänger av Syncthing-klienten efter den senaste användningen</string>
     <string name="settings_force_stop">Tvinga stoppa denna App</string>
     <string name="settings_last_error_title">Senaste felet</string>
     <string name="settings_last_error_summary">Visa detaljerna för det senaste felet</string>
@@ -51,10 +47,6 @@
     <string name="copy_to_clipboard">Kopiera till urklipp</string>
     <string name="copied_to_clipboard">Kopierad till urklipp</string>
     <string name="device_id_dialog_title">Ange enhets-ID</string>
-    <string name="settings_shutdown_delay_10_seconds">10 sekunder</string>
-    <string name="settings_shutdown_delay_30_seconds">30 sekunder</string>
-    <string name="settings_shutdown_delay_1_minute">1 minut</string>
-    <string name="settings_shutdown_delay_5_minutes">5 minuter</string>
     <string name="dialog_warning_reconnect_problem">
         På grund av beteendet hos denna App och beteendet hos Syncthing-servern,
         du kan inte återansluta i några minuter om appen dödades (på grund av att du tog bort från den senaste applistan)
@@ -62,10 +54,8 @@
         Detta gäller inte lokala upptäcktsanslutningar.
    </string>
     <string name="dialog_file_save_as">Spara som</string>
-    <string name="pending_index_updates">%d indexuppdateringar som väntar</string>
     <string name="device_status_connecting">Ansluter till %s</string>
     <string name="device_status_connected">Ansluten till %s</string>
-    <string name="device_status_disconnected">Kommer att försöka ansluta snart - det finns%d kända adresser</string>
     <string name="device_status_no_address">Ingen känd adress för enheten</string>
     <string name="dialog_enable_folder_sync_for_new_device_title">Aktivera mappsynkronisering för ny enhet</string>
     <string name="dialog_enable_folder_sync_for_new_device_text">Vill du synkronisera %1$s med %2$s (%3$s)?</string>

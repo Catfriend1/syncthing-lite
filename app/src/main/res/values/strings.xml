@@ -12,7 +12,6 @@
     <string name="dialog_uploading_file">Uploading file %1$s</string>
     <string name="clear_cache_and_index_title">Clear local cache and index?</string>
     <string name="clear_cache_and_index_body">Clear all local cache data and index data?</string>
-    <string name="index_update_progress_label">Index update for folder %1$s, %2$d%% synchronized</string>
     <string name="loading_config_starting_syncthing_client">Loading config, starting syncthing client…</string>
     <string name="last_modified_time">Last modified: %1$s</string>
     <string name="remove_device_title">Remove device %1$s\?</string>
@@ -22,7 +21,6 @@
     <string name="folders_label">Folders</string>
     <string name="devices_label">Devices</string>
     <string name="folder_label_format">%1$s (%2$s)</string>
-    <string name="folder_content_info">%1$s, %2$d files, %3$d directories</string>
     <string name="file_info">%1$s, last modified %2$s</string>
     <string name="show_device_id">Show device ID</string>
     <string name="device_id">Device ID</string>
@@ -41,8 +39,6 @@
     <string name="settings_app_version_title">App version</string>
     <string name="settings_local_device_name">Local device name</string>
     <string name="settings_local_device_summary">The name that other devices will see for this device</string>
-    <string name="settings_shutdown_delay_title">Shutdown delay</string>
-    <string name="settings_shutdown_delay_summary">Time before shutting down the Syncthing client after its last usage</string>
     <string name="settings_force_stop">Force stop this App</string>
     <string name="settings_last_error_title">Last error</string>
     <string name="settings_last_error_summary">View the details of the last error</string>
@@ -51,10 +47,6 @@
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="copied_to_clipboard">Copied to the clipboard</string>
     <string name="device_id_dialog_title">Enter Device ID</string>
-    <string name="settings_shutdown_delay_10_seconds">10 seconds</string>
-    <string name="settings_shutdown_delay_30_seconds">30 seconds</string>
-    <string name="settings_shutdown_delay_1_minute">1 minute</string>
-    <string name="settings_shutdown_delay_5_minutes">5 minutes</string>
     <string name="dialog_warning_reconnect_problem">
         Due to the behaviour of this App and the behaviour of the Syncthing Server,
         you can\'t reconnect for some minutes if the App was killed (due to removing from the recent App list)
@@ -62,10 +54,8 @@
         This does not apply to local discovery connections.
     </string>
     <string name="dialog_file_save_as">Save as</string>
-    <string name="pending_index_updates">%d index updates pending</string>
     <string name="device_status_connecting">Connecting to %s</string>
     <string name="device_status_connected">Connected to %s</string>
-    <string name="device_status_disconnected">Will retry connecting soon - there are %d known addresses</string>
     <string name="device_status_no_address">No known address for the device</string>
     <string name="dialog_enable_folder_sync_for_new_device_title">Enable folder sync for new device</string>
     <string name="dialog_enable_folder_sync_for_new_device_text">Do you want to sync %1$s with %2$s (%3$s)?</string>
@@ -77,4 +67,11 @@
     <string name="folder_browser_home">Home</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="upload_file">Upload file</string>
+    <string name="add_device">Add device</string>
+    <string name="qr_code_description">QR Code</string>
+    <string name="device_icon">Device icon</string>
+    <string name="file_icon">File icon</string>
+    <string name="scan_qr_code">Scan QR code</string>
+    <string name="device_id_placeholder">XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX</string>
 </resources>

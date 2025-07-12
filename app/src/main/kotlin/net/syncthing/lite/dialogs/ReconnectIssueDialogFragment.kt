@@ -7,10 +7,10 @@ import androidx.appcompat.app.AlertDialog
 import net.syncthing.lite.R
 
 class ReconnectIssueDialogFragment: DialogFragment() {
-    override fun onCreateDialog(savedInstanceState: Bundle?) = AlertDialog.Builder(context!!, theme)
+    override fun onCreateDialog(savedInstanceState: Bundle?) = AlertDialog.Builder(requireContext(), theme)
         .setMessage(R.string.dialog_warning_reconnect_problem)
         .setPositiveButton(android.R.string.ok) { _, _ ->
-            context!!.getSharedPreferences("default", android.content.Context.MODE_PRIVATE)
+            requireContext().getSharedPreferences("default", android.content.Context.MODE_PRIVATE)
                 .edit()
                 .putBoolean(SETTINGS_PARAM, true)
                 .apply()

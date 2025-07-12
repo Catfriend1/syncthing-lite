@@ -1,6 +1,7 @@
 package net.syncthing.lite.adapters
 
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.DiffUtil
 import android.text.format.DateUtils
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,8 +14,9 @@ import net.syncthing.lite.databinding.ListviewFolderBinding
 import kotlin.properties.Delegates
 
 class FoldersListAdapter: RecyclerView.Adapter<FolderListViewHolder>() {
-    var data: List<FolderStatus> by Delegates.observable(listOf()) {
-        _, _, _ -> notifyDataSetChanged()
+    var data: List<FolderStatus> by Delegates.observable(listOf()) { _, old, new ->
+        val diffResult = DiffUtil.calculateDiff(FoldersDiffCallback(old, new))
+        diffResult.dispatchUpdatesTo(this)
     }
 
     var listener: FolderListAdapterListener? = null
@@ -45,12 +47,12 @@ class FoldersListAdapter: RecyclerView.Adapter<FolderListViewHolder>() {
         binding.lastModification = context.getString(R.string.last_modified_time,
                 DateUtils.getRelativeDateTimeString(context, folderStats.lastUpdate.time, DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0))
 
-        binding.info = context.getString(R.string.folder_content_info, folderStats.sizeDescription, folderStats.fileCount, folderStats.dirCount)
+        binding.info = context.resources.getQuantityString(R.plurals.folder_content_info_files, folderStats.fileCount.toInt(), folderStats.sizeDescription, folderStats.fileCount, folderStats.dirCount)
 
         binding.info2 = if (item.missingIndexUpdates == 0L)
             null
         else
-            context.getString(R.string.pending_index_updates, item.missingIndexUpdates)
+            context.resources.getQuantityString(R.plurals.pending_index_updates, item.missingIndexUpdates.toInt(), item.missingIndexUpdates)
 
         binding.root.setOnClickListener {
             listener?.onFolderClicked(folderInfo, folderStats)
@@ -67,4 +69,29 @@ class FolderListViewHolder(val binding: ListviewFolderBinding): RecyclerView.Vie
 interface FolderListAdapterListener {
     fun onFolderClicked(folderInfo: FolderInfo, folderStats: FolderStats)
     fun onFolderLongClicked(folderInfo: FolderInfo): Boolean
+}
+
+class FoldersDiffCallback(
+    private val oldList: List<FolderStatus>,
+    private val newList: List<FolderStatus>
+) : DiffUtil.Callback() {
+    
+    override fun getOldListSize(): Int = oldList.size
+    
+    override fun getNewListSize(): Int = newList.size
+    
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return oldList[oldItemPosition].info.folderId == newList[newItemPosition].info.folderId
+    }
+    
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        val old = oldList[oldItemPosition]
+        val new = newList[newItemPosition]
+        return old.info.label == new.info.label &&
+               old.stats.lastUpdate == new.stats.lastUpdate &&
+               old.stats.fileCount == new.stats.fileCount &&
+               old.stats.dirCount == new.stats.dirCount &&
+               old.stats.sizeDescription == new.stats.sizeDescription &&
+               old.missingIndexUpdates == new.missingIndexUpdates
+    }
 }

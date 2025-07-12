@@ -12,8 +12,7 @@
     <string name="dialog_uploading_file">Caricamento del file %1$s</string>
     <string name="clear_cache_and_index_title">Cancellare la cache locale e l\'indice?</string>
     <string name="clear_cache_and_index_body">Cancellare tutti i dati della cache locale e i dati dell\'indice?</string>
-    <string name="index_update_progress_label">Aggiornamento dell\'indice per la cartella %1$s, %2$d%% sincronizzato</string>
-    <string name="loading_config_starting_syncthing_client">Caricamento configurazione, avvio del client syncthing...</string>
+    <string name="loading_config_starting_syncthing_client">Caricamento configurazione, avvio del client syncthing…</string>
     <string name="last_modified_time">Ultima modifica: %1$s</string>
     <string name="remove_device_title">Rimuovere il dispositivo %1$s\?</string>
     <string name="remove_device_message">Rimuovere %1$s dalla lista dei dispositivi noti?</string>
@@ -22,7 +21,6 @@
     <string name="folders_label">Cartelle</string>
     <string name="devices_label">Dispositivi</string>
     <string name="folder_label_format">%1$s (%2$s)</string>
-    <string name="folder_content_info">%1$s, %2$d file, %3$d cartelle</string>
     <string name="file_info">%1$s, ultima modifica %2$s</string>
     <string name="show_device_id">Mostra l\'ID del dispositivo</string>
     <string name="device_id">ID dispositivo</string>
@@ -41,8 +39,6 @@
     <string name="settings_app_version_title">Versione dell\'app</string>
     <string name="settings_local_device_name">Nome del dispositivo locale</string>
     <string name="settings_local_device_summary">Il nome che altri dispositivi vedranno per questo dispositivo</string>
-    <string name="settings_shutdown_delay_title">Ritardo di chiusura</string>
-    <string name="settings_shutdown_delay_summary">Tempo prima della chiusura del client Syncthing dopo l\'ultimo utilizzo</string>
     <string name="settings_force_stop">Forza l\'arresto dell\'App</string>
     <string name="settings_last_error_title">Ultimo errore</string>
     <string name="settings_last_error_summary">Visualizza i dettagli dell\'ultimo errore</string>
@@ -51,10 +47,6 @@
     <string name="copy_to_clipboard">Copia negli appunti</string>
     <string name="copied_to_clipboard">Copiato negli appunti</string>
     <string name="device_id_dialog_title">Inserisci ID Dispositivo</string>
-    <string name="settings_shutdown_delay_10_seconds">10 secondi</string>
-    <string name="settings_shutdown_delay_30_seconds">30 secondi</string>
-    <string name="settings_shutdown_delay_1_minute">1 minuto</string>
-    <string name="settings_shutdown_delay_5_minutes">5 minuti</string>
     <string name="dialog_warning_reconnect_problem">
         A causa del comportamento di quest\'App e del comportamento del Server Syncthing,
         non è possibile riconnettersi per alcuni minuti se l\'app è stata chiusa (a causa della rimozione dall\'elenco app recenti)
@@ -62,10 +54,8 @@
         Questo non si applica alle connessioni di individuazione locale
     </string>
     <string name="dialog_file_save_as">Salva come</string>
-    <string name="pending_index_updates">%d aggiornamenti degli indici in sospeso</string>
     <string name="device_status_connecting">Connessione a %s</string>
     <string name="device_status_connected">Connesso a %s</string>
-    <string name="device_status_disconnected">Nuovo tentativo di connessione a breve: ci sono %d indirizzi noti</string>
     <string name="device_status_no_address">Nessun indirizzo conosciuto per il dispositivo</string>
     <string name="dialog_enable_folder_sync_for_new_device_title">Abilita sincronizzazione cartella per il nuovo dispositivo</string>
     <string name="dialog_enable_folder_sync_for_new_device_text">Vuoi sincronizzare %1$s con %2$s (%3$s)?</string>

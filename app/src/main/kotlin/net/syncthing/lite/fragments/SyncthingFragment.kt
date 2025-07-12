@@ -4,7 +4,7 @@ import net.syncthing.lite.async.CoroutineFragment
 import net.syncthing.lite.library.LibraryHandler
 
 abstract class SyncthingFragment : CoroutineFragment() {
-    val libraryHandler: LibraryHandler by lazy { LibraryHandler(context = context!!)}
+    val libraryHandler: LibraryHandler by lazy { LibraryHandler(context = requireContext())}
 
     override fun onStart() {
         super.onStart()

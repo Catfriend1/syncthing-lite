@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="folder_content_info_files">
+        <item quantity="one">%1$s, %2$d Datei, %3$d Ordner</item>
+        <item quantity="other">%1$s, %2$d Dateien, %3$d Ordner</item>
+    </plurals>
+    
+    <plurals name="pending_index_updates">
+        <item quantity="one">%d Index-Update ausstehend</item>
+        <item quantity="other">%d Index-Updates ausstehend</item>
+    </plurals>
+    
+    <plurals name="device_status_known_addresses">
+        <item quantity="one">Verbindung wird bald erneut versucht - es ist %d bekannte Adresse vorhanden</item>
+        <item quantity="other">Verbindung wird bald erneut versucht - es sind %d bekannte Adressen vorhanden</item>
+    </plurals>
+</resources>

@@ -92,7 +92,7 @@ class DevicesFragment : SyncthingFragment() {
             integrator.initiateScan()
         }
         binding.deviceId.post {
-            val imm = context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(binding.deviceId, InputMethodManager.SHOW_IMPLICIT)
         }
 

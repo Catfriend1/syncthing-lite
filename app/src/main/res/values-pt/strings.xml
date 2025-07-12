@@ -12,8 +12,7 @@
     <string name="dialog_uploading_file">Enviando ficheiro %1$s</string>
     <string name="clear_cache_and_index_title">Limpar a cache e o índice locais?</string>
     <string name="clear_cache_and_index_body">Limpar todos os dados locais de cache e de índice?</string>
-    <string name="index_update_progress_label">Índice actualizado para a pasta %1$s, %2$d%% sincronizado</string>
-    <string name="loading_config_starting_syncthing_client">Carregando a configuração, iniciando o cliente syncthing...</string>
+    <string name="loading_config_starting_syncthing_client">Carregando a configuração, iniciando o cliente syncthing…</string>
     <string name="last_modified_time">Última alteração: %1$s</string>
     <string name="remove_device_title">Remover o dispositivo %1$s\?</string>
     <string name="remove_device_message">Remover %1$s da lista de dispositivos conhecidos?</string>
@@ -22,7 +21,6 @@
     <string name="folders_label">Pastas</string>
     <string name="devices_label">Dispositivos</string>
     <string name="folder_label_format">%1$s (%2$s)</string>
-    <string name="folder_content_info">%1$s, %2$d ficheiros, %3$d pastas</string>
     <string name="file_info">%1$s, última modificação em %2$s</string>
     <string name="show_device_id">Mostrar ID do dispositivo</string>
     <string name="device_id">ID do dispositivo</string>

@@ -29,6 +29,7 @@
             android:id="@+id/device_icon"
             android:layout_width="32dp"
             android:layout_height="32dp"
+            android:contentDescription="@string/device_icon"
             tools:src="@drawable/ic_laptop_green_24dp"
             android:src="@{safeUnbox(isConnected) ? @drawable/ic_laptop_green_24dp : @drawable/ic_laptop_red_24dp}" />
 
@@ -55,7 +56,7 @@
 
             <TextView
                 android:text="@{status}"
-                tools:text="Trying to connect to 127.0.0.1 ..."
+                tools:text="Trying to connect to 127.0.0.1 …"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 

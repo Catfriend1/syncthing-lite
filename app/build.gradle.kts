@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
@@ -86,6 +87,7 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.material)
+    implementation(libs.appcompat)
     implementation(libs.legacy.preference.v14)
     implementation(libs.legacy.support.v4)
     implementation(libs.lifecycle.runtime.ktx)

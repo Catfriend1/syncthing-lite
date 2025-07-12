@@ -39,7 +39,7 @@ class FoldersFragment : SyncthingFragment() {
 
         val binding = FragmentFoldersBinding.inflate(layoutInflater, container, false)
         binding.list.adapter = adapter
-        libraryHandler.isListeningPortTaken.observe(this, Observer { binding.listeningPortTaken = it })
+        libraryHandler.isListeningPortTaken.observe(viewLifecycleOwner, Observer { binding.listeningPortTaken = it })
 
         launch {
             libraryHandler.subscribeToFolderStatusList().collect {

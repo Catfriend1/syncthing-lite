@@ -36,7 +36,7 @@ class DeviceIdDialogFragment : SyncthingDialogFragment() {
         val binding = DialogDeviceIdBinding.inflate(LayoutInflater.from(context), null, false)
 
         // Placeholder to prevent size changes; this string is never shown
-        binding.deviceId.text = "XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX"
+        binding.deviceId.text = getString(R.string.device_id_placeholder)
         binding.deviceId.visibility = View.INVISIBLE
 
         binding.qrCode.setImageBitmap(Bitmap.createBitmap(QR_RESOLUTION, QR_RESOLUTION, Bitmap.Config.RGB_565))

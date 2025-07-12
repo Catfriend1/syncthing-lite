@@ -1,6 +1,7 @@
 package net.syncthing.lite.adapters
 
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.DiffUtil
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -12,8 +13,9 @@ import kotlin.properties.Delegates
 
 // TODO: enable setHasStableIds and add a good way to get an id
 class FolderContentsAdapter: RecyclerView.Adapter<FolderContentsViewHolder>() {
-    var data: List<FileInfo> by Delegates.observable(listOf()) {
-        _, _, _ -> notifyDataSetChanged()
+    var data: List<FileInfo> by Delegates.observable(listOf()) { _, old, new ->
+        val diffResult = DiffUtil.calculateDiff(FolderContentsDiffCallback(old, new))
+        diffResult.dispatchUpdatesTo(this)
     }
 
     var listener: FolderContentsListener? = null
@@ -67,3 +69,26 @@ interface FolderContentsListener {
 }
 
 class FolderContentsViewHolder(val binding: ListviewFileBinding): RecyclerView.ViewHolder(binding.root)
+
+class FolderContentsDiffCallback(
+    private val oldList: List<FileInfo>,
+    private val newList: List<FileInfo>
+) : DiffUtil.Callback() {
+    
+    override fun getOldListSize(): Int = oldList.size
+    
+    override fun getNewListSize(): Int = newList.size
+    
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return oldList[oldItemPosition].fileName == newList[newItemPosition].fileName
+    }
+    
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        val old = oldList[oldItemPosition]
+        val new = newList[newItemPosition]
+        return old.fileName == new.fileName &&
+               old.isDirectory() == new.isDirectory() &&
+               old.size == new.size &&
+               old.lastModified == new.lastModified
+    }
+}

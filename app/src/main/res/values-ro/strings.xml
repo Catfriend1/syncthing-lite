@@ -12,7 +12,6 @@
     <string name="dialog_uploading_file">Se încarcă fișierul %1$s</string>
     <string name="clear_cache_and_index_title">Se curăță memoria locală și indexul?</string>
     <string name="clear_cache_and_index_body">Se curăță datele din memoria locală și datele indexului?</string>
-    <string name="index_update_progress_label">Actualizarea indexul pentru directorul %1$s, %2$d %% sincronizat</string>
     <string name="loading_config_starting_syncthing_client">Încărcare setări, pornire client syncthing…</string>
     <string name="last_modified_time">Modificat ultima dată pe: %1$s</string>
     <string name="remove_device_title">Ștergere dispozitiv %1$s\?</string>
@@ -22,7 +21,6 @@
     <string name="folders_label">Directoare</string>
     <string name="devices_label">Dispozitive</string>
     <string name="folder_label_format">%1$s (%2$s)</string>
-    <string name="folder_content_info">%1$s, %2$d fișier(e), %3$d director(oare)</string>
     <string name="file_info">%1$s, modificat ultima dată pe %2$s</string>
     <string name="show_device_id">Arată ID dispozitiv</string>
     <string name="device_id">ID dispozitiv</string>
@@ -45,8 +43,6 @@ fi stocate, dacă vor fi partajate cu terțe entități precum și cum vor fi
     <string name="settings_app_version_title">Versiune aplicație</string>
     <string name="settings_local_device_name">Nume local dispozitiv</string>
     <string name="settings_local_device_summary">Numele pe care celălalt dispozitiv îl va vedea pentru acest dispozitiv</string>
-    <string name="settings_shutdown_delay_title">Temporizare oprire</string>
-    <string name="settings_shutdown_delay_summary">După cât timp se va închide clientul Syncthing în funcție de ultima utilizare</string>
     <string name="settings_force_stop">Forțează oprirea acestei aplicații</string>
     <string name="settings_last_error_title">Ultima eroare</string>
     <string name="settings_last_error_summary">Arată detaliile ultimei erori</string>
@@ -55,10 +51,6 @@ fi stocate, dacă vor fi partajate cu terțe entități precum și cum vor fi
     <string name="copy_to_clipboard">Copiază în memorie</string>
     <string name="copied_to_clipboard">Copiat în memorie</string>
     <string name="device_id_dialog_title">Introduceți ID dispozitiv</string>
-    <string name="settings_shutdown_delay_10_seconds">10 secunde</string>
-    <string name="settings_shutdown_delay_30_seconds">30 secunde</string>
-    <string name="settings_shutdown_delay_1_minute">1 minut</string>
-    <string name="settings_shutdown_delay_5_minutes">5 minute</string>
     <string name="dialog_warning_reconnect_problem">
         Datorită modului în care această aplicație și serverul Syncthing funcționează,
         nu se poate face reconectarea timp de câteva minute după ce aplicația a fost oprită (ștearsă din lista de aplicații care rulează)
@@ -66,10 +58,8 @@ fi stocate, dacă vor fi partajate cu terțe entități precum și cum vor fi
         Aceasta limitare nu se aplica la conexiunile descoperite local.
     </string>
     <string name="dialog_file_save_as">Salvează ca</string>
-    <string name="pending_index_updates">%d actualizări de index în așteptare</string>
     <string name="device_status_connecting">Conectare la %s</string>
     <string name="device_status_connected">Conectat la %s</string>
-    <string name="device_status_disconnected">Se va încerca conectarea în curând - există %d adrese cunoscute</string>
     <string name="device_status_no_address">Nici o adresă cunoscută pentru acest dispozitiv</string>
     <string name="dialog_enable_folder_sync_for_new_device_title">Activați sincronizarea directorului pentru un dispozitiv nou</string>
     <string name="dialog_enable_folder_sync_for_new_device_text">Doriți să sincronizați %1$s cu %2$s (%3$s)?</string>

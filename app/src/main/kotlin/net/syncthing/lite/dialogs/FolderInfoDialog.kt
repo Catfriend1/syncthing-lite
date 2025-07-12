@@ -24,10 +24,10 @@ class FolderInfoDialog: SyncthingDialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val folderId = arguments!!.getString(FOLDER_ID)
+        val folderId = requireArguments().getString(FOLDER_ID)
         val binding = DialogFolderInfoBinding.inflate(LayoutInflater.from(context))
 
-        val dialog = AlertDialog.Builder(context!!)
+        val dialog = AlertDialog.Builder(requireContext())
                 .setTitle(folderId)
                 .setView(binding.root)
                 .create()
@@ -54,10 +54,10 @@ class FolderInfoDialog: SyncthingDialogFragment() {
                 val deviceLabel = if (deviceInfo == null)
                     deviceId.deviceId
                 else
-                    context!!.getString(R.string.dialog_folder_info_device_list_item, deviceInfo.name, deviceId.deviceId)
+                    requireContext().getString(R.string.dialog_folder_info_device_list_item, deviceInfo.name, deviceId.deviceId)
 
                 binding.deviceCheckboxesContainer.addView(
-                        AppCompatCheckBox(context!!).apply {
+                        AppCompatCheckBox(requireContext()).apply {
                             text = deviceLabel
                             isChecked = folderInfo.deviceIdWhitelist.contains(deviceId)
 

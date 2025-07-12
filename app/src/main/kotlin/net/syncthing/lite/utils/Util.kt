@@ -42,7 +42,11 @@ object Util {
             if (cursor == null || !cursor.moveToFirst()) {
                 throw InvalidParameterException("Cursor is null or empty")
             }
-            return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+            val columnIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (columnIndex == -1) {
+                throw InvalidParameterException("Display name column not found")
+            }
+            return cursor.getString(columnIndex)
         }
     }
 

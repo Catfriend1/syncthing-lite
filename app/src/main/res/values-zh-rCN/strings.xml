@@ -21,7 +21,6 @@
     <string name="folders_label">文件夹</string>
     <string name="devices_label">设备</string>
     <string name="folder_label_format">%1$s（%2$s）</string>
-    <string name="folder_content_info">%1$s，%2$d个文件，%3$d个目录</string>
     <string name="file_info">%1$s，最后修改 %2$s</string>
     <string name="show_device_id">显示设备 ID</string>
     <string name="device_id">设备 ID</string>
@@ -39,11 +38,6 @@
     <string name="settings_app_version_title">应用版本</string>
     <string name="settings_local_device_name">本地设备名称</string>
     <string name="settings_local_device_summary">此设备将被其他设备看到的名称</string>
-    <string name="settings_shutdown_delay_title">关闭延迟</string>
     <string name="device_id_dialog_title">输入设备 ID</string>
-    <string name="settings_shutdown_delay_10_seconds">10 秒</string>
-    <string name="settings_shutdown_delay_30_seconds">30 秒</string>
-    <string name="settings_shutdown_delay_1_minute">1 分钟</string>
-    <string name="settings_shutdown_delay_5_minutes">5 分钟</string>
     <string name="dialog_folder_info_device_list_item">%1$s（%2$s）</string>
     </resources>
