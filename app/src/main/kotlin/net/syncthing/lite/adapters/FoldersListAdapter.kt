@@ -45,12 +45,12 @@ class FoldersListAdapter: RecyclerView.Adapter<FolderListViewHolder>() {
         binding.lastModification = context.getString(R.string.last_modified_time,
                 DateUtils.getRelativeDateTimeString(context, folderStats.lastUpdate.time, DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0))
 
-        binding.info = context.getString(R.string.folder_content_info, folderStats.sizeDescription, folderStats.fileCount, folderStats.dirCount)
+        binding.info = context.resources.getQuantityString(R.plurals.folder_content_info_files, folderStats.fileCount.toInt(), folderStats.sizeDescription, folderStats.fileCount, folderStats.dirCount)
 
         binding.info2 = if (item.missingIndexUpdates == 0L)
             null
         else
-            context.getString(R.string.pending_index_updates, item.missingIndexUpdates)
+            context.resources.getQuantityString(R.plurals.pending_index_updates, item.missingIndexUpdates.toInt(), item.missingIndexUpdates)
 
         binding.root.setOnClickListener {
             listener?.onFolderClicked(folderInfo, folderStats)

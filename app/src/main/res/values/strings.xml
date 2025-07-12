@@ -22,7 +22,6 @@
     <string name="folders_label">Folders</string>
     <string name="devices_label">Devices</string>
     <string name="folder_label_format">%1$s (%2$s)</string>
-    <string name="folder_content_info">%1$s, %2$d files, %3$d directories</string>
     <string name="file_info">%1$s, last modified %2$s</string>
     <string name="show_device_id">Show device ID</string>
     <string name="device_id">Device ID</string>
@@ -62,10 +61,8 @@
         This does not apply to local discovery connections.
     </string>
     <string name="dialog_file_save_as">Save as</string>
-    <string name="pending_index_updates">%d index updates pending</string>
     <string name="device_status_connecting">Connecting to %s</string>
     <string name="device_status_connected">Connected to %s</string>
-    <string name="device_status_disconnected">Will retry connecting soon - there are %d known addresses</string>
     <string name="device_status_no_address">No known address for the device</string>
     <string name="dialog_enable_folder_sync_for_new_device_title">Enable folder sync for new device</string>
     <string name="dialog_enable_folder_sync_for_new_device_text">Do you want to sync %1$s with %2$s (%3$s)?</string>
@@ -77,4 +74,11 @@
     <string name="folder_browser_home">Home</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="upload_file">Upload file</string>
+    <string name="add_device">Add device</string>
+    <string name="qr_code_description">QR Code</string>
+    <string name="device_icon">Device icon</string>
+    <string name="file_icon">File icon</string>
+    <string name="scan_qr_code">Scan QR code</string>
+    <string name="device_id_placeholder">XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX</string>
 </resources>

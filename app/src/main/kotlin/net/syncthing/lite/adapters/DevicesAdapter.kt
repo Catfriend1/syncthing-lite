@@ -44,7 +44,7 @@ class DevicesAdapter: RecyclerView.Adapter<DeviceViewHolder>() {
             ConnectionStatus.Disconnected -> if (connectionInfo.addresses.isEmpty())
                 context.getString(R.string.device_status_no_address)
             else
-                context.getString(R.string.device_status_disconnected, connectionInfo.addresses.size)
+                context.resources.getQuantityString(R.plurals.device_status_known_addresses, connectionInfo.addresses.size, connectionInfo.addresses.size)
         }
 
         binding.root.setOnLongClickListener { listener?.onDeviceLongClicked(deviceInfo) ?: false }
