@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Syncthing Lite</string>
+    <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">No folder available</string>
     <string name="clear_local_cache_index_label">Clear local cache/index</string>
     <string name="devices_list_view_empty_message">No devices available</string>
@@ -30,7 +30,7 @@
     <string name="share_device_id_chooser">Share device ID with</string>
     <string name="other_syncthing_instance_title">Another Syncthing instance is running</string>
     <string name="other_syncthing_instance_message">Local discovery will not work. Stop the other Syncthing instance to enable local discovery.</string>
-    <string name="intro_page_one_title">Welcome to Syncthing Lite</string>
+    <string name="intro_page_one_title">Welcome to Syncthing-Lite</string>
     <string name="intro_page_one_description">Syncthing replaces proprietary sync and cloud services with something open, trustworthy and decentralized. Your data is your data alone and you deserve to choose where it is stored, if it is shared with some third party and how it\'s transmitted over the Internet.</string>
     <string name="intro_page_two_title">Add a device</string>
     <string name="intro_page_three_title">Share your folders</string>
@@ -73,7 +73,7 @@
     <string name="dialog_enable_folder_sync_for_new_device_negative">Do not sync</string>
     <string name="dialog_folder_info_device_list">Share folder with:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
-    <string name="toast_error">Something went wrong in Syncthing Lite. You can view the details from the settings of Syncthing Lite.</string>
+    <string name="toast_error">Something went wrong in Syncthing-Lite. You can view the details from the settings of Syncthing-Lite.</string>
     <string name="folder_browser_home">Home</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>

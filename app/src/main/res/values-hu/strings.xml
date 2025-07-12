@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Syncthing Lite</string>
+    <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">Nincs elérhető mappa</string>
     <string name="clear_local_cache_index_label">Helyi gyorsítótár/index törlése</string>
     <string name="devices_list_view_empty_message">Nincs elérhető eszköz</string>
@@ -30,7 +30,7 @@
     <string name="share_device_id_chooser">Eszközazonosító megosztása</string>
     <string name="other_syncthing_instance_title">Egy másik Syncthing folyamat fut</string>
     <string name="other_syncthing_instance_message">Helyi felfedezés nem fog működni. Állítsd le a másik Syncthing folyamatot a helyi felfedezés bekapcsolásához.</string>
-    <string name="intro_page_one_title">Üdvözöllek a Syncthing Lite-ban</string>
+    <string name="intro_page_one_title">Üdvözöllek a Syncthing-Lite-ban</string>
     <string name="intro_page_one_description">A Syncthing a zárt forrású szinkronizáló és felhő szolgáltatásokat egy nyílt, megbízható és decentralizált szoftverrel váltja fel. A te adatod csak a tiéd és te szabod meg, hogy hol tárolod, kivel osztod meg, és hogyan továbbítod az interneten.</string>
     <string name="intro_page_two_title">Eszköz hozzáadása</string>
     <string name="intro_page_three_title">Mappáid megosztása</string>

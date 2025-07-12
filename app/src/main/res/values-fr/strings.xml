@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Syncthing Lite</string>
+    <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">Aucun dossier disponible</string>
     <string name="clear_local_cache_index_label">Effacer le cache et l\'index local</string>
     <string name="devices_list_view_empty_message">Aucun appareil disponible</string>
@@ -30,7 +30,7 @@
     <string name="share_device_id_chooser">Partager l\'ID de l\'appareil avec</string>
     <string name="other_syncthing_instance_title">Une autre instance de Syncthing fonctionne</string>
     <string name="other_syncthing_instance_message">La découverte locale ne fonctionnera pas. Arrêtez l\'autre instance de Syncthing pour activer la découverte locale.</string>
-    <string name="intro_page_one_title">Bienvenue dans Syncthing Lite</string>
+    <string name="intro_page_one_title">Bienvenue dans Syncthing-Lite</string>
     <string name="intro_page_one_description">Syncthing remplace les services de synchronisation et de cloud propriétaires par quelque chose d\'ouvert, fiable et décentralisé. Vos données sont uniquement vos données et vous méritez de choisir où elles sont stockées, si elles sont partagées avec des tiers et comment elles sont transmises sur Internet.</string>
     <string name="intro_page_two_title">Ajouter un appareil</string>
     <string name="intro_page_three_title">Partager vos dossiers</string>
@@ -71,5 +71,5 @@ Cela ne s\'applique pas aux connexions de découverte locales.</string>
     <string name="dialog_enable_folder_sync_for_new_device_negative">Ne pas synchroniser</string>
     <string name="dialog_folder_info_device_list">Partager le dossier avec:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
-    <string name="toast_error">Quelque chose s\'est mal passé dans Syncthing Lite. Vous pouvez afficher les détails à partir des paramètres de Syncthing Lite.</string>
+    <string name="toast_error">Quelque chose s\'est mal passé dans Syncthing-Lite. Vous pouvez afficher les détails à partir des paramètres de Syncthing-Lite.</string>
 </resources>
