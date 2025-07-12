@@ -20,7 +20,13 @@ class BlockInfoListConverter {
             }).build().toByteArray()
 
     @TypeConverter
-    fun fromString(data: ByteArray) = BlockExchangeExtraProtos.Blocks.parseFrom(data).blocksList.map { record ->
-        BlockInfo(record!!.offset, record.size, Hex.toHexString(record.hash.toByteArray()))
+    fun fromString(data: ByteArray?): List<BlockInfo> {
+        return if (data == null) {
+            emptyList()
+        } else {
+            BlockExchangeExtraProtos.Blocks.parseFrom(data).blocksList.map { record ->
+                BlockInfo(record!!.offset, record.size, Hex.toHexString(record.hash.toByteArray()))
+            }
+        }
     }
 }
