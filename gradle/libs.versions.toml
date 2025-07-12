@@ -16,7 +16,8 @@ version-code = "1300000"
 version-name = "1.30.0.0"
 
 # AndroidX and Google libraries
-material = "1.0.0"
+material = "1.9.0"
+appcompat = "1.6.1"
 legacy-preference-v14 = "1.0.0"
 legacy-support-v4 = "1.0.0"
 lifecycle-runtime-ktx = "2.2.0"
@@ -51,6 +52,7 @@ protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protob
 
 # AndroidX and Google
 material = { module = "com.google.android.material:material", version.ref = "material" }
+appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 legacy-preference-v14 = { module = "androidx.legacy:legacy-preference-v14", version.ref = "legacy-preference-v14" }
 legacy-support-v4 = { module = "androidx.legacy:legacy-support-v4", version.ref = "legacy-support-v4" }
 lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }

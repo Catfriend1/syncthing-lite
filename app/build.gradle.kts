@@ -86,6 +86,7 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.material)
+    implementation(libs.appcompat)
     implementation(libs.legacy.preference.v14)
     implementation(libs.legacy.support.v4)
     implementation(libs.lifecycle.runtime.ktx)
