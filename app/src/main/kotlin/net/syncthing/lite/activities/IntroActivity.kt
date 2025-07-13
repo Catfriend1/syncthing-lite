@@ -28,6 +28,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
+import net.syncthing.java.bep.connectionactor.ConnectionStatus
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.lite.R
@@ -304,6 +305,18 @@ class IntroActivity : AppIntro() {
                     
                     // Update discovery status display
                     updateDiscoveryStatus(devices, connectionInfo)
+                    
+                    // Check if any devices have no known addresses and trigger discovery retry
+                    // This is the same logic as DevicesFragment to ensure continuous discovery
+                    val devicesWithoutAddresses = devices.filter { device ->
+                        val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                        connection.status == ConnectionStatus.Disconnected && connection.addresses.isEmpty()
+                    }
+                    
+                    if (devicesWithoutAddresses.isNotEmpty()) {
+                        // Trigger discovery retry for devices without addresses
+                        libraryHandler.retryDiscoveryForDevicesWithoutAddresses()
+                    }
                 }
             }
 
