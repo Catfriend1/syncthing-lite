@@ -31,12 +31,18 @@ abstract class SyncthingActivity : CoroutineActivity() {
     private val maxRetryDelayMs = 300000L // Maximum 5 minutes
     private var isStarted = false
 
+    companion object {
+        private const val TAG = "SyncthingActivity"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate() called for ${this.javaClass.simpleName}")
     }
 
     override fun onStart() {
         super.onStart()
+        Log.d(TAG, "onStart() called for ${this.javaClass.simpleName}")
         isStarted = true
 
         val binding = DataBindingUtil.inflate<DialogLoadingBinding>(
@@ -48,7 +54,9 @@ abstract class SyncthingActivity : CoroutineActivity() {
                 .setView(binding.root)
                 .show()
 
+        Log.d(TAG, "Starting LibraryHandler for ${this.javaClass.simpleName}")
         libraryHandler.start {
+            Log.d(TAG, "LibraryHandler started for ${this.javaClass.simpleName}")
             if (!isDestroyed) {
                 loadingDialog?.dismiss()
             }
@@ -59,17 +67,21 @@ abstract class SyncthingActivity : CoroutineActivity() {
 
     override fun onStop() {
         super.onStop()
+        Log.d(TAG, "onStop() called for ${this.javaClass.simpleName}")
         isStarted = false
 
         // Stop the connection manager
+        Log.d(TAG, "Stopping connection manager for ${this.javaClass.simpleName}")
         connectionManagerJob?.cancel()
         connectionManagerJob = null
         
+        Log.d(TAG, "Stopping LibraryHandler for ${this.javaClass.simpleName}")
         libraryHandler.stop()
         loadingDialog?.dismiss()
     }
 
     open fun onLibraryLoaded() {
+        Log.d(TAG, "onLibraryLoaded() called for ${this.javaClass.simpleName}")
         // Start the centralized connection manager
         startConnectionManager()
     }
@@ -79,16 +91,27 @@ abstract class SyncthingActivity : CoroutineActivity() {
      * with proper backoff strategy and lifecycle management.
      */
     private fun startConnectionManager() {
+        Log.d(TAG, "Starting connection manager for ${this.javaClass.simpleName}")
         connectionManagerJob?.cancel()
         connectionManagerJob = launch {
+            Log.d(TAG, "Connection manager coroutine started for ${this.javaClass.simpleName}")
+            
             // Immediate connection attempt on startup
+            Log.d(TAG, "Triggering immediate connection attempt for ${this.javaClass.simpleName}")
             tryConnectToAllDevices()
             
             // Monitor connection status continuously
+            Log.d(TAG, "Starting connection status monitoring for ${this.javaClass.simpleName}")
             libraryHandler.subscribeToConnectionStatus().collect { connectionInfo ->
-                if (isDestroyed || !isStarted) return@collect
+                if (isDestroyed || !isStarted) {
+                    Log.d(TAG, "Connection manager stopping due to destroyed/stopped state for ${this.javaClass.simpleName}")
+                    return@collect
+                }
+                
+                Log.d(TAG, "Connection status update received for ${this.javaClass.simpleName}: ${connectionInfo.size} devices")
                 
                 val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }
+                Log.d(TAG, "Found ${devices.size} configured devices for ${this.javaClass.simpleName}")
                 
                 // Check for devices that need discovery or connection
                 val devicesNeedingDiscovery = devices.filter { device ->
@@ -101,13 +124,17 @@ abstract class SyncthingActivity : CoroutineActivity() {
                     connection.status == ConnectionStatus.Disconnected && connection.addresses.isNotEmpty()
                 }
                 
+                Log.d(TAG, "Devices needing discovery: ${devicesNeedingDiscovery.size}, needing connection: ${devicesNeedingConnection.size} for ${this.javaClass.simpleName}")
+                
                 // Handle devices without addresses - need discovery
                 if (devicesNeedingDiscovery.isNotEmpty()) {
+                    Log.d(TAG, "Triggering discovery retry for ${devicesNeedingDiscovery.size} devices in ${this.javaClass.simpleName}")
                     retryDiscoveryWithBackoff()
                 }
                 
                 // Handle devices with addresses but not connected - need connection
                 if (devicesNeedingConnection.isNotEmpty()) {
+                    Log.d(TAG, "Triggering connection attempt for ${devicesNeedingConnection.size} devices in ${this.javaClass.simpleName}")
                     tryConnectToAllDevices()
                 }
             }
@@ -118,17 +145,21 @@ abstract class SyncthingActivity : CoroutineActivity() {
      * Immediately attempts to connect to all devices and trigger discovery
      */
     private suspend fun tryConnectToAllDevices() {
+        Log.d(TAG, "tryConnectToAllDevices() called for ${this.javaClass.simpleName}")
         launch(Dispatchers.IO) {
             try {
+                Log.d(TAG, "Calling connectToNewlyAddedDevices() for ${this.javaClass.simpleName}")
                 libraryHandler.libraryManager.withLibrary { library ->
                     library.syncthingClient.connectToNewlyAddedDevices()
                 }
+                Log.d(TAG, "connectToNewlyAddedDevices() completed for ${this.javaClass.simpleName}")
             } catch (e: Exception) {
-                // Log error but continue - this is a background operation
+                Log.e(TAG, "Error in connectToNewlyAddedDevices() for ${this.javaClass.simpleName}", e)
             }
         }
         
         // Also trigger discovery for devices without addresses
+        Log.d(TAG, "Triggering discovery retry for ${this.javaClass.simpleName}")
         libraryHandler.retryDiscoveryForDevicesWithoutAddresses()
     }
 
@@ -136,20 +167,26 @@ abstract class SyncthingActivity : CoroutineActivity() {
      * Retry discovery with exponential backoff strategy
      */
     private suspend fun retryDiscoveryWithBackoff() {
+        Log.d(TAG, "retryDiscoveryWithBackoff() called with delay ${retryDelayMs}ms for ${this.javaClass.simpleName}")
+        
         // Apply exponential backoff
         delay(retryDelayMs)
         
         // Trigger discovery
+        Log.d(TAG, "Triggering discovery retry after backoff for ${this.javaClass.simpleName}")
         libraryHandler.retryDiscoveryForDevicesWithoutAddresses()
         
         // Increase delay for next retry (exponential backoff)
+        val oldDelay = retryDelayMs
         retryDelayMs = min(retryDelayMs * 2, maxRetryDelayMs)
+        Log.d(TAG, "Backoff delay increased from ${oldDelay}ms to ${retryDelayMs}ms for ${this.javaClass.simpleName}")
     }
 
     /**
      * Reset the retry delay when a successful connection is established
      */
     fun resetRetryDelay() {
+        Log.d(TAG, "resetRetryDelay() called for ${this.javaClass.simpleName}")
         retryDelayMs = 10000L // Reset to 10 seconds
     }
 
@@ -157,6 +194,7 @@ abstract class SyncthingActivity : CoroutineActivity() {
      * Trigger immediate discovery and connection (called when new devices are added)
      */
     fun triggerImmediateConnectionAttempt() {
+        Log.d(TAG, "triggerImmediateConnectionAttempt() called for ${this.javaClass.simpleName}")
         launch {
             resetRetryDelay()
             tryConnectToAllDevices()
