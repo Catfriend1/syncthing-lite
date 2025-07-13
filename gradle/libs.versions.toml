@@ -17,7 +17,7 @@ version-name = "1.30.0.0"
 
 # AndroidX and Google libraries
 material = "1.12.0"
-appcompat = "1.6.1"
+appcompat = "1.7.1"
 legacy-preference-v14 = "1.0.0"
 legacy-support-v4 = "1.0.0"
 lifecycle-runtime-ktx = "2.2.0"
