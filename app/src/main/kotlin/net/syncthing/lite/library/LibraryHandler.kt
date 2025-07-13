@@ -168,4 +168,10 @@ class LibraryHandler(private val context: Context) {
     fun subscribeToOnFullIndexAcquiredEvents() = indexUpdateCompleteMessages.asSharedFlow()
     fun subscribeToFolderStatusList() = folderStatusList.asSharedFlow()
     fun subscribeToConnectionStatus() = connectionStatus.asStateFlow()
+    
+    fun retryDiscoveryForDevicesWithoutAddresses() {
+        CoroutineScope(Dispatchers.IO).launch {
+            syncthingClient { it.retryDiscovery() }
+        }
+    }
 }

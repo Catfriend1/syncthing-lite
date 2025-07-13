@@ -58,15 +58,34 @@ class DiscoveryHandler(
 
     private var shouldLoadFromGlobal = true
     private var shouldStartLocalDiscovery = true
+    private var lastGlobalDiscoveryTime = 0L
+    private var globalDiscoveryRetryInterval = 30_000L // Start with 30 seconds
+    private val maxRetryInterval = 300_000L // Max 5 minutes
 
     private fun doGlobalDiscoveryIfNotYetDone() {
-        // TODO: timeout for reload
-        // TODO: retry if connectivity changed
-
-        if (shouldLoadFromGlobal) {
+        val currentTime = System.currentTimeMillis()
+        
+        if (shouldLoadFromGlobal || (currentTime - lastGlobalDiscoveryTime) > globalDiscoveryRetryInterval) {
             shouldLoadFromGlobal = false
+            lastGlobalDiscoveryTime = currentTime
+            
             CoroutineScope(Dispatchers.Default).launch {
-                processDeviceAddressBg(globalDiscoveryHandler.query(configuration.peerIds))
+                val deviceAddresses = globalDiscoveryHandler.query(configuration.peerIds)
+                processDeviceAddressBg(deviceAddresses)
+                
+                // If no addresses were found for any device, schedule a retry with exponential backoff
+                val hasAddressesForAllDevices = configuration.peerIds.all { deviceId ->
+                    devicesAddressesManager.getDeviceAddressManager(deviceId).getCurrentDeviceAddresses().isNotEmpty()
+                }
+                
+                if (!hasAddressesForAllDevices) {
+                    // Increase retry interval with exponential backoff, but cap at max
+                    globalDiscoveryRetryInterval = minOf(globalDiscoveryRetryInterval * 2, maxRetryInterval)
+                    logger.info("Global discovery found no addresses for some devices, will retry in ${globalDiscoveryRetryInterval}ms")
+                } else {
+                    // Reset retry interval if successful
+                    globalDiscoveryRetryInterval = 30_000L
+                }
             }
         }
     }
@@ -114,6 +133,20 @@ class DiscoveryHandler(
                 peerDevices = configuration.peerIds,
                 devicesAddressesManager = devicesAddressesManager
         )
+    }
+
+    /**
+     * Force a new discovery attempt, used when devices have no known addresses
+     */
+    fun retryDiscovery() {
+        if (isClosed) {
+            return
+        }
+        
+        doGlobalDiscoveryIfNotYetDone()
+        
+        // Also restart local discovery announcements
+        localDiscoveryHandler.sendAnnounceMessage()
     }
 
     override fun close() {

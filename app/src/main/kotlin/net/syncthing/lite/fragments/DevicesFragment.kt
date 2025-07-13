@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
+import net.syncthing.java.bep.connectionactor.ConnectionStatus
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.lite.R
 import net.syncthing.lite.activities.QRScannerActivity
@@ -88,6 +89,17 @@ class DevicesFragment : SyncthingFragment() {
 
                 adapter.data = devices.map { device -> device to (connectionInfo[device.deviceId] ?: ConnectionInfo.empty) }
                 binding.isEmpty = devices.isEmpty()
+                
+                // Check if any devices have no known addresses and trigger discovery retry
+                val devicesWithoutAddresses = devices.filter { device ->
+                    val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                    connection.status == ConnectionStatus.Disconnected && connection.addresses.isEmpty()
+                }
+                
+                if (devicesWithoutAddresses.isNotEmpty()) {
+                    // Trigger discovery retry for devices without addresses
+                    libraryHandler.retryDiscoveryForDevicesWithoutAddresses()
+                }
             }
         }
 

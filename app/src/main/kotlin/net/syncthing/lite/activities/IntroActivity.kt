@@ -310,12 +310,14 @@ class IntroActivity : AppIntro() {
 
         override fun onResume() {
             super.onResume()
-            // Trigger connection attempts when this fragment becomes active
+            // Trigger connection attempts and discovery when this fragment becomes active
             launch(Dispatchers.IO) {
                 try {
                     libraryHandler.libraryManager.withLibrary { library ->
                         // Ensure discovery and connection processes are active
                         library.syncthingClient.connectToNewlyAddedDevices()
+                        // Also retry discovery in case the device was just added
+                        library.syncthingClient.retryDiscovery()
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "onResume::launch", e)

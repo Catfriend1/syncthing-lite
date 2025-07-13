@@ -90,6 +90,10 @@ class SyncthingClient(
         getConnections()
     }
 
+    fun retryDiscovery() {
+        discoveryHandler.retryDiscovery()
+    }
+
     fun disconnectFromRemovedDevices() {
         // TODO: implement this
     }
