@@ -52,6 +52,10 @@ abstract class SyncthingActivity : CoroutineActivity() {
     }
 
     open fun onLibraryLoaded() {
-        // nothing to do
+        // Ensure all devices are connected when the library is loaded
+        // This is important for re-establishing connections after app resume
+        libraryHandler.syncthingClient { syncthingClient ->
+            syncthingClient.connectToNewlyAddedDevices()
+        }
     }
 }

@@ -314,8 +314,18 @@ class IntroActivity : AppIntro() {
                     }
                     
                     if (devicesWithoutAddresses.isNotEmpty()) {
-                        // Trigger discovery retry for devices without addresses
+                        // Trigger both discovery retry and connection establishment for devices without addresses
                         libraryHandler.retryDiscoveryForDevicesWithoutAddresses()
+                        // Also ensure connection actors are created/active for newly added devices
+                        launch(Dispatchers.IO) {
+                            try {
+                                libraryHandler.libraryManager.withLibrary { library ->
+                                    library.syncthingClient.connectToNewlyAddedDevices()
+                                }
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to connect to newly added devices", e)
+                            }
+                        }
                     }
                 }
             }

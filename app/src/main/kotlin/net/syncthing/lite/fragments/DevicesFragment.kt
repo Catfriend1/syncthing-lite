@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
@@ -111,8 +112,18 @@ class DevicesFragment : SyncthingFragment() {
                 }
                 
                 if (devicesWithoutAddresses.isNotEmpty()) {
-                    // Trigger discovery retry for devices without addresses
+                    // Trigger both discovery retry and connection establishment for devices without addresses
                     libraryHandler.retryDiscoveryForDevicesWithoutAddresses()
+                    // Also ensure connection actors are created/active for devices without addresses
+                    launch(Dispatchers.IO) {
+                        try {
+                            libraryHandler.libraryManager.withLibrary { library ->
+                                library.syncthingClient.connectToNewlyAddedDevices()
+                            }
+                        } catch (e: Exception) {
+                            // Log error but continue
+                        }
+                    }
                 }
             }
         }
