@@ -8,10 +8,14 @@ import androidx.fragment.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.lite.databinding.DialogFileBinding
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileDialogFragment
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileSpec
+import net.syncthing.lite.library.LibraryHandler
 import net.syncthing.lite.utils.MimeType
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -73,6 +77,19 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
                         putExtra(Intent.EXTRA_TITLE, fileSpec.fileName)
                     }
             )
+        }
+
+        binding.deleteButton.setOnClickListener {
+            LibraryHandler(requireContext()).syncthingClient { syncthingClient ->
+                GlobalScope.launch(Dispatchers.Main) {
+                    DeleteFileDialog(
+                        requireContext(),
+                        syncthingClient,
+                        fileSpec.folder,
+                        fileSpec.path
+                    ) { dismiss() }.show()
+                }
+            }
         }
 
         return binding.root
