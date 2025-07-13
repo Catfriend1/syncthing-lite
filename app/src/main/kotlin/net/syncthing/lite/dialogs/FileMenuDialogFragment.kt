@@ -8,9 +8,6 @@ import androidx.fragment.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.lite.databinding.DialogFileBinding
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileDialogFragment
@@ -81,14 +78,12 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
 
         binding.deleteButton.setOnClickListener {
             LibraryHandler(requireContext()).syncthingClient { syncthingClient ->
-                GlobalScope.launch(Dispatchers.Main) {
-                    DeleteFileDialog(
-                        requireContext(),
-                        syncthingClient,
-                        fileSpec.folder,
-                        fileSpec.path
-                    ) { dismiss() }.show()
-                }
+                DeleteFileDialog(
+                    requireContext(),
+                    syncthingClient,
+                    fileSpec.folder,
+                    fileSpec.path
+                ) { dismiss() }.show()
             }
         }
 

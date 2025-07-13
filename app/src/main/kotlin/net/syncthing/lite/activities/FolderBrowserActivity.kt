@@ -52,19 +52,16 @@ class FolderBrowserActivity : SyncthingActivity() {
         ) { result ->
             if (result.resultCode == AppCompatActivity.RESULT_OK) {
                 libraryHandler.syncthingClient { syncthingClient ->
-                    MainScope().launch {
-                        // FIXME: it would be better if the dialog would use the library handler
-                        val currentPath = path.value
-                        result.data?.data?.let { uri ->
-                            FileUploadDialog(
-                                this@FolderBrowserActivity,
-                                syncthingClient,
-                                uri,
-                                folder,
-                                currentPath,
-                                { /* nothing to do on success */ }
-                            ).show()
-                        }
+                    val currentPath = path.value
+                    result.data?.data?.let { uri ->
+                        FileUploadDialog(
+                            this@FolderBrowserActivity,
+                            syncthingClient,
+                            uri,
+                            folder,
+                            currentPath,
+                            { /* nothing to do on success */ }
+                        ).show()
                     }
                 }
             }
