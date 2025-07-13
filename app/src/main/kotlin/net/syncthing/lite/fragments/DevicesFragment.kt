@@ -85,9 +85,23 @@ class DevicesFragment : SyncthingFragment() {
 
         launch {
             libraryHandler.subscribeToConnectionStatus().collect { connectionInfo ->
+                // Ensure we have a valid view before updating
+                if (!isAdded || view == null) return@collect
+                
                 val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }
 
-                adapter.data = devices.map { device -> device to (connectionInfo[device.deviceId] ?: ConnectionInfo.empty) }
+                // Defensive check to ensure data consistency
+                val deviceConnectionPairs = devices.mapNotNull { device ->
+                    val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                    // Only include devices that have valid data
+                    if (device.deviceId != null) {
+                        device to connection
+                    } else {
+                        null
+                    }
+                }
+                
+                adapter.data = deviceConnectionPairs
                 binding.isEmpty = devices.isEmpty()
                 
                 // Check if any devices have no known addresses and trigger discovery retry
