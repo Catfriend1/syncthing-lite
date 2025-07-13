@@ -57,6 +57,16 @@ class MainActivity : SyncthingActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
+    override fun onLibraryLoaded() {
+        Log.d(TAG, "MainActivity onLibraryLoaded() called")
+        super.onLibraryLoaded()
+        
+        // Additional connection establishment for MainActivity
+        // This is critical for the IntroActivity -> MainActivity transition
+        Log.d(TAG, "MainActivity triggering additional connection establishment")
+        triggerImmediateConnectionAttempt()
+    }
+
     /**
      * Sync the toggle state and fragment after onRestoreInstanceState has occurred.
      */

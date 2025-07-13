@@ -85,6 +85,13 @@ abstract class SyncthingActivity : CoroutineActivity() {
         Log.d(TAG, "onLibraryLoaded() called for ${this.javaClass.simpleName}")
         // Start the centralized connection manager
         startConnectionManager()
+        
+        // For MainActivity, ensure we trigger immediate connection attempts
+        // This is especially important after IntroActivity transition
+        if (this is MainActivity) {
+            Log.d(TAG, "MainActivity detected - triggering immediate connection attempt")
+            triggerImmediateConnectionAttempt()
+        }
     }
 
     /**
@@ -125,7 +132,13 @@ abstract class SyncthingActivity : CoroutineActivity() {
                     connection.status == ConnectionStatus.Disconnected && connection.addresses.isNotEmpty()
                 }
                 
-                Log.d(TAG, "Devices needing discovery: ${devicesNeedingDiscovery.size}, needing connection: ${devicesNeedingConnection.size} for ${this.javaClass.simpleName}")
+                // Also check for devices that had socket connection closed (normal after certificate exchange)
+                val devicesWithSocketClosed = devices.filter { device ->
+                    val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                    connection.status == ConnectionStatus.Disconnected && connection.addresses.isNotEmpty()
+                }
+                
+                Log.d(TAG, "Devices needing discovery: ${devicesNeedingDiscovery.size}, needing connection: ${devicesNeedingConnection.size}, with socket closed: ${devicesWithSocketClosed.size} for ${this.javaClass.simpleName}")
                 
                 // Handle devices without addresses - need discovery
                 if (devicesNeedingDiscovery.isNotEmpty()) {
@@ -134,9 +147,16 @@ abstract class SyncthingActivity : CoroutineActivity() {
                 }
                 
                 // Handle devices with addresses but not connected - need connection
+                // This includes devices that had socket closed after certificate exchange
                 if (devicesNeedingConnection.isNotEmpty()) {
                     Log.d(TAG, "Triggering connection attempt for ${devicesNeedingConnection.size} devices in ${this.javaClass.simpleName}")
                     tryConnectToAllDevices()
+                }
+                
+                // Log successful connections for debugging
+                val connectedDevices = connectionInfo.values.filter { it.status == ConnectionStatus.Connected }
+                if (connectedDevices.isNotEmpty()) {
+                    Log.d(TAG, "Successfully connected devices: ${connectedDevices.size} for ${this.javaClass.simpleName}")
                 }
             }
         }
@@ -147,6 +167,8 @@ abstract class SyncthingActivity : CoroutineActivity() {
      */
     private suspend fun tryConnectToAllDevices() {
         Log.d(TAG, "tryConnectToAllDevices() called for ${this.javaClass.simpleName}")
+        
+        // First try to connect to devices that already have addresses
         launch(Dispatchers.IO) {
             try {
                 Log.d(TAG, "Calling connectToNewlyAddedDevices() for ${this.javaClass.simpleName}")
@@ -162,6 +184,26 @@ abstract class SyncthingActivity : CoroutineActivity() {
         // Also trigger discovery for devices without addresses
         Log.d(TAG, "Triggering discovery retry for ${this.javaClass.simpleName}")
         libraryHandler.retryDiscoveryForDevicesWithoutAddresses()
+        
+        // Additional step for MainActivity: force reconnection to all known devices
+        // This helps with the IntroActivity -> MainActivity transition
+        if (this is MainActivity) {
+            Log.d(TAG, "MainActivity - forcing reconnection to all known devices")
+            launch(Dispatchers.IO) {
+                try {
+                    libraryHandler.libraryManager.withLibrary { library ->
+                        val devices = library.configuration.peers
+                        Log.d(TAG, "MainActivity - attempting to reconnect to ${devices.size} devices")
+                        devices.forEach { device ->
+                            Log.d(TAG, "MainActivity - reconnecting to device: ${device.deviceId}")
+                            library.syncthingClient.reconnect(device.deviceId)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "MainActivity - Error reconnecting to devices", e)
+                }
+            }
+        }
     }
 
     /**

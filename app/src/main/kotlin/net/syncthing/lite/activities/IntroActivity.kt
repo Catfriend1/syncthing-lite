@@ -127,6 +127,8 @@ class IntroActivity : AppIntro() {
         Log.d(TAG, "Starting MainActivity from IntroActivity")
         startActivity(Intent(this, MainActivity::class.java))
         Log.d(TAG, "Finishing IntroActivity")
+        // Add a slight delay to ensure MainActivity starts before we finish
+        // This helps with connection persistence during activity transition
         finish()
     }
 
