@@ -7,7 +7,7 @@ protobuf-plugin = "0.9.5"
 ksp = "2.2.0-2.0.2"
 
 # Android SDK versions
-compile-sdk = "34"
+compile-sdk = "36"
 min-sdk = "21"
 target-sdk = "33"
 
@@ -16,16 +16,16 @@ version-code = "1300000"
 version-name = "1.30.0.0"
 
 # AndroidX and Google libraries
-material = "1.9.0"
-appcompat = "1.6.1"
+material = "1.12.0"
+appcompat = "1.7.1"
 legacy-preference-v14 = "1.0.0"
 legacy-support-v4 = "1.0.0"
-lifecycle-runtime-ktx = "2.2.0"
-recyclerview = "1.0.0"
+lifecycle-runtime-ktx = "2.9.1"
+recyclerview = "1.4.0"
 room = "2.7.2"
 appcompat-v7 = "28.0.0"
-core-ktx = "1.12.0"
-collection-ktx = "1.3.0"
+core-ktx = "1.16.0"
+collection-ktx = "1.5.0"
 preference-ktx = "1.2.1"
 
 # Third-party libraries
