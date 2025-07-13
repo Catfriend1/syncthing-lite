@@ -3,6 +3,7 @@ package net.syncthing.lite.activities
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
+import android.util.Log
 import com.google.android.material.snackbar.Snackbar
 import android.view.LayoutInflater
 import kotlinx.coroutines.Dispatchers
