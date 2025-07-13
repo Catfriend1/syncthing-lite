@@ -18,9 +18,13 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
+import androidx.appcompat.app.AppCompatActivity
 import com.github.appintro.AppIntro
 import com.github.appintro.SlidePolicy
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceId
@@ -30,8 +34,10 @@ import net.syncthing.lite.databinding.FragmentIntroOneBinding
 import net.syncthing.lite.databinding.FragmentIntroThreeBinding
 import net.syncthing.lite.databinding.FragmentIntroTwoBinding
 import net.syncthing.lite.fragments.SyncthingFragment
+import net.syncthing.lite.library.LibraryHandler
 import net.syncthing.lite.utils.Util
 import java.io.IOException
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Shown when a user first starts the app. Shows some info and helps the user to add their first
@@ -43,6 +49,11 @@ class IntroActivity : AppIntro() {
         private const val ENABLE_TEST_DATA: Boolean = true
         private const val TEST_DEVICE_ID: String = "RF2FVSV-DGNA7O7-UM2N4IU-YB6S6CA-5YXBHSV-BGS3M53-PVCCOA4-FHTQOQC"
         private const val TAG = "IntroActivity"
+    }
+
+    // Shared LibraryHandler instance across all fragments
+    private val sharedLibraryHandler: LibraryHandler by lazy {
+        LibraryHandler(context = this@IntroActivity)
     }
 
     /**
@@ -63,6 +74,18 @@ class IntroActivity : AppIntro() {
         isWizardMode = false
     }
 
+    override fun onStart() {
+        super.onStart()
+        // Start the shared LibraryHandler
+        sharedLibraryHandler.start()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Stop the shared LibraryHandler
+        sharedLibraryHandler.stop()
+    }
+
     override fun onSkipPressed(currentFragment: Fragment?) {
         onDonePressed(currentFragment)
     }
@@ -76,9 +99,27 @@ class IntroActivity : AppIntro() {
     }
 
     /**
+     * Base class for IntroActivity fragments that uses shared LibraryHandler
+     */
+    abstract class IntroSyncthingFragment : Fragment(), CoroutineScope {
+        protected val libraryHandler: LibraryHandler
+            get() = (activity as IntroActivity).sharedLibraryHandler
+        
+        private val job = Job()
+        
+        override val coroutineContext: CoroutineContext
+            get() = job + Dispatchers.Main
+        
+        override fun onDestroy() {
+            super.onDestroy()
+            job.cancel()
+        }
+    }
+
+    /**
      * Display some simple welcome text.
      */
-    class IntroFragmentOne : SyncthingFragment() {
+    class IntroFragmentOne : IntroSyncthingFragment() {
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
             super.onViewCreated(view, savedInstanceState)
 
@@ -108,7 +149,7 @@ class IntroActivity : AppIntro() {
     /**
      * Display device ID entry field and QR scanner option.
      */
-    class IntroFragmentTwo : SyncthingFragment(), SlidePolicy {
+    class IntroFragmentTwo : IntroSyncthingFragment(), SlidePolicy {
 
         private lateinit var binding: FragmentIntroTwoBinding
         private var qrCodeLauncher: ActivityResultLauncher<Intent>? = null
@@ -211,7 +252,7 @@ class IntroActivity : AppIntro() {
     /**
      * Waits until remote device connects with new folder.
      */
-    class IntroFragmentThree : SyncthingFragment() {
+    class IntroFragmentThree : IntroSyncthingFragment() {
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val binding = FragmentIntroThreeBinding.inflate(inflater, container, false)
