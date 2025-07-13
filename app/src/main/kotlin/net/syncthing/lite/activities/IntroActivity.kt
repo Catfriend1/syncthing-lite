@@ -27,7 +27,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import net.syncthing.java.bep.connectionactor.ConnectionInfo
 import net.syncthing.java.core.beans.DeviceId
+import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.lite.R
 import net.syncthing.lite.activities.QRScannerActivity
 import net.syncthing.lite.databinding.FragmentIntroOneBinding
@@ -275,14 +277,19 @@ class IntroActivity : AppIntro() {
      */
     class IntroFragmentThree : IntroSyncthingFragment() {
 
+        private lateinit var binding: FragmentIntroThreeBinding
+
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-            val binding = FragmentIntroThreeBinding.inflate(inflater, container, false)
+            binding = FragmentIntroThreeBinding.inflate(inflater, container, false)
 
             launch {
                 val ownDeviceId = libraryHandler.libraryManager.withLibrary { it.configuration.localDeviceId }
 
-                libraryHandler.subscribeToConnectionStatus().collect {
-                    if (it.values.find { it.addresses.isNotEmpty() } != null) {
+                libraryHandler.subscribeToConnectionStatus().collect { connectionInfo ->
+                    val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }
+                    val hasConnectedDevice = connectionInfo.values.find { it.addresses.isNotEmpty() } != null
+                    
+                    if (hasConnectedDevice) {
                         val desc = activity?.getString(R.string.intro_page_three_description, "<b>$ownDeviceId</b>")
                         val spanned = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                             Html.fromHtml(desc, Html.FROM_HTML_MODE_LEGACY)
@@ -294,6 +301,9 @@ class IntroActivity : AppIntro() {
                     } else {
                         binding.description.text = getString(R.string.intro_page_three_searching_device)
                     }
+                    
+                    // Update discovery status display
+                    updateDiscoveryStatus(devices, connectionInfo)
                 }
             }
 
@@ -306,6 +316,50 @@ class IntroActivity : AppIntro() {
             }
 
             return binding.root
+        }
+
+        private fun updateDiscoveryStatus(devices: Set<DeviceInfo>, connectionInfo: Map<DeviceId, ConnectionInfo>) {
+            if (devices.isEmpty()) {
+                // No devices added yet, show searching
+                binding.discoveryStatusIcon.setImageResource(android.R.drawable.ic_menu_search)
+                binding.discoveryStatusText.text = getString(R.string.discovery_status_searching)
+                return
+            }
+
+            // Check the discovery status of all devices
+            val devicesWithAddresses = devices.filter { device ->
+                val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                connection.addresses.isNotEmpty()
+            }
+            
+            val devicesWithoutAddresses = devices.filter { device ->
+                val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                connection.addresses.isEmpty()
+            }
+
+            when {
+                devicesWithAddresses.isNotEmpty() -> {
+                    // At least one device has addresses - show success
+                    binding.discoveryStatusIcon.setImageResource(android.R.drawable.checkbox_on_background)
+                    if (devicesWithAddresses.size == 1) {
+                        val connection = connectionInfo[devicesWithAddresses.first().deviceId]
+                        val address = connection?.addresses?.firstOrNull()?.address ?: "unknown"
+                        binding.discoveryStatusText.text = getString(R.string.discovery_status_found, address)
+                    } else {
+                        binding.discoveryStatusText.text = getString(R.string.discovery_status_found, "${devicesWithAddresses.size} addresses")
+                    }
+                }
+                devicesWithoutAddresses.isNotEmpty() -> {
+                    // All devices have no addresses - show error
+                    binding.discoveryStatusIcon.setImageResource(android.R.drawable.ic_delete)
+                    binding.discoveryStatusText.text = getString(R.string.discovery_status_not_found)
+                }
+                else -> {
+                    // Still searching
+                    binding.discoveryStatusIcon.setImageResource(android.R.drawable.ic_menu_search)
+                    binding.discoveryStatusText.text = getString(R.string.discovery_status_searching)
+                }
+            }
         }
 
         override fun onResume() {
