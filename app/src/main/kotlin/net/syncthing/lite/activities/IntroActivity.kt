@@ -25,6 +25,7 @@ import com.github.appintro.SlidePolicy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
@@ -42,6 +43,7 @@ import net.syncthing.lite.utils.Util
 import java.io.IOException
 import java.util.Locale
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.min
 
 /**
  * Shown when a user first starts the app. Shows some info and helps the user to add their first
@@ -59,6 +61,11 @@ class IntroActivity : AppIntro() {
     private val sharedLibraryHandler: LibraryHandler by lazy {
         LibraryHandler(context = this@IntroActivity)
     }
+    
+    private var connectionManagerJob: Job? = null
+    private var retryDelayMs = 10000L // Start with 10 seconds
+    private val maxRetryDelayMs = 300000L // Maximum 5 minutes
+    private var isStarted = false
 
     /**
      * Initialize fragments and library parameters.
@@ -80,12 +87,22 @@ class IntroActivity : AppIntro() {
 
     override fun onStart() {
         super.onStart()
+        isStarted = true
+        
         // Start the shared LibraryHandler
-        sharedLibraryHandler.start()
+        sharedLibraryHandler.start {
+            startConnectionManager()
+        }
     }
 
     override fun onStop() {
         super.onStop()
+        isStarted = false
+        
+        // Stop the connection manager
+        connectionManagerJob?.cancel()
+        connectionManagerJob = null
+        
         // Stop the shared LibraryHandler
         sharedLibraryHandler.stop()
     }
@@ -100,6 +117,95 @@ class IntroActivity : AppIntro() {
         }
         startActivity(Intent(this, MainActivity::class.java))
         finish()
+    }
+
+    /**
+     * Centralized connection manager that handles discovery and connection establishment
+     * with proper backoff strategy and lifecycle management.
+     */
+    private fun startConnectionManager() {
+        connectionManagerJob?.cancel()
+        connectionManagerJob = lifecycleScope.launch {
+            // Immediate connection attempt on startup
+            tryConnectToAllDevices()
+            
+            // Monitor connection status continuously
+            sharedLibraryHandler.subscribeToConnectionStatus().collect { connectionInfo ->
+                if (isDestroyed || !isStarted) return@collect
+                
+                val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
+                
+                // Check for devices that need discovery or connection
+                val devicesNeedingDiscovery = devices.filter { device ->
+                    val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                    connection.status == ConnectionStatus.Disconnected && connection.addresses.isEmpty()
+                }
+                
+                val devicesNeedingConnection = devices.filter { device ->
+                    val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                    connection.status == ConnectionStatus.Disconnected && connection.addresses.isNotEmpty()
+                }
+                
+                // Handle devices without addresses - need discovery
+                if (devicesNeedingDiscovery.isNotEmpty()) {
+                    retryDiscoveryWithBackoff()
+                }
+                
+                // Handle devices with addresses but not connected - need connection
+                if (devicesNeedingConnection.isNotEmpty()) {
+                    tryConnectToAllDevices()
+                }
+            }
+        }
+    }
+
+    /**
+     * Immediately attempts to connect to all devices and trigger discovery
+     */
+    private suspend fun tryConnectToAllDevices() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                sharedLibraryHandler.libraryManager.withLibrary { library ->
+                    library.syncthingClient.connectToNewlyAddedDevices()
+                }
+            } catch (e: Exception) {
+                // Log error but continue - this is a background operation
+            }
+        }
+        
+        // Also trigger discovery for devices without addresses
+        sharedLibraryHandler.retryDiscoveryForDevicesWithoutAddresses()
+    }
+
+    /**
+     * Retry discovery with exponential backoff strategy
+     */
+    private suspend fun retryDiscoveryWithBackoff() {
+        // Apply exponential backoff
+        delay(retryDelayMs)
+        
+        // Trigger discovery
+        sharedLibraryHandler.retryDiscoveryForDevicesWithoutAddresses()
+        
+        // Increase delay for next retry (exponential backoff)
+        retryDelayMs = min(retryDelayMs * 2, maxRetryDelayMs)
+    }
+
+    /**
+     * Reset the retry delay when a successful connection is established
+     */
+    fun resetRetryDelay() {
+        retryDelayMs = 10000L // Reset to 10 seconds
+    }
+
+    /**
+     * Trigger immediate discovery and connection (called when new devices are added)
+     */
+    fun triggerImmediateConnectionAttempt() {
+        lifecycleScope.launch {
+            resetRetryDelay()
+            tryConnectToAllDevices()
+        }
     }
 
     /**
@@ -215,6 +321,8 @@ class IntroActivity : AppIntro() {
                 if (!hasImportedDevice) {
                     Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId) {
                         hasImportedDevice = true
+                        // Trigger immediate connection attempt after device import
+                        (activity as? IntroActivity)?.triggerImmediateConnectionAttempt()
                     }
                 }
                 true
@@ -305,28 +413,6 @@ class IntroActivity : AppIntro() {
                     
                     // Update discovery status display
                     updateDiscoveryStatus(devices, connectionInfo)
-                    
-                    // Check if any devices have no known addresses and trigger discovery retry
-                    // This is the same logic as DevicesFragment to ensure continuous discovery
-                    val devicesWithoutAddresses = devices.filter { device ->
-                        val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
-                        connection.status == ConnectionStatus.Disconnected && connection.addresses.isEmpty()
-                    }
-                    
-                    if (devicesWithoutAddresses.isNotEmpty()) {
-                        // Trigger both discovery retry and connection establishment for devices without addresses
-                        libraryHandler.retryDiscoveryForDevicesWithoutAddresses()
-                        // Also ensure connection actors are created/active for newly added devices
-                        launch(Dispatchers.IO) {
-                            try {
-                                libraryHandler.libraryManager.withLibrary { library ->
-                                    library.syncthingClient.connectToNewlyAddedDevices()
-                                }
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to connect to newly added devices", e)
-                            }
-                        }
-                    }
                 }
             }
 
@@ -387,19 +473,8 @@ class IntroActivity : AppIntro() {
 
         override fun onResume() {
             super.onResume()
-            // Trigger connection attempts and discovery when this fragment becomes active
-            launch(Dispatchers.IO) {
-                try {
-                    libraryHandler.libraryManager.withLibrary { library ->
-                        // Ensure discovery and connection processes are active
-                        library.syncthingClient.connectToNewlyAddedDevices()
-                        // Also retry discovery in case the device was just added
-                        library.syncthingClient.retryDiscovery()
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "onResume::launch", e)
-                }
-            }
+            // Trigger immediate connection attempt when this fragment becomes visible
+            (activity as? IntroActivity)?.triggerImmediateConnectionAttempt()
         }
     }
 }

@@ -18,7 +18,9 @@ import net.syncthing.java.bep.connectionactor.ConnectionInfo
 import net.syncthing.java.bep.connectionactor.ConnectionStatus
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.lite.R
+import net.syncthing.lite.activities.IntroActivity
 import net.syncthing.lite.activities.QRScannerActivity
+import net.syncthing.lite.activities.SyncthingActivity
 import net.syncthing.lite.adapters.DeviceAdapterListener
 import net.syncthing.lite.adapters.DevicesAdapter
 import net.syncthing.lite.databinding.FragmentDevicesBinding
@@ -92,39 +94,13 @@ class DevicesFragment : SyncthingFragment() {
                 val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }
 
                 // Defensive check to ensure data consistency
-                val deviceConnectionPairs = devices.mapNotNull { device ->
+                val deviceConnectionPairs = devices.map { device ->
                     val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
-                    // Only include devices that have valid data
-                    if (device.deviceId != null) {
-                        device to connection
-                    } else {
-                        null
-                    }
+                    device to connection
                 }
                 
                 adapter.data = deviceConnectionPairs
                 binding.isEmpty = devices.isEmpty()
-                
-                // Check if any devices have no known addresses and trigger discovery retry
-                val devicesWithoutAddresses = devices.filter { device ->
-                    val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
-                    connection.status == ConnectionStatus.Disconnected && connection.addresses.isEmpty()
-                }
-                
-                if (devicesWithoutAddresses.isNotEmpty()) {
-                    // Trigger both discovery retry and connection establishment for devices without addresses
-                    libraryHandler.retryDiscoveryForDevicesWithoutAddresses()
-                    // Also ensure connection actors are created/active for devices without addresses
-                    launch(Dispatchers.IO) {
-                        try {
-                            libraryHandler.libraryManager.withLibrary { library ->
-                                library.syncthingClient.connectToNewlyAddedDevices()
-                            }
-                        } catch (e: Exception) {
-                            // Log error but continue
-                        }
-                    }
-                }
             }
         }
 
@@ -158,7 +134,13 @@ class DevicesFragment : SyncthingFragment() {
         fun handleAddClick() {
             try {
                 val deviceId = binding.deviceId.text.toString()
-                Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId, { /* TODO: Is updateDeviceList() still required? */ })
+                Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId) {
+                    // Trigger immediate connection attempt after device import
+                    when (val act = activity) {
+                        is SyncthingActivity -> act.triggerImmediateConnectionAttempt()
+                        is IntroActivity -> act.triggerImmediateConnectionAttempt()
+                    }
+                }
                 dialog.dismiss()
             } catch (e: IOException) {
                 binding.deviceId.error = getString(R.string.invalid_device_id)
