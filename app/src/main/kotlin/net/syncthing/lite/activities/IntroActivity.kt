@@ -37,6 +37,7 @@ import net.syncthing.lite.fragments.SyncthingFragment
 import net.syncthing.lite.library.LibraryHandler
 import net.syncthing.lite.utils.Util
 import java.io.IOException
+import java.util.Locale
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -153,6 +154,7 @@ class IntroActivity : AppIntro() {
 
         private lateinit var binding: FragmentIntroTwoBinding
         private var qrCodeLauncher: ActivityResultLauncher<Intent>? = null
+        private var hasImportedDevice = false
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
@@ -163,6 +165,7 @@ class IntroActivity : AppIntro() {
                     if (scanResult != null && scanResult.isNotBlank()) {
                         binding.enterDeviceId.deviceId.setText(scanResult)
                         binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                        hasImportedDevice = false
                     }
                 }
             }
@@ -178,6 +181,15 @@ class IntroActivity : AppIntro() {
             }
             binding.enterDeviceId.scanQrCode.setImageResource(R.drawable.ic_qr_code_white_24dp)
 
+            // Reset import flag when device ID text changes
+            binding.enterDeviceId.deviceId.addTextChangedListener(object : android.text.TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    hasImportedDevice = false
+                }
+                override fun afterTextChanged(s: android.text.Editable?) {}
+            })
+
             if (ENABLE_TEST_DATA) {
                 binding.enterDeviceId.deviceId.setText(TEST_DEVICE_ID)
                 binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
@@ -187,15 +199,23 @@ class IntroActivity : AppIntro() {
         }
 
         /**
-         * Checks if the entered device ID is valid. If yes, imports it and returns true. If not,
+         * Checks if the entered device ID is valid. If yes, imports it (only once) and returns true. If not,
          * sets an error on the textview and returns false.
          */
         fun isDeviceIdValid(): Boolean {
             return try {
                 val deviceId = binding.enterDeviceId.deviceId.text.toString()
-                Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId, { })
+                // Just validate the device ID format first
+                DeviceId(deviceId.uppercase(Locale.getDefault()))
+                
+                // Only import once
+                if (!hasImportedDevice) {
+                    Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId) {
+                        hasImportedDevice = true
+                    }
+                }
                 true
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 binding.enterDeviceId.deviceId.error = getString(R.string.invalid_device_id)
                 false
             }
@@ -240,6 +260,7 @@ class IntroActivity : AppIntro() {
                                 setOnClickListener {
                                     binding.enterDeviceId.deviceId.setText(deviceId.deviceId)
                                     binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                                    hasImportedDevice = false
 
                                     binding.scroll.scrollTo(0, 0)
                                 }
@@ -285,6 +306,21 @@ class IntroActivity : AppIntro() {
             }
 
             return binding.root
+        }
+
+        override fun onResume() {
+            super.onResume()
+            // Trigger connection attempts when this fragment becomes active
+            launch(Dispatchers.IO) {
+                try {
+                    libraryHandler.libraryManager.withLibrary { library ->
+                        // Ensure discovery and connection processes are active
+                        library.syncthingClient.connectToNewlyAddedDevices()
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "onResume::launch", e)
+                }
+            }
         }
     }
 }
