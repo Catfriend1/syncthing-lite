@@ -66,6 +66,8 @@ class IntroActivity : AppIntro() {
     private var retryDelayMs = 10000L // Start with 10 seconds
     private val maxRetryDelayMs = 300000L // Maximum 5 minutes
     private var isStarted = false
+    private var currentSlidePosition = 0 // Track current slide position
+    private var isSlideThreeActive = false // Track if slide 3 is active
 
     /**
      * Initialize fragments and library parameters.
@@ -114,6 +116,29 @@ class IntroActivity : AppIntro() {
         sharedLibraryHandler.stop()
     }
 
+    override fun onSlideChanged(oldFragment: Fragment?, newFragment: Fragment?) {
+        super.onSlideChanged(oldFragment, newFragment)
+        
+        // Track the current slide position
+        when (newFragment) {
+            is IntroFragmentOne -> {
+                currentSlidePosition = 0
+                isSlideThreeActive = false
+                Log.d(TAG, "IntroActivity switched to slide 1")
+            }
+            is IntroFragmentTwo -> {
+                currentSlidePosition = 1
+                isSlideThreeActive = false
+                Log.d(TAG, "IntroActivity switched to slide 2")
+            }
+            is IntroFragmentThree -> {
+                currentSlidePosition = 2
+                isSlideThreeActive = true
+                Log.d(TAG, "IntroActivity switched to slide 3")
+            }
+        }
+    }
+
     override fun onSkipPressed(currentFragment: Fragment?) {
         Log.d(TAG, "IntroActivity onSkipPressed() called")
         onDonePressed(currentFragment)
@@ -135,6 +160,9 @@ class IntroActivity : AppIntro() {
     /**
      * Centralized connection manager that handles discovery and connection establishment
      * with proper backoff strategy and lifecycle management.
+     * 
+     * NOTE: For IntroActivity, we DON'T start discovery immediately. Discovery should only
+     * start when IntroFragmentThree is displayed (slide 3).
      */
     private fun startConnectionManager() {
         Log.d(TAG, "Starting connection manager for IntroActivity")
@@ -142,9 +170,8 @@ class IntroActivity : AppIntro() {
         connectionManagerJob = lifecycleScope.launch {
             Log.d(TAG, "IntroActivity connection manager coroutine started")
             
-            // Immediate connection attempt on startup
-            Log.d(TAG, "Triggering immediate connection attempt for IntroActivity")
-            tryConnectToAllDevices()
+            // DON'T trigger immediate discovery - wait for slide 3
+            Log.d(TAG, "IntroActivity connection manager waiting for slide 3 to trigger discovery")
             
             // Monitor connection status continuously
             Log.d(TAG, "Starting connection status monitoring for IntroActivity")
@@ -172,9 +199,10 @@ class IntroActivity : AppIntro() {
                 
                 Log.d(TAG, "IntroActivity devices needing discovery: ${devicesNeedingDiscovery.size}, needing connection: ${devicesNeedingConnection.size}")
                 
-                // Handle devices without addresses - need discovery
-                if (devicesNeedingDiscovery.isNotEmpty()) {
-                    Log.d(TAG, "IntroActivity triggering discovery retry for ${devicesNeedingDiscovery.size} devices")
+                // Only trigger discovery if we're on slide 3 and there are devices needing discovery
+                // This prevents discovery from running too early
+                if (devicesNeedingDiscovery.isNotEmpty() && isOnSlideThree()) {
+                    Log.d(TAG, "IntroActivity triggering discovery retry for ${devicesNeedingDiscovery.size} devices (slide 3 active)")
                     retryDiscoveryWithBackoff()
                 }
                 
@@ -192,6 +220,12 @@ class IntroActivity : AppIntro() {
      */
     private suspend fun tryConnectToAllDevices() {
         Log.d(TAG, "IntroActivity tryConnectToAllDevices() called")
+        
+        // First trigger global and local discovery
+        Log.d(TAG, "IntroActivity triggering discovery for all devices")
+        sharedLibraryHandler.retryDiscoveryForDevicesWithoutAddresses()
+        
+        // Then try to connect to devices that already have addresses
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 Log.d(TAG, "IntroActivity calling connectToNewlyAddedDevices()")
@@ -203,10 +237,6 @@ class IntroActivity : AppIntro() {
                 Log.e(TAG, "IntroActivity error in connectToNewlyAddedDevices()", e)
             }
         }
-        
-        // Also trigger discovery for devices without addresses
-        Log.d(TAG, "IntroActivity triggering discovery retry")
-        sharedLibraryHandler.retryDiscoveryForDevicesWithoutAddresses()
     }
 
     /**
@@ -237,10 +267,56 @@ class IntroActivity : AppIntro() {
     }
 
     /**
+     * Check if we're currently on slide 3 (IntroFragmentThree)
+     */
+    private fun isOnSlideThree(): Boolean {
+        return isSlideThreeActive
+    }
+
+    /**
      * Trigger immediate discovery and connection (called when new devices are added)
+     * For IntroActivity, we only trigger discovery if we're on slide 3
      */
     fun triggerImmediateConnectionAttempt() {
         Log.d(TAG, "IntroActivity triggerImmediateConnectionAttempt() called")
+        lifecycleScope.launch {
+            resetRetryDelay()
+            
+            // Only trigger discovery if we're on slide 3
+            if (isOnSlideThree()) {
+                Log.d(TAG, "IntroActivity triggering discovery on slide 3")
+                tryConnectToAllDevices()
+            } else {
+                Log.d(TAG, "IntroActivity not on slide 3, skipping discovery trigger")
+                // Still trigger connection attempts for devices that already have addresses
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
+                        val connectionInfo = sharedLibraryHandler.subscribeToConnectionStatus().value
+                        val devicesWithAddresses = devices.filter { device ->
+                            val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                            connection.addresses.isNotEmpty()
+                        }
+                        
+                        if (devicesWithAddresses.isNotEmpty()) {
+                            Log.d(TAG, "IntroActivity triggering connection attempt for ${devicesWithAddresses.size} devices with addresses")
+                            sharedLibraryHandler.libraryManager.withLibrary { library ->
+                                library.syncthingClient.connectToNewlyAddedDevices()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "IntroActivity error in triggerImmediateConnectionAttempt()", e)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Special method to trigger discovery when IntroFragmentThree is displayed
+     */
+    fun triggerDiscoveryOnSlideThree() {
+        Log.d(TAG, "IntroActivity triggerDiscoveryOnSlideThree() called")
         lifecycleScope.launch {
             resetRetryDelay()
             tryConnectToAllDevices()
@@ -366,9 +442,8 @@ class IntroActivity : AppIntro() {
                     Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId) {
                         Log.d(TAG, "IntroFragmentTwo device ID imported successfully")
                         hasImportedDevice = true
-                        // Trigger immediate connection attempt after device import
-                        Log.d(TAG, "IntroFragmentTwo triggering immediate connection attempt")
-                        (activity as? IntroActivity)?.triggerImmediateConnectionAttempt()
+                        // Don't trigger discovery here - it will be triggered when slide 3 is displayed
+                        Log.d(TAG, "IntroFragmentTwo device imported, discovery will be triggered on slide 3")
                     }
                 } else {
                     Log.d(TAG, "IntroFragmentTwo device ID already imported, skipping")
@@ -549,9 +624,9 @@ class IntroActivity : AppIntro() {
         override fun onResume() {
             super.onResume()
             Log.d(TAG, "IntroFragmentThree onResume() called")
-            // Trigger immediate connection attempt when this fragment becomes visible
-            Log.d(TAG, "IntroFragmentThree triggering immediate connection attempt")
-            (activity as? IntroActivity)?.triggerImmediateConnectionAttempt()
+            // Trigger discovery when slide 3 is displayed
+            Log.d(TAG, "IntroFragmentThree triggering discovery on slide 3")
+            (activity as? IntroActivity)?.triggerDiscoveryOnSlideThree()
         }
     }
 }
