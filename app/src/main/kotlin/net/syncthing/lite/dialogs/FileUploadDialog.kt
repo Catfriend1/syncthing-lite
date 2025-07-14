@@ -38,19 +38,21 @@ class FileUploadDialog(
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     fun show() {
-        showDialog()
-
-        scope.launch {
-            uploadFileTask = UploadFileTask(
-                context,
-                syncthingClient,
-                localFile,
-                syncthingFolder,
-                syncthingSubFolder,
-                this@FileUploadDialog::onProgress,
-                this@FileUploadDialog::onComplete,
-                this@FileUploadDialog::onError
-            )
+        uiHandler.post {
+            showDialog()
+            
+            scope.launch {
+                uploadFileTask = UploadFileTask(
+                    context,
+                    syncthingClient,
+                    localFile,
+                    syncthingFolder,
+                    syncthingSubFolder,
+                    this@FileUploadDialog::onProgress,
+                    this@FileUploadDialog::onComplete,
+                    this@FileUploadDialog::onError
+                )
+            }
         }
     }
 
