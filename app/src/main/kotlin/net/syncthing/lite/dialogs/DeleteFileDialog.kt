@@ -34,7 +34,9 @@ class DeleteFileDialog(
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     fun show() {
-        showDialog()
+        uiHandler.post {
+            showDialog()
+        }
 
         scope.launch {
             deleteFileTask = DeleteFileTask(
