@@ -39,6 +39,7 @@ class UploadFileTask(
     private val uploadStream = context.contentResolver.openInputStream(localFile)
 
     private var isCancelled = false
+    private var observer: BlockPusher.FileUploadObserver? = null
 
     init {
         Log.i(TAG, "Uploading file $localFile to folder $syncthingFolder:$syncthingPath")
@@ -53,22 +54,28 @@ class UploadFileTask(
                 }
 
                 val blockPusher = syncthingClient.getBlockPusher(folderId = syncthingFolder)
-                val observer = blockPusher.pushFile(input, syncthingFolder, syncthingPath)
+                observer = blockPusher.pushFile(input, syncthingFolder, syncthingPath)
 
-                handler.post { onProgress(observer) }
+                handler.post { onProgress(observer!!) }
 
-                while (!observer.isCompleted()) {
-                    if (isCancelled)
+                while (!observer!!.isCompleted()) {
+                    if (isCancelled) {
+                        observer?.close()
                         return@launch
+                    }
 
-                    observer.waitForProgressUpdate()
-                    Log.i(TAG, "upload progress = ${observer.progressPercentage()}%")
-                    handler.post { onProgress(observer) }
+                    observer!!.waitForProgressUpdate()
+                    Log.i(TAG, "upload progress = ${observer!!.progressPercentage()}%")
+                    handler.post { onProgress(observer!!) }
                 }
 
                 IOUtils.closeQuietly(input)
+                observer?.close()
+                Log.i(TAG, "Upload completed successfully, observer closed")
                 handler.post { onComplete() }
             } catch (ex: Exception) {
+                Log.e(TAG, "Upload failed", ex)
+                observer?.close()
                 handler.post { onError() }
             }
         }
@@ -76,5 +83,6 @@ class UploadFileTask(
 
     fun cancel() {
         isCancelled = true
+        observer?.close()
     }
 }
