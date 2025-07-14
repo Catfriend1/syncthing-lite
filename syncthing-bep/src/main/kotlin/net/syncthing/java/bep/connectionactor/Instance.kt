@@ -82,13 +82,9 @@ object ConnectionActor {
                         logger.debug("📡 receivePostAuthMessage() delivered: ${result.first}, class=${result.second.javaClass.name}")
                         return result
                     } catch (e: Exception) {
-                        // Log "Connection reset" errors as debug instead of error since they're expected
+                        // Log "Connection reset" errors since they're expected
                         // when the remote device hasn't accepted the connection yet
-                        if (e.message?.contains("Connection reset") == true) {
-                            logger.debug("🚨 receivePostAuthMessage failed: ${e.message}")
-                        } else {
-                            logger.error("🚨 receivePostAuthMessage failed: ${e.message}", e)
-                        }
+                        logger.debug("🚨 receivePostAuthMessage failed: ${e.message}")
                         throw e
                     }
                 }
@@ -106,13 +102,9 @@ object ConnectionActor {
                         }.await()
                     }
                 } catch (e: Exception) {
-                    // Log "Connection reset" errors as debug instead of error since they're expected
+                    // Log "Connection reset" errors since they're expected
                     // when the remote device hasn't accepted the connection yet
-                    if (e.message?.contains("Connection reset") == true) {
-                        logger.debug("💥 Exception while receiving post-auth message: ${e.message}")
-                    } else {
-                        logger.error("💥 Exception while receiving post-auth message: ${e.message}", e)
-                    }
+                    logger.debug("💥 Exception while receiving post-auth message: ${e.message}")
                     throw e
                 }
                 logger.debug("📬 Received post-auth message type: ${clusterConfigPair.first}, class: ${clusterConfigPair.second.javaClass.name}")
