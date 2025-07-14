@@ -28,8 +28,10 @@ abstract class SyncthingActivity : CoroutineActivity() {
     private var loadingDialog: AlertDialog? = null
     private var snackBar: Snackbar? = null
     private var connectionManagerJob: Job? = null
+    private var connectionRetryJob: Job? = null
     private var retryDelayMs = 10000L // Start with 10 seconds
     private val maxRetryDelayMs = 300000L // Maximum 5 minutes
+    private val connectionRetryIntervalMs = 15000L // Retry connections every 15 seconds
     private var isStarted = false
 
     companion object {
@@ -76,6 +78,11 @@ abstract class SyncthingActivity : CoroutineActivity() {
         connectionManagerJob?.cancel()
         connectionManagerJob = null
         
+        // Stop the connection retry job
+        Log.d(TAG, "Stopping connection retry job for ${this.javaClass.simpleName}")
+        connectionRetryJob?.cancel()
+        connectionRetryJob = null
+        
         Log.d(TAG, "Stopping LibraryHandler for ${this.javaClass.simpleName}")
         libraryHandler.stop()
         loadingDialog?.dismiss()
@@ -85,6 +92,9 @@ abstract class SyncthingActivity : CoroutineActivity() {
         Log.d(TAG, "onLibraryLoaded() called for ${this.javaClass.simpleName}")
         // Start the centralized connection manager
         startConnectionManager()
+        
+        // Start the connection retry job
+        startConnectionRetryJob()
         
         // For MainActivity, ensure we trigger immediate connection attempts
         // This is especially important after IntroActivity transition
@@ -159,6 +169,75 @@ abstract class SyncthingActivity : CoroutineActivity() {
                     Log.d(TAG, "Successfully connected devices: ${connectedDevices.size} for ${this.javaClass.simpleName}")
                 }
             }
+        }
+    }
+
+    /**
+     * Periodic connection retry job that continuously attempts to reconnect
+     * to devices that have addresses but are disconnected.
+     * This is crucial for handling the "socket close after certificate exchange" scenario.
+     */
+    private fun startConnectionRetryJob() {
+        Log.d(TAG, "Starting connection retry job for ${this.javaClass.simpleName}")
+        connectionRetryJob?.cancel()
+        connectionRetryJob = launch {
+            Log.d(TAG, "Connection retry job coroutine started for ${this.javaClass.simpleName}")
+            
+            while (isStarted && !isDestroyed) {
+                try {
+                    // Wait before checking
+                    delay(connectionRetryIntervalMs)
+                    
+                    if (!isStarted || isDestroyed) {
+                        Log.d(TAG, "Connection retry job stopping due to destroyed/stopped state for ${this.javaClass.simpleName}")
+                        break
+                    }
+                    
+                    Log.d(TAG, "Connection retry job checking for disconnected devices with addresses for ${this.javaClass.simpleName}")
+                    
+                    // Get current connection status
+                    val connectionInfo = libraryHandler.subscribeToConnectionStatus().value
+                    val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }
+                    
+                    // Find devices that have addresses but are disconnected
+                    val devicesNeedingReconnection = devices.filter { device ->
+                        val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                        connection.status == ConnectionStatus.Disconnected && connection.addresses.isNotEmpty()
+                    }
+                    
+                    if (devicesNeedingReconnection.isNotEmpty()) {
+                        Log.d(TAG, "Connection retry job found ${devicesNeedingReconnection.size} devices needing reconnection for ${this.javaClass.simpleName}")
+                        
+                        // Attempt to reconnect to these devices
+                        launch(Dispatchers.IO) {
+                            try {
+                                Log.d(TAG, "Connection retry job calling connectToNewlyAddedDevices() for ${this.javaClass.simpleName}")
+                                libraryHandler.libraryManager.withLibrary { library ->
+                                    library.syncthingClient.connectToNewlyAddedDevices()
+                                }
+                                
+                                // Also try individual reconnection for each device
+                                devicesNeedingReconnection.forEach { device ->
+                                    Log.d(TAG, "Connection retry job attempting reconnect to device: ${device.deviceId.deviceId.substring(0, 8)} for ${this.javaClass.simpleName}")
+                                    libraryHandler.libraryManager.withLibrary { library ->
+                                        library.syncthingClient.reconnect(device.deviceId)
+                                    }
+                                }
+                                
+                                Log.d(TAG, "Connection retry job completed reconnection attempts for ${this.javaClass.simpleName}")
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Connection retry job error in reconnection for ${this.javaClass.simpleName}", e)
+                            }
+                        }
+                    } else {
+                        Log.d(TAG, "Connection retry job found no devices needing reconnection for ${this.javaClass.simpleName}")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Connection retry job error for ${this.javaClass.simpleName}", e)
+                }
+            }
+            
+            Log.d(TAG, "Connection retry job coroutine ended for ${this.javaClass.simpleName}")
         }
     }
 
