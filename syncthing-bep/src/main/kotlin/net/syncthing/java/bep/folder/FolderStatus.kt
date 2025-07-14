@@ -8,7 +8,8 @@ import net.syncthing.java.core.beans.IndexInfo
 data class FolderStatus(
         val info: FolderInfo,
         val stats: FolderStats,
-        val indexInfo: List<IndexInfo>
+        val indexInfo: List<IndexInfo>,
+        val localDeviceId: String? = null
 ) {
     companion object {
         fun createDummy(folder: String) = FolderStatus(
@@ -20,15 +21,21 @@ data class FolderStatus(
                         ignoredDeviceIdList = emptySet()
                 ),
                 stats = FolderStats.createDummy(folder),
-                indexInfo = emptyList()
+                indexInfo = emptyList(),
+                localDeviceId = null
         )
     }
 
     val missingIndexUpdates: Long by lazy {
+        // Filter out the local device from the calculation to only show pending updates from remote devices
+        val remoteIndexInfo = localDeviceId?.let { localId ->
+            indexInfo.filter { it.deviceId != localId }
+        } ?: indexInfo
+
         Math.max(
                 0,
-                indexInfo.longMaxBy ({ it.maxSequence }, 0) -
-                        indexInfo.longMaxBy ({ it.localSequence }, 0)
+                remoteIndexInfo.longMaxBy ({ it.maxSequence }, 0) -
+                        remoteIndexInfo.longMaxBy ({ it.localSequence }, 0)
 
         )
     }
