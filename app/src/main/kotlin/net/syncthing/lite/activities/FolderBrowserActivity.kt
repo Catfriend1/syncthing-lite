@@ -195,12 +195,7 @@ class FolderBrowserActivity : SyncthingActivity() {
         }
     }
 
-    @Deprecated("Deprecated in API level 33. Use OnBackPressedCallback instead.")
-    override fun onBackPressed() {
-        if (!goUp()) {
-            super.onBackPressed()
-        }
-    }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         // This method is no longer used - replaced by ActivityResultLauncher
