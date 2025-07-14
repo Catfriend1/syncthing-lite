@@ -157,8 +157,11 @@ class DiscoveryHandler(
             return
         }
         
-        logger.info("retryDiscovery() called - triggering global and local discovery")
+        logger.info("retryDiscovery() called - forcing global and local discovery")
         
+        // Force a new global discovery attempt by resetting the flag
+        // This bypasses the retry interval when explicitly called
+        shouldLoadFromGlobal = true
         doGlobalDiscoveryIfNotYetDone()
         
         // Also restart local discovery announcements
