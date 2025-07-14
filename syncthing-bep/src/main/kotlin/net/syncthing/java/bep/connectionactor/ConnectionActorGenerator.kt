@@ -104,6 +104,7 @@ object ConnectionActorGenerator {
         var currentClusterConfig = ClusterConfigInfo.dummy
         var currentDeviceAddress: DeviceAddress? = null
         var currentStatus = ConnectionInfo.empty
+        var lastFailureWasConnectionReset = false // Track if last failure was due to Connection reset
 
         suspend fun dispatchStatus() {
             send(Connection(currentActor, currentClusterConfig) to currentStatus)
@@ -131,6 +132,7 @@ object ConnectionActorGenerator {
             currentActor = connection
             currentDeviceAddress = deviceAddress
             currentClusterConfig = clusterConfig
+            lastFailureWasConnectionReset = false // Reset on successful connection
 
             dispatchStatus()
         }
@@ -141,7 +143,14 @@ object ConnectionActorGenerator {
 
             newActor to clusterConfig
         } catch (ex: Exception) {
-            logger.warn("failed to connect to $deviceAddress", ex)
+            // Handle "Connection reset" specifically - this is expected when remote device hasn't accepted connection yet
+            if (ex.message?.contains("Connection reset") == true) {
+                logger.debug("Connection reset detected - this is expected when remote device hasn't accepted connection yet")
+                lastFailureWasConnectionReset = true // Mark that this failure was due to Connection reset
+            } else {
+                logger.warn("failed to connect to $deviceAddress", ex)
+                lastFailureWasConnectionReset = false // Other failures should not use fast retry
+            }
 
             when (ex) {
                 is IOException -> {/* expected -> ignore */}
@@ -245,8 +254,19 @@ object ConnectionActorGenerator {
                     // this does not reset if it has not counted down the whole time yet
                     reconnectTicker.tryReceive().getOrNull()
 
-                    // wait for new device address list but not more than 15 seconds before the next iteration
-                    val newDeviceAddressList = withTimeoutOrNull(15 * 1000) {
+                    // Use different retry intervals based on last failure type
+                    // For "Connection reset" errors, use 15 seconds as requested
+                    // For other failures, use the default 15 seconds
+                    val retryTimeout = if (lastFailureWasConnectionReset) {
+                        15L * 1000 // 15 seconds for Connection reset errors
+                    } else {
+                        15L * 1000 // 15 seconds for other failures
+                    }
+
+                    logger.debug("Waiting for retry (timeout: ${retryTimeout}ms, lastFailureWasConnectionReset: $lastFailureWasConnectionReset)")
+
+                    // wait for new device address list but not more than the retry timeout before the next iteration
+                    val newDeviceAddressList = withTimeoutOrNull(retryTimeout) {
                         deviceAddressSource.receive()
                     }
 
