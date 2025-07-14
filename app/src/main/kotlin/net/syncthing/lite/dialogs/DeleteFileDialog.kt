@@ -3,6 +3,7 @@ package net.syncthing.lite.dialogs
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ProgressBar
@@ -37,16 +38,33 @@ class DeleteFileDialog(
         uiHandler.post {
             showDialog()
         }
-
+        
+        // Start the delete operation in the dialog's scope
         scope.launch {
-            deleteFileTask = DeleteFileTask(
-                context,
-                syncthingClient,
-                syncthingFolder,
-                syncthingPath,
-                this@DeleteFileDialog::onComplete,
-                this@DeleteFileDialog::onError
-            )
+            try {
+                Log.d("DeleteFileDialog", "Starting delete operation")
+                deleteFileTask = DeleteFileTask(
+                    context,
+                    syncthingClient,
+                    syncthingFolder,
+                    syncthingPath
+                )
+                
+                Log.d("DeleteFileDialog", "Calling deleteFileTask.execute()")
+                deleteFileTask!!.execute()
+                
+                Log.d("DeleteFileDialog", "Delete operation completed successfully")
+                uiHandler.post { 
+                    Log.d("DeleteFileDialog", "Calling onComplete from scope")
+                    onComplete() 
+                }
+            } catch (ex: Exception) {
+                Log.e("DeleteFileDialog", "Error in delete operation", ex)
+                uiHandler.post { 
+                    Log.d("DeleteFileDialog", "Calling onError from scope")
+                    onError() 
+                }
+            }
         }
     }
 
@@ -67,7 +85,9 @@ class DeleteFileDialog(
     }
 
     private fun onComplete() {
+        Log.d("DeleteFileDialog", "onComplete() called")
         uiHandler.post {
+            Log.d("DeleteFileDialog", "onComplete() - dismissing dialog")
             dialog?.dismiss()
             Toast.makeText(context, R.string.toast_delete_complete, Toast.LENGTH_SHORT).show()
             onDeleteCompleteListener()
@@ -76,7 +96,9 @@ class DeleteFileDialog(
     }
 
     private fun onError() {
+        Log.d("DeleteFileDialog", "onError() called")
         uiHandler.post {
+            Log.d("DeleteFileDialog", "onError() - dismissing dialog")
             dialog?.dismiss()
             Toast.makeText(context, R.string.toast_file_delete_failed, Toast.LENGTH_SHORT).show()
             cancel()
@@ -84,7 +106,6 @@ class DeleteFileDialog(
     }
 
     private fun cancel() {
-        deleteFileTask?.cancel()
         scope.cancel()
     }
 }
