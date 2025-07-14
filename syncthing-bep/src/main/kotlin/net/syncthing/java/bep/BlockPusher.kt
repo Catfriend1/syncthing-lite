@@ -154,6 +154,11 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 scope.cancel()
                 monitoringProcessExecutorService.shutdown()
                 requestHandlerRegistry.unregisterListener(requestFilter)
+                
+                // Close the input stream and clean up data source
+                IOUtils.closeQuietly(inputStream)
+                dataSource.close()
+                
                 //TODO: Rename fileInfo1 and fileInfo
                 val (fileInfo1, folderStatsUpdate) = indexHandler.indexRepository.runInTransaction {
                     val folderStatsUpdateCollector = FolderStatsUpdateCollector(folderId)
@@ -254,43 +259,41 @@ class BlockPusher(private val localDeviceId: DeviceId,
         private var hashes: Set<String>? = null
 
         private var hash: String? = null
+        private var fileData: ByteArray? = null
 
         init {
-            inputStream.use { it ->
-                val list = mutableListOf<BlockExchangeProtos.BlockInfo>()
-                var offset: Long = 0
-                while (true) {
-                    var block = ByteArray(BLOCK_SIZE)
-                    val blockSize = it.read(block)
-                    if (blockSize <= 0) {
-                        break
-                    }
-                    if (blockSize < block.size) {
-                        block = Arrays.copyOf(block, blockSize)
-                    }
-
-                    val hash = MessageDigest.getInstance("SHA-256").digest(block)
-                    list.add(BlockExchangeProtos.BlockInfo.newBuilder()
-                            .setHash(ByteString.copyFrom(hash))
-                            .setOffset(offset)
-                            .setSize(blockSize)
-                            .build())
-                    offset += blockSize.toLong()
-                }
-                size = offset
-                blocks = list
+            // Read the entire file into memory to calculate blocks and be able to serve them later
+            val fileDataBuffer = IOUtils.toByteArray(inputStream)
+            fileData = fileDataBuffer
+            
+            val list = mutableListOf<BlockExchangeProtos.BlockInfo>()
+            var offset: Long = 0
+            var dataOffset = 0
+            
+            while (dataOffset < fileDataBuffer.size) {
+                val blockSize = minOf(BLOCK_SIZE, fileDataBuffer.size - dataOffset)
+                val block = fileDataBuffer.copyOfRange(dataOffset, dataOffset + blockSize)
+                
+                val hash = MessageDigest.getInstance("SHA-256").digest(block)
+                list.add(BlockExchangeProtos.BlockInfo.newBuilder()
+                        .setHash(ByteString.copyFrom(hash))
+                        .setOffset(offset)
+                        .setSize(blockSize)
+                        .build())
+                offset += blockSize.toLong()
+                dataOffset += blockSize
             }
+            size = offset
+            blocks = list
         }
 
         @Throws(IOException::class)
         fun getBlock(offset: Long, size: Int, hash: String): ByteArray {
-            val buffer = ByteArray(size)
-            inputStream.use { it ->
-                IOUtils.skipFully(it, offset)
-                IOUtils.readFully(it, buffer)
-                NetworkUtils.assertProtocol(Hex.toHexString(MessageDigest.getInstance("SHA-256").digest(buffer)) == hash, {"block hash mismatch!"})
-                return buffer
-            }
+            val buffer = fileData?.copyOfRange(offset.toInt(), offset.toInt() + size)
+                    ?: throw IOException("File data not available")
+            
+            NetworkUtils.assertProtocol(Hex.toHexString(MessageDigest.getInstance("SHA-256").digest(buffer)) == hash, {"block hash mismatch!"})
+            return buffer
         }
 
 
@@ -311,6 +314,11 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 hash = hash2
                 hash2
             }
+        }
+        
+        fun close() {
+            // Clear file data to free memory
+            fileData = null
         }
     }
 
