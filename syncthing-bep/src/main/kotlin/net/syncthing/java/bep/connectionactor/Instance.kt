@@ -45,7 +45,10 @@ object ConnectionActor {
     ): SendChannel<ConnectionAction> {
         val channel = Channel<ConnectionAction>(Channel.RENDEZVOUS)
 
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
+            logger.debug("💣 Uncaught exception in connection actor coroutine: ${throwable.message}")
+            throwable.printStackTrace()
+        }).launch {
             Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
                 println("💣 Uncaught exception in thread ${thread.name}: ${throwable.message}")
                 throwable.printStackTrace()
@@ -128,7 +131,12 @@ object ConnectionActor {
                 try {
                     launch {
                         while (isActive) {
-                            val message = receivePostAuthMessage().second
+                            val message = try {
+                                receivePostAuthMessage().second
+                            } catch (e: Exception) {
+                                logger.debug("🚨 receivePostAuthMessage failed in message loop: ${e.message}")
+                                break // Exit the loop to allow retry mechanism to work
+                            }
 
                             when (message) {
                                 is BlockExchangeProtos.Response -> {
