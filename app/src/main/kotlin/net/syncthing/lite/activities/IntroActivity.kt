@@ -221,9 +221,20 @@ class IntroActivity : AppIntro() {
     private suspend fun tryConnectToAllDevices() {
         Log.d(TAG, "IntroActivity tryConnectToAllDevices() called")
         
-        // First trigger global and local discovery
-        Log.d(TAG, "IntroActivity triggering discovery for all devices")
-        sharedLibraryHandler.retryDiscoveryForDevicesWithoutAddresses()
+        // First trigger global and local discovery with more aggressive retry
+        Log.d(TAG, "IntroActivity triggering discovery for all devices with aggressive retry")
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Multiple discovery attempts to ensure both local and global discovery run
+                for (i in 1..3) {
+                    Log.d(TAG, "IntroActivity discovery attempt $i")
+                    sharedLibraryHandler.retryDiscoveryForDevicesWithoutAddresses()
+                    delay(2000) // 2 second delay between attempts
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "IntroActivity error in discovery attempts", e)
+            }
+        }
         
         // Then try to connect to devices that already have addresses
         lifecycleScope.launch(Dispatchers.IO) {
@@ -248,9 +259,20 @@ class IntroActivity : AppIntro() {
         // Apply exponential backoff
         delay(retryDelayMs)
         
-        // Trigger discovery
+        // Trigger discovery multiple times to ensure global discovery runs
         Log.d(TAG, "IntroActivity triggering discovery retry after backoff")
-        sharedLibraryHandler.retryDiscoveryForDevicesWithoutAddresses()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Try discovery multiple times to ensure global discovery server is contacted
+                for (i in 1..2) {
+                    Log.d(TAG, "IntroActivity retryDiscovery attempt $i after backoff")
+                    sharedLibraryHandler.retryDiscoveryForDevicesWithoutAddresses()
+                    delay(1000) // 1 second between attempts
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "IntroActivity error in retryDiscoveryWithBackoff()", e)
+            }
+        }
         
         // Increase delay for next retry (exponential backoff)
         val oldDelay = retryDelayMs
