@@ -40,6 +40,7 @@ class FolderBrowserActivity : SyncthingActivity() {
 
     private lateinit var folder: String
     private lateinit var uploadFileLauncher: ActivityResultLauncher<Intent>
+    private var currentUploadDialog: FileUploadDialog? = null
 
     private val path = MutableStateFlow("")
     private val listing = MutableStateFlow<DirectoryListing?>(null)
@@ -54,14 +55,19 @@ class FolderBrowserActivity : SyncthingActivity() {
                 libraryHandler.syncthingClient { syncthingClient ->
                     val currentPath = path.value
                     result.data?.data?.let { uri ->
-                        FileUploadDialog(
+                        currentUploadDialog?.cleanup() // cleanup any existing dialog
+                        currentUploadDialog = FileUploadDialog(
                             this@FolderBrowserActivity,
                             syncthingClient,
                             uri,
                             folder,
                             currentPath,
-                            { /* nothing to do on success */ }
-                        ).show()
+                            { 
+                                // cleanup the dialog reference after successful upload
+                                currentUploadDialog = null
+                            }
+                        )
+                        currentUploadDialog?.show()
                     }
                 }
             }
@@ -205,5 +211,10 @@ class FolderBrowserActivity : SyncthingActivity() {
             true
         }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    override fun onDestroy() {
+        currentUploadDialog?.cleanup()
+        super.onDestroy()
     }
 }

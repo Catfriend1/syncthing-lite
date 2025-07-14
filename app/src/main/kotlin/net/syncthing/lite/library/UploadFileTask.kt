@@ -5,8 +5,8 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.BlockPusher
 import net.syncthing.java.client.SyncthingClient
@@ -23,7 +23,8 @@ class UploadFileTask(
     syncthingSubFolder: String,
     private val onProgress: (BlockPusher.FileUploadObserver) -> Unit,
     private val onComplete: () -> Unit,
-    private val onError: () -> Unit
+    private val onError: () -> Unit,
+    private val scope: CoroutineScope
 ) {
 
     companion object {
@@ -44,7 +45,7 @@ class UploadFileTask(
     init {
         Log.i(TAG, "Uploading file $localFile to folder $syncthingFolder:$syncthingPath")
 
-        MainScope().launch(Dispatchers.IO) {
+        scope.launch(Dispatchers.IO) {
             try {
                 val input = uploadStream
                 if (input == null) {
