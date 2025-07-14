@@ -63,8 +63,10 @@ class IntroActivity : AppIntro() {
     }
     
     private var connectionManagerJob: Job? = null
+    private var connectionRetryJob: Job? = null
     private var retryDelayMs = 10000L // Start with 10 seconds
     private val maxRetryDelayMs = 300000L // Maximum 5 minutes
+    private val connectionRetryIntervalMs = 15000L // Retry connections every 15 seconds
     private var isStarted = false
     private var currentSlidePosition = 0 // Track current slide position
     private var isSlideThreeActive = false // Track if slide 3 is active
@@ -98,6 +100,7 @@ class IntroActivity : AppIntro() {
         sharedLibraryHandler.start {
             Log.d(TAG, "Shared LibraryHandler started for IntroActivity")
             startConnectionManager()
+            startConnectionRetryJob()
         }
     }
 
@@ -110,6 +113,11 @@ class IntroActivity : AppIntro() {
         Log.d(TAG, "Stopping connection manager for IntroActivity")
         connectionManagerJob?.cancel()
         connectionManagerJob = null
+        
+        // Stop the connection retry job
+        Log.d(TAG, "Stopping connection retry job for IntroActivity")
+        connectionRetryJob?.cancel()
+        connectionRetryJob = null
         
         // Stop the shared LibraryHandler
         Log.d(TAG, "Stopping shared LibraryHandler for IntroActivity")
@@ -212,6 +220,81 @@ class IntroActivity : AppIntro() {
                     tryConnectToAllDevices()
                 }
             }
+        }
+    }
+
+    /**
+     * Periodic connection retry job that continuously attempts to reconnect
+     * to devices that have addresses but are disconnected.
+     * This is crucial for handling the "socket close after certificate exchange" scenario.
+     */
+    private fun startConnectionRetryJob() {
+        Log.d(TAG, "Starting connection retry job for IntroActivity")
+        connectionRetryJob?.cancel()
+        connectionRetryJob = lifecycleScope.launch {
+            Log.d(TAG, "IntroActivity connection retry job coroutine started")
+            
+            while (isStarted && !isDestroyed) {
+                try {
+                    // Wait before checking
+                    delay(connectionRetryIntervalMs)
+                    
+                    if (!isStarted || isDestroyed) {
+                        Log.d(TAG, "IntroActivity connection retry job stopping due to destroyed/stopped state")
+                        break
+                    }
+                    
+                    // Only run connection retry if we're on slide 3 - no point retrying on earlier slides
+                    if (!isOnSlideThree()) {
+                        Log.d(TAG, "IntroActivity connection retry job skipping - not on slide 3")
+                        continue
+                    }
+                    
+                    Log.d(TAG, "IntroActivity connection retry job checking for disconnected devices with addresses")
+                    
+                    // Get current connection status
+                    val connectionInfo = sharedLibraryHandler.subscribeToConnectionStatus().value
+                    val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
+                    
+                    // Find devices that have addresses but are disconnected
+                    val devicesNeedingReconnection = devices.filter { device ->
+                        val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                        connection.status == ConnectionStatus.Disconnected && connection.addresses.isNotEmpty()
+                    }
+                    
+                    if (devicesNeedingReconnection.isNotEmpty()) {
+                        Log.d(TAG, "IntroActivity connection retry job found ${devicesNeedingReconnection.size} devices needing reconnection")
+                        
+                        // Attempt to reconnect to these devices
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                Log.d(TAG, "IntroActivity connection retry job calling connectToNewlyAddedDevices()")
+                                sharedLibraryHandler.libraryManager.withLibrary { library ->
+                                    library.syncthingClient.connectToNewlyAddedDevices()
+                                }
+                                
+                                // Also try individual reconnection for each device
+                                devicesNeedingReconnection.forEach { device ->
+                                    Log.d(TAG, "IntroActivity connection retry job attempting reconnect to device: ${device.deviceId.deviceId.substring(0, 8)}")
+                                    sharedLibraryHandler.libraryManager.withLibrary { library ->
+                                        library.syncthingClient.reconnect(device.deviceId)
+                                    }
+                                }
+                                
+                                Log.d(TAG, "IntroActivity connection retry job completed reconnection attempts")
+                            } catch (e: Exception) {
+                                Log.e(TAG, "IntroActivity connection retry job error in reconnection", e)
+                            }
+                        }
+                    } else {
+                        Log.d(TAG, "IntroActivity connection retry job found no devices needing reconnection")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "IntroActivity connection retry job error", e)
+                }
+            }
+            
+            Log.d(TAG, "IntroActivity connection retry job coroutine ended")
         }
     }
 
