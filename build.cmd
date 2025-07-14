@@ -1,7 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 ::
-call gradlew %1 assembledebug --warning-mode all
+:: --no-build-cache
+call gradlew --warning-mode all %* assembledebug
 ::
 call scripts\debug\win\hide-folders-from-notepad++.cmd
 ::
