@@ -38,19 +38,22 @@ class FileUploadDialog(
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     fun show() {
-        showDialog()
-
-        scope.launch {
-            uploadFileTask = UploadFileTask(
-                context,
-                syncthingClient,
-                localFile,
-                syncthingFolder,
-                syncthingSubFolder,
-                this@FileUploadDialog::onProgress,
-                this@FileUploadDialog::onComplete,
-                this@FileUploadDialog::onError
-            )
+        uiHandler.post {
+            showDialog()
+            
+            scope.launch {
+                uploadFileTask = UploadFileTask(
+                    context,
+                    syncthingClient,
+                    localFile,
+                    syncthingFolder,
+                    syncthingSubFolder,
+                    this@FileUploadDialog::onProgress,
+                    this@FileUploadDialog::onComplete,
+                    this@FileUploadDialog::onError,
+                    scope
+                )
+            }
         }
     }
 
@@ -87,7 +90,8 @@ class FileUploadDialog(
             dialog?.dismiss()
             Toast.makeText(context, R.string.toast_upload_complete, Toast.LENGTH_SHORT).show()
             onUploadCompleteListener()
-            cancel()
+            // Don't call cancel() from onComplete to avoid issues with coroutine cleanup
+            // The scope will be cancelled when the dialog is dismissed/destroyed
         }
     }
 
@@ -95,12 +99,17 @@ class FileUploadDialog(
         uiHandler.post {
             dialog?.dismiss()
             Toast.makeText(context, R.string.toast_file_upload_failed, Toast.LENGTH_SHORT).show()
-            cancel()
+            // Don't call cancel() from onError to avoid issues with coroutine cleanup
+            // The scope will be cancelled when the dialog is dismissed/destroyed
         }
     }
 
     private fun cancel() {
         uploadFileTask?.cancel()
+        cleanup()
+    }
+
+    fun cleanup() {
         scope.cancel()  // cleanly shuts down coroutines
     }
 }

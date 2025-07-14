@@ -5,8 +5,8 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.BlockPusher
 import net.syncthing.java.client.SyncthingClient
@@ -23,7 +23,8 @@ class UploadFileTask(
     syncthingSubFolder: String,
     private val onProgress: (BlockPusher.FileUploadObserver) -> Unit,
     private val onComplete: () -> Unit,
-    private val onError: () -> Unit
+    private val onError: () -> Unit,
+    private val scope: CoroutineScope
 ) {
 
     companion object {
@@ -39,11 +40,12 @@ class UploadFileTask(
     private val uploadStream = context.contentResolver.openInputStream(localFile)
 
     private var isCancelled = false
+    private var observer: BlockPusher.FileUploadObserver? = null
 
     init {
         Log.i(TAG, "Uploading file $localFile to folder $syncthingFolder:$syncthingPath")
 
-        MainScope().launch(Dispatchers.IO) {
+        scope.launch(Dispatchers.IO) {
             try {
                 val input = uploadStream
                 if (input == null) {
@@ -53,22 +55,28 @@ class UploadFileTask(
                 }
 
                 val blockPusher = syncthingClient.getBlockPusher(folderId = syncthingFolder)
-                val observer = blockPusher.pushFile(input, syncthingFolder, syncthingPath)
+                observer = blockPusher.pushFile(input, syncthingFolder, syncthingPath)
 
-                handler.post { onProgress(observer) }
+                handler.post { onProgress(observer!!) }
 
-                while (!observer.isCompleted()) {
-                    if (isCancelled)
+                while (!observer!!.isCompleted()) {
+                    if (isCancelled) {
+                        observer?.close()
                         return@launch
+                    }
 
-                    observer.waitForProgressUpdate()
-                    Log.i(TAG, "upload progress = ${observer.progressPercentage()}%")
-                    handler.post { onProgress(observer) }
+                    observer!!.waitForProgressUpdate()
+                    Log.i(TAG, "upload progress = ${observer!!.progressPercentage()}%")
+                    handler.post { onProgress(observer!!) }
                 }
 
                 IOUtils.closeQuietly(input)
+                observer?.close()
+                Log.i(TAG, "Upload completed successfully, observer closed")
                 handler.post { onComplete() }
             } catch (ex: Exception) {
+                Log.e(TAG, "Upload failed", ex)
+                observer?.close()
                 handler.post { onError() }
             }
         }
@@ -76,5 +84,6 @@ class UploadFileTask(
 
     fun cancel() {
         isCancelled = true
+        observer?.close()
     }
 }

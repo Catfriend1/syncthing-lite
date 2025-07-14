@@ -40,6 +40,7 @@ class FolderBrowserActivity : SyncthingActivity() {
 
     private lateinit var folder: String
     private lateinit var uploadFileLauncher: ActivityResultLauncher<Intent>
+    private var currentUploadDialog: FileUploadDialog? = null
 
     private val path = MutableStateFlow("")
     private val listing = MutableStateFlow<DirectoryListing?>(null)
@@ -52,19 +53,21 @@ class FolderBrowserActivity : SyncthingActivity() {
         ) { result ->
             if (result.resultCode == AppCompatActivity.RESULT_OK) {
                 libraryHandler.syncthingClient { syncthingClient ->
-                    MainScope().launch {
-                        // FIXME: it would be better if the dialog would use the library handler
-                        val currentPath = path.value
-                        result.data?.data?.let { uri ->
-                            FileUploadDialog(
-                                this@FolderBrowserActivity,
-                                syncthingClient,
-                                uri,
-                                folder,
-                                currentPath,
-                                { /* nothing to do on success */ }
-                            ).show()
-                        }
+                    val currentPath = path.value
+                    result.data?.data?.let { uri ->
+                        currentUploadDialog?.cleanup() // cleanup any existing dialog
+                        currentUploadDialog = FileUploadDialog(
+                            this@FolderBrowserActivity,
+                            syncthingClient,
+                            uri,
+                            folder,
+                            currentPath,
+                            { 
+                                // cleanup the dialog reference after successful upload
+                                currentUploadDialog = null
+                            }
+                        )
+                        currentUploadDialog?.show()
                     }
                 }
             }
@@ -208,5 +211,10 @@ class FolderBrowserActivity : SyncthingActivity() {
             true
         }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    override fun onDestroy() {
+        currentUploadDialog?.cleanup()
+        super.onDestroy()
     }
 }
