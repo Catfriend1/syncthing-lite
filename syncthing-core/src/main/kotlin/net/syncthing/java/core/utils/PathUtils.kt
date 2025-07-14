@@ -128,7 +128,7 @@ object PathUtils {
         assertPathValid(dir)
         assertFilenameValid(file)
 
-        return dir.removeSuffix(PATH_SEPARATOR) + file
+        return dir.removeSuffix(PATH_SEPARATOR) + PATH_SEPARATOR + file.removePrefix(PATH_SEPARATOR)
     }
 
     fun getFileExtensionFromFilename(filename: String): String {

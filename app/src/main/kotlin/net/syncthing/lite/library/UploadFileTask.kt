@@ -31,7 +31,11 @@ class UploadFileTask(
         private val handler = Handler(Looper.getMainLooper())
     }
 
-    private val syncthingPath = PathUtils.buildPath(syncthingSubFolder, Util.getContentFileName(context, localFile))
+    private val syncthingPath = if ("" == syncthingSubFolder)
+        Util.getContentFileName(context, localFile)
+    else
+        PathUtils.buildPath(syncthingSubFolder, Util.getContentFileName(context, localFile))
+
     private val uploadStream = context.contentResolver.openInputStream(localFile)
 
     private var isCancelled = false
