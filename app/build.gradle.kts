@@ -102,3 +102,30 @@ dependencies {
     implementation(project(":syncthing-repository-android"))
     implementation(project(":syncthing-temp-repository-encryption"))
 }
+
+tasks.register("validateAppVersionCode") {
+    doFirst {
+        val versionName = libs.versions.version.name.get()
+        val versionCode = libs.versions.version.code.get().toInt()
+
+        val parts = versionName.split(".")
+        if (parts.size != 4) {
+            throw GradleException("Invalid versionName format: '$versionName'. Expected format 'major.minor.patch.wrapper'.")
+        }
+
+        val calculatedCode = parts[0].toInt() * 1_000_000 +
+                             parts[1].toInt() * 10_000 +
+                             parts[2].toInt() * 100 +
+                             parts[3].toInt()
+
+        if (calculatedCode != versionCode) {
+            throw GradleException("Version mismatch: Calculated versionCode ($calculatedCode) does not match declared versionCode ($versionCode). Please review 'gradle/libs.versions.toml'.")
+        }
+    }
+}
+
+project.afterEvaluate {
+    tasks.matching { it.name.startsWith("assemble") || it.name.startsWith("bundle") }.configureEach {
+        dependsOn("validateAppVersionCode")
+    }
+}
