@@ -31,5 +31,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <Button
+            android:id="@+id/delete_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?selectableItemBackground"
+            android:drawableStart="@drawable/ic_delete_gray_24dp"
+            android:gravity="start|center_vertical"
+            android:padding="8dp"
+            android:text="@string/dialog_file_delete" />
+
     </LinearLayout>
 </layout>
