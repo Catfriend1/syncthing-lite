@@ -172,9 +172,22 @@ class LibraryHandler(private val context: Context) {
     fun retryDiscoveryForDevicesWithoutAddresses() {
         android.util.Log.d(TAG, "retryDiscoveryForDevicesWithoutAddresses() called")
         CoroutineScope(Dispatchers.IO).launch {
-            android.util.Log.d(TAG, "Calling syncthingClient.retryDiscovery()")
-            syncthingClient { it.retryDiscovery() }
-            android.util.Log.d(TAG, "syncthingClient.retryDiscovery() completed")
+            try {
+                // Additional logging to help debug discovery issues
+                libraryManager.withLibrary { library ->
+                    val devices = library.configuration.peers
+                    android.util.Log.d(TAG, "LibraryHandler found ${devices.size} configured devices for discovery")
+                    devices.forEach { device ->
+                        android.util.Log.d(TAG, "LibraryHandler device for discovery: ${device.deviceId.deviceId.substring(0, 8)}...")
+                    }
+                }
+                
+                android.util.Log.d(TAG, "Calling syncthingClient.retryDiscovery()")
+                syncthingClient { it.retryDiscovery() }
+                android.util.Log.d(TAG, "syncthingClient.retryDiscovery() completed")
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error in retryDiscoveryForDevicesWithoutAddresses()", e)
+            }
         }
     }
 }

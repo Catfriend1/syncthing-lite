@@ -314,6 +314,9 @@ class IntroActivity : AppIntro() {
                     sharedLibraryHandler.retryDiscoveryForDevicesWithoutAddresses()
                     delay(2000) // 2 second delay between attempts
                 }
+                
+                // Additional logging to verify discovery was called
+                Log.d(TAG, "IntroActivity completed all discovery attempts")
             } catch (e: Exception) {
                 Log.e(TAG, "IntroActivity error in discovery attempts", e)
             }
@@ -424,6 +427,23 @@ class IntroActivity : AppIntro() {
         Log.d(TAG, "IntroActivity triggerDiscoveryOnSlideThree() called")
         lifecycleScope.launch {
             resetRetryDelay()
+            
+            // First ensure we have devices configured
+            val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
+            Log.d(TAG, "IntroActivity triggerDiscoveryOnSlideThree found ${devices.size} configured devices")
+            
+            if (devices.isEmpty()) {
+                Log.w(TAG, "IntroActivity triggerDiscoveryOnSlideThree no devices configured, cannot trigger discovery")
+                return@launch
+            }
+            
+            // Log each device to debug
+            devices.forEach { device ->
+                Log.d(TAG, "IntroActivity device: ${device.deviceId.deviceId.substring(0, 8)}...")
+            }
+            
+            // Trigger discovery with additional logging
+            Log.d(TAG, "IntroActivity triggering discovery for ${devices.size} devices")
             tryConnectToAllDevices()
         }
     }
@@ -729,9 +749,23 @@ class IntroActivity : AppIntro() {
         override fun onResume() {
             super.onResume()
             Log.d(TAG, "IntroFragmentThree onResume() called")
-            // Trigger discovery when slide 3 is displayed
-            Log.d(TAG, "IntroFragmentThree triggering discovery on slide 3")
-            (activity as? IntroActivity)?.triggerDiscoveryOnSlideThree()
+            
+            // Wait a bit to ensure the library is fully loaded before triggering discovery
+            lifecycleScope.launch {
+                delay(1000) // Wait 1 second for library to be ready
+                Log.d(TAG, "IntroFragmentThree triggering discovery on slide 3 after delay")
+                
+                // Check if we have devices configured
+                val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }
+                Log.d(TAG, "IntroFragmentThree found ${devices.size} configured devices")
+                
+                if (devices.isNotEmpty()) {
+                    Log.d(TAG, "IntroFragmentThree devices found, triggering discovery")
+                    (activity as? IntroActivity)?.triggerDiscoveryOnSlideThree()
+                } else {
+                    Log.w(TAG, "IntroFragmentThree no devices configured, cannot trigger discovery")
+                }
+            }
         }
     }
 }
