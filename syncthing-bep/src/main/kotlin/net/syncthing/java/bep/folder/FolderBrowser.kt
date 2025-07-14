@@ -60,7 +60,8 @@ class FolderBrowser internal constructor(
                                     info = info,
                                     stats = currentFolderStats[info.folderId]
                                         ?: FolderStats.createDummy(info.folderId),
-                                    indexInfo = currentIndexInfo[info.folderId] ?: emptyList()
+                                    indexInfo = currentIndexInfo[info.folderId] ?: emptyList(),
+                                    localDeviceId = configuration.localDeviceId.deviceId
                             )
                         }.associateBy { it.info.folderId }
                 )
