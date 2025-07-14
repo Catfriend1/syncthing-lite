@@ -227,6 +227,7 @@ object ConnectionActor {
                                 async {
                                     try {
                                         sendPostAuthMessage(action.message)
+                                        action.completableDeferred.complete(Unit)
                                     } catch (ex: Exception) {
                                         action.completableDeferred.completeExceptionally(ex)
                                     }
