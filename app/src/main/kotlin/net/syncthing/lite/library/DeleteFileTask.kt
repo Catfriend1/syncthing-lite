@@ -32,12 +32,17 @@ class DeleteFileTask(
                 if (isCancelled) return@launch
                 
                 val blockPusher = syncthingClient.getBlockPusher(folderId = syncthingFolder)
+                // pushDelete is a suspend function that needs to be awaited
                 blockPusher.pushDelete(folderId = syncthingFolder, targetPath = syncthingPath)
                 
-                handler.post { onComplete() }
+                if (!isCancelled) {
+                    handler.post { onComplete() }
+                }
             } catch (ex: Exception) {
                 Log.e(TAG, "Error deleting file", ex)
-                handler.post { onError() }
+                if (!isCancelled) {
+                    handler.post { onError() }
+                }
             }
         }
     }
