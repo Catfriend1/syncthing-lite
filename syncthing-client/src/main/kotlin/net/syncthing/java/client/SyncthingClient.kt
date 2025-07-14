@@ -30,6 +30,8 @@ import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.java.core.interfaces.IndexRepository
 import net.syncthing.java.core.interfaces.TempRepository
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import net.syncthing.java.discovery.DiscoveryHandler
 import java.io.Closeable
 import java.io.InputStream
@@ -42,6 +44,10 @@ class SyncthingClient(
 ) : Closeable {
     val indexHandler = IndexHandler(configuration, repository, tempRepository, exceptionReportHandler)
     val discoveryHandler = DiscoveryHandler(configuration, exceptionReportHandler)
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(SyncthingClient::class.java)
+    }
 
     private val requestHandlerRegistry = RequestHandlerRegistry()
     private val connections = Connections(
@@ -91,6 +97,7 @@ class SyncthingClient(
     }
 
     fun retryDiscovery() {
+        logger.debug("SyncthingClient.retryDiscovery() called - delegating to discoveryHandler")
         discoveryHandler.retryDiscovery()
     }
 

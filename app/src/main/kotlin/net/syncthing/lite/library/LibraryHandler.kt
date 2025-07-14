@@ -170,8 +170,11 @@ class LibraryHandler(private val context: Context) {
     fun subscribeToConnectionStatus() = connectionStatus.asStateFlow()
     
     fun retryDiscoveryForDevicesWithoutAddresses() {
+        android.util.Log.d(TAG, "retryDiscoveryForDevicesWithoutAddresses() called")
         CoroutineScope(Dispatchers.IO).launch {
+            android.util.Log.d(TAG, "Calling syncthingClient.retryDiscovery()")
             syncthingClient { it.retryDiscovery() }
+            android.util.Log.d(TAG, "syncthingClient.retryDiscovery() completed")
         }
     }
 }

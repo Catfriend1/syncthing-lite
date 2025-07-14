@@ -64,29 +64,42 @@ class DiscoveryHandler(
 
     private fun doGlobalDiscoveryIfNotYetDone() {
         val currentTime = System.currentTimeMillis()
+        val timeSinceLastDiscovery = currentTime - lastGlobalDiscoveryTime
         
-        if (shouldLoadFromGlobal || (currentTime - lastGlobalDiscoveryTime) > globalDiscoveryRetryInterval) {
+        logger.debug("doGlobalDiscoveryIfNotYetDone() called - shouldLoadFromGlobal: $shouldLoadFromGlobal, timeSinceLastDiscovery: ${timeSinceLastDiscovery}ms, retryInterval: ${globalDiscoveryRetryInterval}ms")
+        
+        if (shouldLoadFromGlobal || timeSinceLastDiscovery > globalDiscoveryRetryInterval) {
+            logger.info("Starting global discovery - shouldLoadFromGlobal: $shouldLoadFromGlobal, timeSinceLastDiscovery: ${timeSinceLastDiscovery}ms")
             shouldLoadFromGlobal = false
             lastGlobalDiscoveryTime = currentTime
             
             CoroutineScope(Dispatchers.Default).launch {
-                val deviceAddresses = globalDiscoveryHandler.query(configuration.peerIds)
-                processDeviceAddressBg(deviceAddresses)
-                
-                // If no addresses were found for any device, schedule a retry with exponential backoff
-                val hasAddressesForAllDevices = configuration.peerIds.all { deviceId ->
-                    devicesAddressesManager.getDeviceAddressManager(deviceId).getCurrentDeviceAddresses().isNotEmpty()
-                }
-                
-                if (!hasAddressesForAllDevices) {
-                    // Increase retry interval with exponential backoff, but cap at max
-                    globalDiscoveryRetryInterval = minOf(globalDiscoveryRetryInterval * 2, maxRetryInterval)
-                    logger.info("Global discovery found no addresses for some devices, will retry in ${globalDiscoveryRetryInterval}ms")
-                } else {
-                    // Reset retry interval if successful
-                    globalDiscoveryRetryInterval = 30_000L
+                try {
+                    logger.info("Calling globalDiscoveryHandler.query() for ${configuration.peerIds.size} devices")
+                    val deviceAddresses = globalDiscoveryHandler.query(configuration.peerIds)
+                    logger.info("Global discovery completed, received ${deviceAddresses.size} addresses")
+                    processDeviceAddressBg(deviceAddresses)
+                    
+                    // If no addresses were found for any device, schedule a retry with exponential backoff
+                    val hasAddressesForAllDevices = configuration.peerIds.all { deviceId ->
+                        devicesAddressesManager.getDeviceAddressManager(deviceId).getCurrentDeviceAddresses().isNotEmpty()
+                    }
+                    
+                    if (!hasAddressesForAllDevices) {
+                        // Increase retry interval with exponential backoff, but cap at max
+                        globalDiscoveryRetryInterval = minOf(globalDiscoveryRetryInterval * 2, maxRetryInterval)
+                        logger.info("Global discovery found no addresses for some devices, will retry in ${globalDiscoveryRetryInterval}ms")
+                    } else {
+                        // Reset retry interval if successful
+                        globalDiscoveryRetryInterval = 30_000L
+                        logger.info("Global discovery successful for all devices, reset retry interval to 30s")
+                    }
+                } catch (e: Exception) {
+                    logger.error("Global discovery failed with exception", e)
                 }
             }
+        } else {
+            logger.debug("Global discovery skipped - waiting for retry interval (${globalDiscoveryRetryInterval - timeSinceLastDiscovery}ms remaining)")
         }
     }
 
@@ -140,12 +153,16 @@ class DiscoveryHandler(
      */
     fun retryDiscovery() {
         if (isClosed) {
+            logger.debug("retryDiscovery() called but handler is closed")
             return
         }
+        
+        logger.info("retryDiscovery() called - triggering global and local discovery")
         
         doGlobalDiscoveryIfNotYetDone()
         
         // Also restart local discovery announcements
+        logger.debug("Sending local discovery announcement")
         localDiscoveryHandler.sendAnnounceMessage()
     }
 
