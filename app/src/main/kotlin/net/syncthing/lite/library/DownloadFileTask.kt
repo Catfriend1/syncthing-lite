@@ -2,12 +2,12 @@ package net.syncthing.lite.library
 
 import android.os.Handler
 import android.os.Looper
-import androidx.core.os.CancellationSignal
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.Job
 import net.syncthing.java.bep.BlockPullerStatus
 import net.syncthing.java.client.SyncthingClient
 import net.syncthing.java.core.beans.FileInfo
@@ -55,13 +55,13 @@ class DownloadFileTask(private val fileStorageDirectory: File,
         }
     }
 
-    private val cancellationSignal = CancellationSignal()
+    private var downloadJob: Job? = null
     private var doneListenerCalled = false
 
     init {
         val file = DownloadFilePath(fileStorageDirectory, fileInfo.hash!!)
 
-        MainScope().launch(Dispatchers.IO) {
+        downloadJob = MainScope().launch(Dispatchers.IO) {
             if (file.targetFile.exists()) {
                 Log.d(TAG, "there is already a file")
 
@@ -129,7 +129,7 @@ class DownloadFileTask(private val fileStorageDirectory: File,
     }
 
     fun cancel() {
-        cancellationSignal.cancel()
+        downloadJob?.cancel()
         callError(InterruptedException())
     }
 }

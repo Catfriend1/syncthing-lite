@@ -19,7 +19,7 @@ class SqliteTransaction(
             throw IllegalStateException("tried to use a transaction which is already done")
         }
 
-        if (Thread.currentThread().id != threadId) {
+        if (Thread.currentThread().threadId() != threadId) {
             throw IllegalStateException("tried to access the transaction from an other Thread")
         }
     }

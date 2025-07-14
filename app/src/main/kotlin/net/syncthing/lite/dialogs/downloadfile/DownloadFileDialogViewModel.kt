@@ -5,10 +5,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import android.content.ContentResolver
 import android.net.Uri
-import androidx.core.os.CancellationSignal
 import android.util.Log
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 import net.syncthing.lite.library.DownloadFileTask
 import net.syncthing.lite.library.LibraryHandler
 import org.apache.commons.io.FileUtils
@@ -21,7 +21,7 @@ class DownloadFileDialogViewModel : ViewModel() {
 
     private var isInitialized = false
     private val statusInternal = MutableLiveData<DownloadFileStatus>()
-    private val cancellationSignal = CancellationSignal()
+    private var downloadJob: Job? = null
     val status: LiveData<DownloadFileStatus> = statusInternal
 
     fun init(
@@ -72,7 +72,7 @@ class DownloadFileDialogViewModel : ViewModel() {
                         onComplete = { file ->
                             libraryHandler.stop()
 
-                            MainScope().launch {
+                            downloadJob = MainScope().launch {
                                 try {
                                     if (outputUri != null) {
                                         contentResolver.openOutputStream(outputUri).use { outputStream ->
@@ -93,10 +93,6 @@ class DownloadFileDialogViewModel : ViewModel() {
                             libraryHandler.stop()
                         }
                 )
-
-                cancellationSignal.setOnCancelListener {
-                    task.cancel()
-                }
             } catch (ex: Exception) {
                 Log.w(TAG, "downloading file failed", ex)
                 statusInternal.postValue(DownloadFileStatusFailed)
@@ -111,6 +107,6 @@ class DownloadFileDialogViewModel : ViewModel() {
     }
 
     fun cancel() {
-        cancellationSignal.cancel()
+        downloadJob?.cancel()
     }
 }

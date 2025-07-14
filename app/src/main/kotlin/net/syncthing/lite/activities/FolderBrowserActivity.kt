@@ -29,6 +29,7 @@ import net.syncthing.lite.dialogs.ReconnectIssueDialogFragment
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileDialogFragment
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.OnBackPressedCallback
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FolderBrowserActivity : SyncthingActivity() {
@@ -47,6 +48,15 @@ class FolderBrowserActivity : SyncthingActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Modern back handling
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (!goUp()) {
+                    finish()
+                }
+            }
+        })
 
         uploadFileLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -185,6 +195,7 @@ class FolderBrowserActivity : SyncthingActivity() {
         }
     }
 
+    @Deprecated("Deprecated in API level 33. Use OnBackPressedCallback instead.")
     override fun onBackPressed() {
         if (!goUp()) {
             super.onBackPressed()
