@@ -165,6 +165,7 @@ object ConnectionActorGenerator {
                         status = ConnectionStatus.Disconnected
                 )
                 dispatchStatus()
+                logger.debug("ConnectionActorGenerator: Connection attempt to $deviceAddress failed, status set to Disconnected")
             }
 
             currentStatus = currentStatus.copy(
@@ -172,14 +173,23 @@ object ConnectionActorGenerator {
                     currentAddress = deviceAddress
             )
             dispatchStatus()
+            logger.debug("ConnectionActorGenerator: Attempting to connect to $deviceAddress")
 
-            var connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {handleCancel(); false}
+            var connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {
+                logger.debug("ConnectionActorGenerator: Connection to $deviceAddress failed, will retry later")
+                handleCancel()
+                false
+            }
 
             if (connection.second.newSharedFolders.isNotEmpty()) {
                 logger.debug("Connected to device {} with new folders --> Reconnect.", deviceAddress)
                 // reconnect to send new cluster config
                 connection.first.close()
-                connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {handleCancel(); false}
+                connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {
+                    logger.debug("ConnectionActorGenerator: Reconnection to $deviceAddress failed, will retry later")
+                    handleCancel()
+                    false
+                }
             }
 
             logger.debug("Connected to device {}.", deviceAddress)
