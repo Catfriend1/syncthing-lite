@@ -30,9 +30,9 @@ abstract class SyncthingActivity : CoroutineActivity() {
     private var snackBar: Snackbar? = null
     private var connectionManagerJob: Job? = null
     private var connectionRetryJob: Job? = null
-    private var retryDelayMs = 10000L // Start with 10 seconds
-    private val maxRetryDelayMs = 30000L // Maximum 30 seconds  
-    private val connectionRetryIntervalMs = 10000L // Retry connections every 10 seconds
+    private var retryDelayMs = 5000L // Start with 5 seconds - faster reconnection
+    private val maxRetryDelayMs = 15000L // Maximum 15 seconds - faster than before
+    private val connectionRetryIntervalMs = 5000L // Retry connections every 5 seconds - more aggressive
     private var isStarted = false
 
     companion object {
@@ -209,6 +209,13 @@ abstract class SyncthingActivity : CoroutineActivity() {
                         connection.status == ConnectionStatus.Disconnected && connection.addresses.isNotEmpty()
                     }
                     
+                    // Also check for devices that might be in a broken state but still show as connected
+                    val devicesWithPotentiallyBrokenConnections = devices.filter { device ->
+                        val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                        // Force reconnection for devices that have been in Connected state but might be broken
+                        connection.status == ConnectionStatus.Connected && connection.addresses.isNotEmpty()
+                    }
+                    
                     if (devicesNeedingReconnection.isNotEmpty()) {
                         Log.v(TAG, "Connection retry job found ${devicesNeedingReconnection.size} devices needing reconnection for ${this.javaClass.simpleName}")
                         
@@ -230,7 +237,26 @@ abstract class SyncthingActivity : CoroutineActivity() {
                                 
                                 Log.v(TAG, "Connection retry job completed reconnection attempts for ${this.javaClass.simpleName}")
                             } catch (e: Exception) {
-                                Log.e(TAG, "Connection retry job error in reconnection for ${this.javaClass.simpleName}", e)
+                                Log.e(TAG, "Connection retry job error in reconnection for ${this.javaClass.simpleName}: ${e.message}", e)
+                            }
+                        }
+                    } else if (devicesWithPotentiallyBrokenConnections.isNotEmpty()) {
+                        // Periodically test potentially broken connections (every 30 seconds)
+                        val currentTime = System.currentTimeMillis()
+                        if (currentTime % 30000 < connectionRetryIntervalMs) {
+                            Log.v(TAG, "Testing potentially broken connections for ${devicesWithPotentiallyBrokenConnections.size} devices")
+                            launch(Dispatchers.IO) {
+                                try {
+                                    devicesWithPotentiallyBrokenConnections.forEach { device ->
+                                        Log.v(TAG, "Testing connection to device: ${device.deviceId.deviceId.substring(0, 8)}")
+                                        libraryHandler.libraryManager.withLibrary { library ->
+                                            // Force a reconnection to test if the connection is really alive
+                                            library.syncthingClient.reconnect(device.deviceId)
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Error testing potentially broken connections: ${e.message}", e)
+                                }
                             }
                         }
                     } else {
@@ -316,7 +342,7 @@ abstract class SyncthingActivity : CoroutineActivity() {
      */
     fun resetRetryDelay() {
         Log.v(TAG, "resetRetryDelay() called for ${this.javaClass.simpleName}")
-        retryDelayMs = 10000L // Reset to 10 seconds
+        retryDelayMs = 5000L // Reset to 5 seconds - faster reconnection
     }
 
     /**
