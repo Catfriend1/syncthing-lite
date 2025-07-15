@@ -105,7 +105,6 @@ class IntroActivity : AppIntro() {
 
     override fun onStop() {
         super.onStop()
-        Log.d(TAG, "IntroActivity onStop() called")
         isStarted = false
         
         // Stop the connection manager
@@ -154,12 +153,11 @@ class IntroActivity : AppIntro() {
     }
 
     override fun onSkipPressed(currentFragment: Fragment?) {
-        Log.d(TAG, "IntroActivity onSkipPressed() called")
         onDonePressed(currentFragment)
     }
 
     override fun onDonePressed(currentFragment: Fragment?) {
-        Log.d(TAG, "IntroActivity onDonePressed() called, transitioning to MainActivity")
+        Log.v(TAG, "IntroActivity onDonePressed() called, transitioning to MainActivity")
         getSharedPreferences("default", Context.MODE_PRIVATE).edit {
             putBoolean(MainActivity.PREF_IS_FIRST_START, false)
         }
@@ -310,7 +308,7 @@ class IntroActivity : AppIntro() {
      * Immediately attempts to connect to all devices and trigger discovery
      */
     private suspend fun tryConnectToAllDevices() {
-        Log.d(TAG, "IntroActivity tryConnectToAllDevices() called")
+        Log.v(TAG, "IntroActivity tryConnectToAllDevices() called")
         
         // First trigger global and local discovery with more aggressive retry
         Log.d(TAG, "IntroActivity triggering discovery for all devices with aggressive retry")
@@ -322,9 +320,6 @@ class IntroActivity : AppIntro() {
                     sharedLibraryHandler.retryDiscoveryForDevicesWithoutAddresses()
                     delay(2000) // 2 second delay between attempts
                 }
-                
-                // Additional logging to verify discovery was called
-                Log.d(TAG, "IntroActivity completed all discovery attempts")
             } catch (e: Exception) {
                 Log.e(TAG, "IntroActivity error in discovery attempts", e)
             }
@@ -348,7 +343,7 @@ class IntroActivity : AppIntro() {
      * Attempts to connect to devices that already have addresses (without triggering discovery)
      */
     private suspend fun tryConnectToDevicesWithAddresses(devicesNeedingConnection: List<DeviceInfo>) {
-        Log.d(TAG, "IntroActivity tryConnectToDevicesWithAddresses() called for ${devicesNeedingConnection.size} devices")
+        Log.v(TAG, "IntroActivity tryConnectToDevicesWithAddresses() called for ${devicesNeedingConnection.size} devices")
         
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -376,7 +371,7 @@ class IntroActivity : AppIntro() {
      * Retry discovery with exponential backoff strategy
      */
     private suspend fun retryDiscoveryWithBackoff() {
-        Log.d(TAG, "IntroActivity retryDiscoveryWithBackoff() called with delay ${retryDelayMs}ms")
+        Log.v(TAG, "IntroActivity retryDiscoveryWithBackoff() called with delay ${retryDelayMs}ms")
         
         // Apply exponential backoff
         delay(retryDelayMs)
@@ -407,7 +402,7 @@ class IntroActivity : AppIntro() {
      */
     fun resetRetryDelay() {
         Log.d(TAG, "IntroActivity resetRetryDelay() called")
-        retryDelayMs = 15000L // Reset to 15 seconds as requested
+        retryDelayMs = 15000L // Reset to 15 seconds
     }
 
     /**
@@ -422,18 +417,16 @@ class IntroActivity : AppIntro() {
      * For IntroActivity, we only trigger discovery if we're on slide 3
      */
     fun triggerImmediateConnectionAttempt() {
-        Log.d(TAG, "IntroActivity triggerImmediateConnectionAttempt() called")
+        Log.v(TAG, "IntroActivity triggerImmediateConnectionAttempt() called")
         lifecycleScope.launch {
             resetRetryDelay()
             
             // Only trigger discovery if we're on slide 3
             if (isOnSlideThree()) {
-                Log.d(TAG, "IntroActivity triggering discovery on slide 3")
                 // Ensure discovery is enabled
                 sharedLibraryHandler.enableDiscovery()
                 tryConnectToAllDevices()
             } else {
-                Log.d(TAG, "IntroActivity not on slide 3, skipping discovery trigger")
                 // Still trigger connection attempts for devices that already have addresses
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
@@ -445,7 +438,7 @@ class IntroActivity : AppIntro() {
                         }
                         
                         if (devicesWithAddresses.isNotEmpty()) {
-                            Log.d(TAG, "IntroActivity triggering connection attempt for ${devicesWithAddresses.size} devices with addresses")
+                            Log.v(TAG, "IntroActivity triggering connection attempt for ${devicesWithAddresses.size} devices with addresses")
                             sharedLibraryHandler.libraryManager.withLibrary { library ->
                                 library.syncthingClient.connectToNewlyAddedDevices()
                             }
@@ -462,30 +455,22 @@ class IntroActivity : AppIntro() {
      * Special method to trigger discovery when IntroFragmentThree is displayed
      */
     fun triggerDiscoveryOnSlideThree() {
-        Log.d(TAG, "IntroActivity triggerDiscoveryOnSlideThree() called")
+        Log.v(TAG, "IntroActivity triggerDiscoveryOnSlideThree() called")
         lifecycleScope.launch {
             resetRetryDelay()
             
             // First ensure discovery is enabled
-            Log.d(TAG, "IntroActivity enabling discovery for slide 3")
             sharedLibraryHandler.enableDiscovery()
             
             // First ensure we have devices configured
             val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
-            Log.d(TAG, "IntroActivity triggerDiscoveryOnSlideThree found ${devices.size} configured devices")
-            
             if (devices.isEmpty()) {
                 Log.w(TAG, "IntroActivity triggerDiscoveryOnSlideThree no devices configured, cannot trigger discovery")
                 return@launch
             }
-            
-            // Log each device to debug
-            devices.forEach { device ->
-                Log.d(TAG, "IntroActivity device: ${device.deviceId.deviceId.substring(0, 8)}...")
-            }
-            
+
             // Trigger discovery with additional logging
-            Log.d(TAG, "IntroActivity triggering discovery for ${devices.size} devices")
+            Log.v(TAG, "IntroActivity triggering discovery for ${devices.size} devices")
             tryConnectToAllDevices()
         }
     }
@@ -594,15 +579,12 @@ class IntroActivity : AppIntro() {
          * sets an error on the textview and returns false.
          */
         fun isDeviceIdValid(): Boolean {
-            Log.d(TAG, "IntroFragmentTwo isDeviceIdValid() called")
             return try {
                 val deviceId = binding.enterDeviceId.deviceId.text.toString()
-                Log.d(TAG, "IntroFragmentTwo validating device ID: $deviceId")
-                
+
                 // Just validate the device ID format first
                 DeviceId(deviceId.uppercase(Locale.getDefault()))
-                Log.d(TAG, "IntroFragmentTwo device ID format is valid")
-                
+
                 // Only import once
                 if (!hasImportedDevice) {
                     Log.d(TAG, "IntroFragmentTwo importing device ID (first time)")
@@ -610,10 +592,9 @@ class IntroActivity : AppIntro() {
                         Log.d(TAG, "IntroFragmentTwo device ID imported successfully")
                         hasImportedDevice = true
                         // Don't trigger discovery here - it will be triggered when slide 3 is displayed
-                        Log.d(TAG, "IntroFragmentTwo device imported, discovery will be triggered on slide 3")
                     }
                 } else {
-                    Log.d(TAG, "IntroFragmentTwo device ID already imported, skipping")
+                    Log.w(TAG, "IntroFragmentTwo device ID already imported, skipping")
                 }
                 true
             } catch (e: Exception) {
@@ -634,7 +615,6 @@ class IntroActivity : AppIntro() {
 
         override fun onResume() {
             super.onResume()
-            Log.d(TAG, "IntroFragmentTwo onResume() called")
 
             binding.foundDevices.removeAllViews()
             addedDeviceIds.clear()
@@ -644,7 +624,6 @@ class IntroActivity : AppIntro() {
 
         override fun onPause() {
             super.onPause()
-            Log.d(TAG, "IntroFragmentTwo onPause() called")
 
             libraryHandler.unregisterMessageFromUnknownDeviceListener(onDeviceFound)
         }
@@ -682,25 +661,18 @@ class IntroActivity : AppIntro() {
         private lateinit var binding: FragmentIntroThreeBinding
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-            Log.d(TAG, "IntroFragmentThree onCreateView() called")
             binding = FragmentIntroThreeBinding.inflate(inflater, container, false)
 
             launch {
-                Log.d(TAG, "IntroFragmentThree starting connection status monitoring")
+                Log.v(TAG, "IntroFragmentThree starting connection status monitoring")
                 val ownDeviceId = libraryHandler.libraryManager.withLibrary { it.configuration.localDeviceId }
-                Log.d(TAG, "IntroFragmentThree own device ID: $ownDeviceId")
 
                 libraryHandler.subscribeToConnectionStatus().collect { connectionInfo ->
-                    Log.d(TAG, "IntroFragmentThree connection status update: ${connectionInfo.size} devices")
-                    
                     val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }
-                    Log.d(TAG, "IntroFragmentThree found ${devices.size} configured devices")
-                    
+
                     val hasConnectedDevice = connectionInfo.values.find { it.addresses.isNotEmpty() } != null
-                    Log.d(TAG, "IntroFragmentThree hasConnectedDevice: $hasConnectedDevice")
-                    
+
                     if (hasConnectedDevice) {
-                        Log.d(TAG, "IntroFragmentThree showing connected device description")
                         val desc = activity?.getString(R.string.intro_page_three_description, "<b>$ownDeviceId</b>")
                         val spanned = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                             Html.fromHtml(desc, Html.FROM_HTML_MODE_LEGACY)
@@ -710,22 +682,18 @@ class IntroActivity : AppIntro() {
                         }
                         binding.description.text = spanned
                     } else {
-                        Log.d(TAG, "IntroFragmentThree showing searching device description")
                         binding.description.text = getString(R.string.intro_page_three_searching_device)
                     }
                     
                     // Update discovery status display
-                    Log.d(TAG, "IntroFragmentThree updating discovery status")
                     updateDiscoveryStatus(devices, connectionInfo)
                 }
             }
 
             launch {
-                Log.d(TAG, "IntroFragmentThree starting folder status monitoring")
                 libraryHandler.subscribeToFolderStatusList().collect {
-                    Log.d(TAG, "IntroFragmentThree folder status update: ${it.size} folders")
                     if (it.isNotEmpty()) {
-                        Log.d(TAG, "IntroFragmentThree folders found, finishing intro")
+                        Log.v(TAG, "IntroFragmentThree folders found, finishing intro")
                         (activity as IntroActivity?)?.onDonePressed(null)
                     }
                 }
@@ -735,10 +703,9 @@ class IntroActivity : AppIntro() {
         }
 
         private fun updateDiscoveryStatus(devices: Set<DeviceInfo>, connectionInfo: Map<DeviceId, ConnectionInfo>) {
-            Log.d(TAG, "IntroFragmentThree updateDiscoveryStatus() called with ${devices.size} devices")
+            Log.v(TAG, "IntroFragmentThree updateDiscoveryStatus() called with ${devices.size} devices")
             
             if (devices.isEmpty()) {
-                Log.d(TAG, "IntroFragmentThree no devices added yet, showing searching")
                 // No devices added yet, show searching
                 binding.discoveryStatusText.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_search, 0, 0, 0)
                 binding.discoveryStatusText.text = getString(R.string.discovery_status_searching)
@@ -756,31 +723,26 @@ class IntroActivity : AppIntro() {
                 connection.addresses.isEmpty()
             }
 
-            Log.d(TAG, "IntroFragmentThree devices with addresses: ${devicesWithAddresses.size}, without addresses: ${devicesWithoutAddresses.size}")
+            Log.v(TAG, "IntroFragmentThree devices with addresses: ${devicesWithAddresses.size}, without addresses: ${devicesWithoutAddresses.size}")
 
             when {
                 devicesWithAddresses.isNotEmpty() -> {
-                    Log.d(TAG, "IntroFragmentThree showing success status for devices with addresses")
                     // At least one device has addresses - show success
                     binding.discoveryStatusText.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.checkbox_on_background, 0, 0, 0)
                     if (devicesWithAddresses.size == 1) {
                         val connection = connectionInfo[devicesWithAddresses.first().deviceId]
                         val address = connection?.addresses?.firstOrNull()?.address ?: "unknown"
                         binding.discoveryStatusText.text = getString(R.string.discovery_status_found, address)
-                        Log.d(TAG, "IntroFragmentThree showing address: $address")
                     } else {
                         binding.discoveryStatusText.text = getString(R.string.discovery_status_found, "${devicesWithAddresses.size} addresses")
-                        Log.d(TAG, "IntroFragmentThree showing ${devicesWithAddresses.size} addresses")
                     }
                 }
                 devicesWithoutAddresses.isNotEmpty() -> {
-                    Log.d(TAG, "IntroFragmentThree showing not found status for devices without addresses")
                     // All devices have no addresses - show error
                     binding.discoveryStatusText.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_delete, 0, 0, 0)
                     binding.discoveryStatusText.text = getString(R.string.discovery_status_not_found)
                 }
                 else -> {
-                    Log.d(TAG, "IntroFragmentThree showing searching status")
                     // Still searching
                     binding.discoveryStatusText.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_search, 0, 0, 0)
                     binding.discoveryStatusText.text = getString(R.string.discovery_status_searching)
@@ -790,15 +752,10 @@ class IntroActivity : AppIntro() {
 
         override fun onResume() {
             super.onResume()
-            Log.d(TAG, "IntroFragmentThree onResume() called")
             
             // Wait a bit to ensure the library is fully loaded before triggering discovery
             lifecycleScope.launch {
-                delay(1000) // Wait 1 second for library to be ready
-                Log.d(TAG, "IntroFragmentThree triggering discovery on slide 3 after delay")
-                
                 // Enable discovery first
-                Log.d(TAG, "IntroFragmentThree enabling discovery")
                 libraryHandler.enableDiscovery()
                 
                 // Check if we have devices configured
@@ -806,7 +763,6 @@ class IntroActivity : AppIntro() {
                 Log.d(TAG, "IntroFragmentThree found ${devices.size} configured devices")
                 
                 if (devices.isNotEmpty()) {
-                    Log.d(TAG, "IntroFragmentThree devices found, triggering discovery")
                     (activity as? IntroActivity)?.triggerDiscoveryOnSlideThree()
                 } else {
                     Log.w(TAG, "IntroFragmentThree no devices configured, cannot trigger discovery")
