@@ -287,18 +287,6 @@ class LibraryHandler(private val context: Context) {
         }
     }
 
-    fun enableDiscovery() {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                Log.v(TAG, "Calling syncthingClient.enableDiscovery()")
-                syncthingClient { it.enableDiscovery() }
-                Log.v(TAG, "syncthingClient.enableDiscovery() completed")
-            } catch (e: Exception) {
-                Log.e(TAG, "Error in enableDiscovery()", e)
-            }
-        }
-    }
-
     fun disableDiscovery() {
         CoroutineScope(Dispatchers.IO).launch {
             try {

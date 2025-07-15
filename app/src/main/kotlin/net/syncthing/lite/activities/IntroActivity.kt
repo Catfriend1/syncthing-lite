@@ -132,7 +132,6 @@ class IntroActivity : AppIntro() {
                 isSlideThreeActive = false
                 Log.d(TAG, "IntroActivity switched to slide 1")
                 // Disable all discovery on slide 1
-                sharedLibraryHandler.disableDiscovery()
                 sharedLibraryHandler.disableLocalDiscovery()
                 sharedLibraryHandler.disableGlobalDiscovery()
             }
@@ -140,8 +139,7 @@ class IntroActivity : AppIntro() {
                 currentSlidePosition = 1
                 isSlideThreeActive = false
                 Log.d(TAG, "IntroActivity switched to slide 2")
-                // Enable general discovery and local discovery from slide 2
-                sharedLibraryHandler.enableDiscovery()
+                // Enable local discovery from slide 2 (for finding devices to display)
                 sharedLibraryHandler.enableLocalDiscovery()
                 // Keep global discovery disabled until device ID is imported
                 sharedLibraryHandler.disableGlobalDiscovery()
@@ -153,7 +151,6 @@ class IntroActivity : AppIntro() {
                 // Import device ID and enable global discovery when we reach slide 3
                 Log.d(TAG, "IntroActivity importing device ID and enabling global discovery on slide 3")
                 importDeviceIdOnSlideThree()
-                sharedLibraryHandler.enableDiscovery()
                 sharedLibraryHandler.enableLocalDiscovery()
                 sharedLibraryHandler.enableGlobalDiscovery()
             }
@@ -431,7 +428,6 @@ class IntroActivity : AppIntro() {
             
             // Enable discovery based on current slide
             if (currentSlidePosition >= 1) { // Slide 2 or later
-                sharedLibraryHandler.enableDiscovery()
                 sharedLibraryHandler.enableLocalDiscovery()
                 
                 // Only enable global discovery if we're on slide 3 (and device ID is imported)
@@ -465,7 +461,6 @@ class IntroActivity : AppIntro() {
                 }
             } else {
                 // On slide 1, disable all discovery
-                sharedLibraryHandler.disableDiscovery()
                 sharedLibraryHandler.disableLocalDiscovery()
                 sharedLibraryHandler.disableGlobalDiscovery()
             }
@@ -501,8 +496,9 @@ class IntroActivity : AppIntro() {
         lifecycleScope.launch {
             resetRetryDelay()
             
-            // First ensure discovery is enabled
-            sharedLibraryHandler.enableDiscovery()
+            // First ensure local and global discovery are enabled
+            sharedLibraryHandler.enableLocalDiscovery()
+            sharedLibraryHandler.enableGlobalDiscovery()
             
             // First ensure we have devices configured
             val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
@@ -817,8 +813,9 @@ class IntroActivity : AppIntro() {
             
             // Wait a bit to ensure the library is fully loaded before triggering discovery
             lifecycleScope.launch {
-                // Enable discovery first
-                libraryHandler.enableDiscovery()
+                // Enable local and global discovery first
+                libraryHandler.enableLocalDiscovery()
+                libraryHandler.enableGlobalDiscovery()
                 
                 // Check if we have devices configured
                 val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }

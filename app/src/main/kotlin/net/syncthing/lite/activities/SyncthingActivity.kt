@@ -89,10 +89,11 @@ abstract class SyncthingActivity : CoroutineActivity() {
     open fun onLibraryLoaded() {
         Log.v(TAG, "onLibraryLoaded() called for ${this.javaClass.simpleName}")
         
-        // For MainActivity, always enable discovery when library is loaded
+        // For MainActivity, always enable both local and global discovery when library is loaded
         // This ensures discovery works properly after IntroActivity transition
         if (this is MainActivity) {
-            libraryHandler.enableDiscovery()
+            libraryHandler.enableLocalDiscovery()
+            libraryHandler.enableGlobalDiscovery()
         }
         
         // Start the centralized connection manager
