@@ -138,39 +138,37 @@ object ConnectionActorGenerator {
         suspend fun tryConnectingToAddressHandleBaseErrors(deviceAddress: DeviceAddress): Pair<SendChannel<ConnectionAction>, ClusterConfigInfo>? = try {
             val newActor = ConnectionActor.createInstance(deviceAddress, configuration, indexHandler, requestHandler)
             
-            // Monitor the connection actor to detect failures during setup
-            val connectionMonitorJob = scope.launch {
-                newActor.invokeOnClose { cause ->
-                    logger.debug("ConnectionActorGenerator: Connection actor closed during setup: $cause")
-                    // If the actor closes during setup, we need to trigger a retry
-                    if (currentActor == newActor) {
-                        scope.launch {
-                            currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
-                            currentActor = closed
-                            dispatchStatus()
-                            logger.debug("ConnectionActorGenerator: Connection setup failed, status set to Disconnected for retry")
-                        }
-                    }
+            logger.debug("ConnectionActorGenerator: Created connection actor for $deviceAddress, waiting for connection setup")
+            
+            // Use a timeout for connection setup to avoid hanging indefinitely
+            val clusterConfig = try {
+                withTimeout(30000) { // 30 second timeout for connection setup
+                    ConnectionActorUtil.waitUntilConnected(newActor)
                 }
+            } catch (e: TimeoutCancellationException) {
+                logger.debug("ConnectionActorGenerator: Connection setup timed out for $deviceAddress")
+                newActor.close()
+                throw IOException("Connection setup timeout for $deviceAddress")
+            } catch (e: Exception) {
+                logger.debug("ConnectionActorGenerator: Connection setup failed for $deviceAddress: ${e.message}")
+                newActor.close()
+                throw e
             }
             
-            val clusterConfig = ConnectionActorUtil.waitUntilConnected(newActor)
-            
-            // Cancel the monitor job since connection setup succeeded
-            connectionMonitorJob.cancel()
-
+            logger.debug("ConnectionActorGenerator: Connection setup succeeded for $deviceAddress")
             newActor to clusterConfig
         } catch (ex: Exception) {
             // Log "Connection reset" at debug level since it's expected when remote device hasn't accepted connection yet
             if (ex.message?.contains("Connection reset") == true) {
-                logger.debug("Connection reset detected - this is expected when remote device hasn't accepted connection yet")
+                logger.debug("ConnectionActorGenerator: Connection reset detected - this is expected when remote device hasn't accepted connection yet")
             } else {
-                logger.warn("failed to connect to $deviceAddress", ex)
+                logger.debug("ConnectionActorGenerator: Failed to connect to $deviceAddress: ${ex.message}")
             }
 
             when (ex) {
                 is IOException -> {/* expected -> ignore */}
                 is InterruptedException -> {/* expected -> ignore */}
+                is TimeoutCancellationException -> {/* expected -> ignore */}
                 else -> throw ex
             }
 
@@ -328,15 +326,10 @@ object ConnectionActorGenerator {
 
                     logger.debug("ConnectionActorGenerator: Waiting for retry (timeout: ${retryTimeout}ms)")
 
-                    // For better retry handling, use a shorter initial delay if we just failed
-                    val actualRetryTimeout = if (currentStatus.status == ConnectionStatus.Disconnected) {
-                        // If we just failed, use a shorter delay for immediate retry
-                        3L * 1000 // 3 seconds for immediate retry after failure
-                    } else {
-                        retryTimeout
-                    }
+                    // Always use the standard retry timeout for consistent behavior
+                    val actualRetryTimeout = retryTimeout
 
-                    // wait for new device address list but not more than the retry timeout before the next iteration
+                    // Wait for either new device addresses or timeout
                     val newDeviceAddressList = withTimeoutOrNull(actualRetryTimeout) {
                         deviceAddressSource.receive()
                     }
@@ -347,6 +340,12 @@ object ConnectionActorGenerator {
                         dispatchStatus()
                     } else {
                         logger.debug("ConnectionActorGenerator: Retry timeout reached, will try again in next iteration")
+                    }
+                    
+                    // After the timeout, force a retry attempt even if no new addresses arrived
+                    // This ensures retry attempts happen even when device already has addresses
+                    if (newDeviceAddressList == null && currentStatus.addresses.isNotEmpty()) {
+                        logger.debug("ConnectionActorGenerator: Forcing retry attempt with existing addresses after timeout")
                     }
                 }
             }
