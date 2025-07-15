@@ -174,21 +174,21 @@ class IntroActivity : AppIntro() {
      * start when IntroFragmentThree is displayed (slide 3).
      */
     private fun startConnectionManager() {
-        Log.d(TAG, "Starting connection manager for IntroActivity")
+        Log.v(TAG, "Starting connection manager for IntroActivity")
         connectionManagerJob?.cancel()
         connectionManagerJob = lifecycleScope.launch {
             // Monitor connection status continuously
-            Log.d(TAG, "Starting connection status monitoring for IntroActivity")
+            Log.v(TAG, "Starting connection status monitoring for IntroActivity")
             sharedLibraryHandler.subscribeToConnectionStatus().collect { connectionInfo ->
                 if (isDestroyed || !isStarted) {
-                    Log.d(TAG, "IntroActivity connection manager stopping due to destroyed/stopped state")
+                    Log.v(TAG, "IntroActivity connection manager stopping due to destroyed/stopped state")
                     return@collect
                 }
                 
                 Log.d(TAG, "IntroActivity connection status update received: ${connectionInfo.size} devices")
                 
                 val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
-                Log.d(TAG, "IntroActivity found ${devices.size} configured devices")
+                Log.v(TAG, "IntroActivity found ${devices.size} configured devices")
                 
                 // Check for devices that need discovery or connection
                 val devicesNeedingDiscovery = devices.filter { device ->
@@ -201,7 +201,7 @@ class IntroActivity : AppIntro() {
                     connection.addresses.isNotEmpty() && connection.status != ConnectionStatus.Connected
                 }
                 
-                Log.d(TAG, "IntroActivity devices needing discovery: ${devicesNeedingDiscovery.size}, needing connection: ${devicesNeedingConnection.size}")
+                Log.v(TAG, "IntroActivity devices needing discovery: ${devicesNeedingDiscovery.size}, needing connection: ${devicesNeedingConnection.size}")
                 
                 // Only trigger discovery if we're on slide 3 AND there are devices needing discovery
                 // This prevents discovery from running too early and for devices that already have addresses
@@ -228,7 +228,7 @@ class IntroActivity : AppIntro() {
         Log.d(TAG, "Starting connection retry job for IntroActivity")
         connectionRetryJob?.cancel()
         connectionRetryJob = lifecycleScope.launch {
-            Log.d(TAG, "IntroActivity connection retry job coroutine started")
+            // Log.d(TAG, "IntroActivity connection retry job coroutine started")
             
             while (isStarted && !isDestroyed) {
                 try {
@@ -236,7 +236,7 @@ class IntroActivity : AppIntro() {
                     delay(connectionRetryIntervalMs)
                     
                     if (!isStarted || isDestroyed) {
-                        Log.d(TAG, "IntroActivity connection retry job stopping due to destroyed/stopped state")
+                        // Log.v(TAG, "IntroActivity connection retry job stopping due to destroyed/stopped state")
                         break
                     }
                     
@@ -246,7 +246,7 @@ class IntroActivity : AppIntro() {
                         continue
                     }
                     
-                    Log.d(TAG, "IntroActivity connection retry job checking for disconnected devices with addresses")
+                    Log.v(TAG, "IntroActivity connection retry job checking for disconnected devices with addresses")
                     
                     // Get current connection status
                     val connectionInfo = sharedLibraryHandler.subscribeToConnectionStatus().value
