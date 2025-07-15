@@ -193,7 +193,6 @@ class LibraryHandler(private val context: Context) {
     }
 
     fun enableDiscovery() {
-        Log.d(TAG, "enableDiscovery() called")
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 Log.v(TAG, "Calling syncthingClient.enableDiscovery()")
