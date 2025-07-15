@@ -66,7 +66,7 @@ class DiscoveryHandler(
     private fun doGlobalDiscoveryIfNotYetDone() {
         // Only proceed if discovery is enabled
         if (!discoveryEnabled) {
-            logger.debug("doGlobalDiscoveryIfNotYetDone() skipped - discovery not enabled")
+            logger.trace("doGlobalDiscoveryIfNotYetDone() skipped - discovery not enabled")
             return
         }
         
@@ -113,7 +113,7 @@ class DiscoveryHandler(
     private fun initLocalDiscoveryIfNotYetDone() {
         // Only proceed if discovery is enabled
         if (!discoveryEnabled) {
-            logger.debug("initLocalDiscoveryIfNotYetDone() skipped - discovery not enabled")
+            logger.trace("initLocalDiscoveryIfNotYetDone() skipped - discovery not enabled")
             return
         }
         

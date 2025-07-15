@@ -97,17 +97,17 @@ class SyncthingClient(
     }
 
     fun retryDiscovery() {
-        logger.debug("SyncthingClient.retryDiscovery() called - delegating to discoveryHandler")
+        logger.trace("SyncthingClient.retryDiscovery() called - delegating to discoveryHandler")
         discoveryHandler.retryDiscovery()
     }
 
     fun enableDiscovery() {
-        logger.debug("SyncthingClient.enableDiscovery() called - delegating to discoveryHandler")
+        logger.trace("SyncthingClient.enableDiscovery() called - delegating to discoveryHandler")
         discoveryHandler.enableDiscovery()
     }
 
     fun disableDiscovery() {
-        logger.debug("SyncthingClient.disableDiscovery() called - delegating to discoveryHandler")
+        logger.trace("SyncthingClient.disableDiscovery() called - delegating to discoveryHandler")
         discoveryHandler.disableDiscovery()
     }
 
