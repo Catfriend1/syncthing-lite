@@ -111,6 +111,26 @@ class SyncthingClient(
         discoveryHandler.disableDiscovery()
     }
 
+    fun enableLocalDiscovery() {
+        logger.trace("SyncthingClient.enableLocalDiscovery() called - delegating to discoveryHandler")
+        discoveryHandler.enableLocalDiscovery()
+    }
+
+    fun disableLocalDiscovery() {
+        logger.trace("SyncthingClient.disableLocalDiscovery() called - delegating to discoveryHandler")
+        discoveryHandler.disableLocalDiscovery()
+    }
+
+    fun enableGlobalDiscovery() {
+        logger.trace("SyncthingClient.enableGlobalDiscovery() called - delegating to discoveryHandler")
+        discoveryHandler.enableGlobalDiscovery()
+    }
+
+    fun disableGlobalDiscovery() {
+        logger.trace("SyncthingClient.disableGlobalDiscovery() called - delegating to discoveryHandler")
+        discoveryHandler.disableGlobalDiscovery()
+    }
+
     fun disconnectFromRemovedDevices() {
         // TODO: implement this
     }

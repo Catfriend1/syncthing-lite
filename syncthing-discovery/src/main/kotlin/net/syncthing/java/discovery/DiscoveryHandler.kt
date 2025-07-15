@@ -59,14 +59,16 @@ class DiscoveryHandler(
     private var shouldLoadFromGlobal = true
     private var shouldStartLocalDiscovery = true
     private var discoveryEnabled = false // Only start discovery when explicitly enabled
+    private var localDiscoveryEnabled = false // Control local discovery separately
+    private var globalDiscoveryEnabled = false // Control global discovery separately
     private var lastGlobalDiscoveryTime = 0L
     private var globalDiscoveryRetryInterval = 30_000L // Start with 30 seconds
     private val maxRetryInterval = 300_000L // Max 5 minutes
 
     private fun doGlobalDiscoveryIfNotYetDone() {
-        // Only proceed if discovery is enabled
-        if (!discoveryEnabled) {
-            logger.trace("doGlobalDiscoveryIfNotYetDone() skipped - discovery not enabled")
+        // Only proceed if discovery is enabled AND global discovery is specifically enabled
+        if (!discoveryEnabled || !globalDiscoveryEnabled) {
+            logger.trace("doGlobalDiscoveryIfNotYetDone() skipped - discovery enabled: $discoveryEnabled, global enabled: $globalDiscoveryEnabled")
             return
         }
         
@@ -111,9 +113,9 @@ class DiscoveryHandler(
     }
 
     private fun initLocalDiscoveryIfNotYetDone() {
-        // Only proceed if discovery is enabled
-        if (!discoveryEnabled) {
-            logger.trace("initLocalDiscoveryIfNotYetDone() skipped - discovery not enabled")
+        // Only proceed if discovery is enabled AND local discovery is specifically enabled
+        if (!discoveryEnabled || !localDiscoveryEnabled) {
+            logger.trace("initLocalDiscoveryIfNotYetDone() skipped - discovery enabled: $discoveryEnabled, local enabled: $localDiscoveryEnabled")
             return
         }
         
@@ -161,6 +163,38 @@ class DiscoveryHandler(
     fun disableDiscovery() {
         logger.info("disableDiscovery() called - discovery is now disabled")
         discoveryEnabled = false
+    }
+
+    /**
+     * Enable local discovery specifically
+     */
+    fun enableLocalDiscovery() {
+        logger.info("enableLocalDiscovery() called - local discovery is now enabled")
+        localDiscoveryEnabled = true
+    }
+
+    /**
+     * Disable local discovery specifically
+     */
+    fun disableLocalDiscovery() {
+        logger.info("disableLocalDiscovery() called - local discovery is now disabled")
+        localDiscoveryEnabled = false
+    }
+
+    /**
+     * Enable global discovery specifically
+     */
+    fun enableGlobalDiscovery() {
+        logger.info("enableGlobalDiscovery() called - global discovery is now enabled")
+        globalDiscoveryEnabled = true
+    }
+
+    /**
+     * Disable global discovery specifically
+     */
+    fun disableGlobalDiscovery() {
+        logger.info("disableGlobalDiscovery() called - global discovery is now disabled")
+        globalDiscoveryEnabled = false
     }
 
     fun newDeviceAddressSupplier(): DeviceAddressSupplier {

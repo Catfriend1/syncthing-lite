@@ -131,23 +131,31 @@ class IntroActivity : AppIntro() {
                 currentSlidePosition = 0
                 isSlideThreeActive = false
                 Log.d(TAG, "IntroActivity switched to slide 1")
-                // Disable discovery on slide 1
+                // Disable all discovery on slide 1
                 sharedLibraryHandler.disableDiscovery()
+                sharedLibraryHandler.disableLocalDiscovery()
+                sharedLibraryHandler.disableGlobalDiscovery()
             }
             is IntroFragmentTwo -> {
                 currentSlidePosition = 1
                 isSlideThreeActive = false
                 Log.d(TAG, "IntroActivity switched to slide 2")
-                // Keep discovery disabled on slide 2
-                sharedLibraryHandler.disableDiscovery()
+                // Enable general discovery and local discovery from slide 2
+                sharedLibraryHandler.enableDiscovery()
+                sharedLibraryHandler.enableLocalDiscovery()
+                // Keep global discovery disabled until device ID is imported
+                sharedLibraryHandler.disableGlobalDiscovery()
             }
             is IntroFragmentThree -> {
                 currentSlidePosition = 2
                 isSlideThreeActive = true
                 Log.d(TAG, "IntroActivity switched to slide 3")
-                // Enable discovery when we reach slide 3
-                Log.d(TAG, "IntroActivity enabling discovery on slide 3")
+                // Import device ID and enable global discovery when we reach slide 3
+                Log.d(TAG, "IntroActivity importing device ID and enabling global discovery on slide 3")
+                importDeviceIdOnSlideThree()
                 sharedLibraryHandler.enableDiscovery()
+                sharedLibraryHandler.enableLocalDiscovery()
+                sharedLibraryHandler.enableGlobalDiscovery()
             }
         }
     }
@@ -421,33 +429,67 @@ class IntroActivity : AppIntro() {
         lifecycleScope.launch {
             resetRetryDelay()
             
-            // Only trigger discovery if we're on slide 3
-            if (isOnSlideThree()) {
-                // Ensure discovery is enabled
+            // Enable discovery based on current slide
+            if (currentSlidePosition >= 1) { // Slide 2 or later
                 sharedLibraryHandler.enableDiscovery()
-                tryConnectToAllDevices()
-            } else {
-                // Still trigger connection attempts for devices that already have addresses
-                lifecycleScope.launch(Dispatchers.IO) {
-                    try {
-                        val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
-                        val connectionInfo = sharedLibraryHandler.subscribeToConnectionStatus().value
-                        val devicesWithAddresses = devices.filter { device ->
-                            val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
-                            connection.addresses.isNotEmpty()
-                        }
-                        
-                        if (devicesWithAddresses.isNotEmpty()) {
-                            Log.v(TAG, "IntroActivity triggering connection attempt for ${devicesWithAddresses.size} devices with addresses")
-                            sharedLibraryHandler.libraryManager.withLibrary { library ->
-                                library.syncthingClient.connectToNewlyAddedDevices()
+                sharedLibraryHandler.enableLocalDiscovery()
+                
+                // Only enable global discovery if we're on slide 3 (and device ID is imported)
+                if (isOnSlideThree()) {
+                    sharedLibraryHandler.enableGlobalDiscovery()
+                    tryConnectToAllDevices()
+                } else {
+                    // On slide 2, only use local discovery and connect to devices with addresses
+                    sharedLibraryHandler.disableGlobalDiscovery()
+                    
+                    // Still trigger connection attempts for devices that already have addresses
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        try {
+                            val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
+                            val connectionInfo = sharedLibraryHandler.subscribeToConnectionStatus().value
+                            val devicesWithAddresses = devices.filter { device ->
+                                val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
+                                connection.addresses.isNotEmpty()
                             }
+                            
+                            if (devicesWithAddresses.isNotEmpty()) {
+                                Log.v(TAG, "IntroActivity triggering connection attempt for ${devicesWithAddresses.size} devices with addresses")
+                                sharedLibraryHandler.libraryManager.withLibrary { library ->
+                                    library.syncthingClient.connectToNewlyAddedDevices()
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "IntroActivity error in triggerImmediateConnectionAttempt()", e)
                         }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "IntroActivity error in triggerImmediateConnectionAttempt()", e)
                     }
                 }
+            } else {
+                // On slide 1, disable all discovery
+                sharedLibraryHandler.disableDiscovery()
+                sharedLibraryHandler.disableLocalDiscovery()
+                sharedLibraryHandler.disableGlobalDiscovery()
             }
+        }
+    }
+
+    /**
+     * Import device ID when transitioning to slide 3
+     */
+    private fun importDeviceIdOnSlideThree() {
+        Log.v(TAG, "IntroActivity importDeviceIdOnSlideThree() called")
+        
+        // Find the IntroFragmentTwo to get the device ID
+        val fragmentTwo = supportFragmentManager.fragments.find { it is IntroFragmentTwo } as? IntroFragmentTwo
+        if (fragmentTwo != null) {
+            // Check if device ID is valid and import it
+            if (fragmentTwo.isDeviceIdValidForImport()) {
+                Log.d(TAG, "IntroActivity device ID is valid, importing now")
+                fragmentTwo.importDeviceId()
+            } else {
+                Log.w(TAG, "IntroActivity device ID is not valid, cannot import")
+            }
+        } else {
+            Log.w(TAG, "IntroActivity could not find IntroFragmentTwo, cannot import device ID")
         }
     }
 
@@ -575,32 +617,52 @@ class IntroActivity : AppIntro() {
         }
 
         /**
-         * Checks if the entered device ID is valid. If yes, imports it (only once) and returns true. If not,
-         * sets an error on the textview and returns false.
+         * Checks if the entered device ID is valid. Does NOT import it.
          */
         fun isDeviceIdValid(): Boolean {
             return try {
                 val deviceId = binding.enterDeviceId.deviceId.text.toString()
-
-                // Just validate the device ID format first
+                // Just validate the device ID format
                 DeviceId(deviceId.uppercase(Locale.getDefault()))
-
-                // Only import once
-                if (!hasImportedDevice) {
-                    Log.d(TAG, "IntroFragmentTwo importing device ID (first time)")
-                    Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId) {
-                        Log.d(TAG, "IntroFragmentTwo device ID imported successfully")
-                        hasImportedDevice = true
-                        // Don't trigger discovery here - it will be triggered when slide 3 is displayed
-                    }
-                } else {
-                    Log.w(TAG, "IntroFragmentTwo device ID already imported, skipping")
-                }
+                binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
                 true
             } catch (e: Exception) {
                 Log.e(TAG, "IntroFragmentTwo device ID validation failed", e)
                 binding.enterDeviceId.deviceId.error = getString(R.string.invalid_device_id)
                 false
+            }
+        }
+
+        /**
+         * Checks if the entered device ID is valid for import (not already imported)
+         */
+        fun isDeviceIdValidForImport(): Boolean {
+            return isDeviceIdValid() && !hasImportedDevice
+        }
+
+        /**
+         * Imports the device ID if it's valid and not already imported
+         */
+        fun importDeviceId() {
+            try {
+                val deviceId = binding.enterDeviceId.deviceId.text.toString()
+                
+                // Validate the device ID format first
+                DeviceId(deviceId.uppercase(Locale.getDefault()))
+                
+                // Only import once
+                if (!hasImportedDevice) {
+                    Log.d(TAG, "IntroFragmentTwo importing device ID")
+                    Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId) {
+                        Log.d(TAG, "IntroFragmentTwo device ID imported successfully")
+                        hasImportedDevice = true
+                    }
+                } else {
+                    Log.w(TAG, "IntroFragmentTwo device ID already imported, skipping")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "IntroFragmentTwo device ID import failed", e)
+                binding.enterDeviceId.deviceId.error = getString(R.string.invalid_device_id)
             }
         }
 

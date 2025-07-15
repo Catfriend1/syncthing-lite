@@ -215,4 +215,52 @@ class LibraryHandler(private val context: Context) {
             }
         }
     }
+
+    fun enableLocalDiscovery() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Log.v(TAG, "Calling syncthingClient.enableLocalDiscovery()")
+                syncthingClient { it.enableLocalDiscovery() }
+                Log.v(TAG, "syncthingClient.enableLocalDiscovery() completed")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in enableLocalDiscovery()", e)
+            }
+        }
+    }
+
+    fun disableLocalDiscovery() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Log.v(TAG, "Calling syncthingClient.disableLocalDiscovery()")
+                syncthingClient { it.disableLocalDiscovery() }
+                Log.v(TAG, "syncthingClient.disableLocalDiscovery() completed")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in disableLocalDiscovery()", e)
+            }
+        }
+    }
+
+    fun enableGlobalDiscovery() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Log.v(TAG, "Calling syncthingClient.enableGlobalDiscovery()")
+                syncthingClient { it.enableGlobalDiscovery() }
+                Log.v(TAG, "syncthingClient.enableGlobalDiscovery() completed")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in enableGlobalDiscovery()", e)
+            }
+        }
+    }
+
+    fun disableGlobalDiscovery() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Log.v(TAG, "Calling syncthingClient.disableGlobalDiscovery()")
+                syncthingClient { it.disableGlobalDiscovery() }
+                Log.v(TAG, "syncthingClient.disableGlobalDiscovery() completed")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in disableGlobalDiscovery()", e)
+            }
+        }
+    }
 }
