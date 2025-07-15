@@ -77,7 +77,6 @@ class IntroActivity : AppIntro() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "IntroActivity onCreate() called")
 
         addSlide(IntroFragmentOne())
         addSlide(IntroFragmentTwo())
@@ -93,7 +92,6 @@ class IntroActivity : AppIntro() {
 
     override fun onStart() {
         super.onStart()
-        Log.d(TAG, "IntroActivity onStart() called")
         isStarted = true
         
         // Start the shared LibraryHandler
