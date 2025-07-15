@@ -247,7 +247,7 @@ class IntroActivity : AppIntro() {
                     
                     // Only run connection retry if we're on slide 3 - no point retrying on earlier slides
                     if (!isOnSlideThree()) {
-                        Log.d(TAG, "IntroActivity connection retry job skipping - not on slide 3")
+                        // Log.v(TAG, "IntroActivity connection retry job skipping - not on slide 3")
                         continue
                     }
                     
