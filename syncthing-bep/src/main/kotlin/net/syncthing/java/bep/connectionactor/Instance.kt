@@ -54,7 +54,8 @@ object ConnectionActor {
                 throwable.printStackTrace()
             }
 
-            OpenConnection.openSocketConnection(address, configuration).use { socket ->
+            try {
+                OpenConnection.openSocketConnection(address, configuration).use { socket ->
                 val inputStream = DataInputStream(socket.inputStream)
                 val outputStream = DataOutputStream(socket.outputStream)
 
@@ -88,6 +89,7 @@ object ConnectionActor {
                         // Log "Connection reset" errors since they're expected
                         // when the remote device hasn't accepted the connection yet
                         logger.debug("🚨 receivePostAuthMessage failed: ${e.message}")
+                        // Re-throw to be handled by the outer connection setup catch block
                         throw e
                     }
                 }
@@ -108,6 +110,7 @@ object ConnectionActor {
                     // Log "Connection reset" errors since they're expected
                     // when the remote device hasn't accepted the connection yet
                     logger.debug("💥 Exception while receiving post-auth message: ${e.message}")
+                    // Re-throw to be handled by the outer connection setup catch block
                     throw e
                 }
                 logger.debug("📬 Received post-auth message type: ${clusterConfigPair.first}, class: ${clusterConfigPair.second.javaClass.name}")
@@ -258,6 +261,16 @@ object ConnectionActor {
                     // cancel all pending listeners
                     messageListeners.values.forEach { it.cancel() }
                 }
+            }
+            } catch (e: Exception) {
+                // Handle connection setup failures gracefully to allow retry mechanism to work
+                if (e.message?.contains("Connection reset") == true) {
+                    logger.debug("🔄 Connection setup failed with Connection reset, allowing retry: ${e.message}")
+                } else {
+                    logger.debug("🔄 Connection setup failed, allowing retry: ${e.message}")
+                }
+                // Exit gracefully so the retry mechanism can work
+                return@launch
             }
         }.invokeOnCompletion { ex ->
             if (ex != null) {
