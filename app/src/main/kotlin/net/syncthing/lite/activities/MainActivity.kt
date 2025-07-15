@@ -34,7 +34,6 @@ class MainActivity : SyncthingActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "MainActivity onCreate() called")
 
         val prefs = getSharedPreferences("default", Context.MODE_PRIVATE)
         if (prefs.getBoolean(PREF_IS_FIRST_START, true)) {
