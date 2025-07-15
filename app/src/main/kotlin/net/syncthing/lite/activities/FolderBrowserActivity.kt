@@ -195,8 +195,6 @@ class FolderBrowserActivity : SyncthingActivity() {
         }
     }
 
-
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         // This method is no longer used - replaced by ActivityResultLauncher
         super.onActivityResult(requestCode, resultCode, intent)
