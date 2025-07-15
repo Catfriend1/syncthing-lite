@@ -82,7 +82,7 @@ object ConnectionActor {
                         logger.debug("📡 receivePostAuthMessage() delivered: ${result.first}, class=${result.second.javaClass.name}")
                         return result
                     } catch (e: Exception) {
-                        logger.error("🚨 receivePostAuthMessage failed: ${e.message}", e)
+                        logger.error("🚨 receivePostAuthMessage failed: ${e.message}")
                         throw e
                     }
                 }
@@ -100,7 +100,7 @@ object ConnectionActor {
                         }.await()
                     }
                 } catch (e: Exception) {
-                    logger.error("💥 Exception while receiving post-auth message: ${e.message}", e)
+                    logger.error("💥 Exception while receiving post-auth message: ${e.message}")
                     throw e
                 }
                 logger.debug("📬 Received post-auth message type: ${clusterConfigPair.first}, class: ${clusterConfigPair.second.javaClass.name}")
