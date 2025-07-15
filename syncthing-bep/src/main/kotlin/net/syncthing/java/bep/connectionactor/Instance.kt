@@ -46,12 +46,12 @@ object ConnectionActor {
         val channel = Channel<ConnectionAction>(Channel.RENDEZVOUS)
 
         CoroutineScope(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
-            logger.debug("💣 Uncaught exception in connection actor coroutine: ${throwable.message}")
-            logger.debug("💣 Uncaught exception stack trace:", throwable)
+            logger.warn("💣 Uncaught exception in connection actor coroutine: ${throwable.message}")
+            // logger.error("💣 Uncaught exception stack trace:", throwable)
         }).launch {
             Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-                logger.debug("💣 Uncaught exception in thread ${thread.name}: ${throwable.message}")
-                logger.debug("💣 Uncaught exception stack trace:", throwable)
+                logger.warn ("💣 Uncaught exception in thread ${thread.name}: ${throwable.message}")
+                // logger.error("💣 Uncaught exception stack trace:", throwable)
             }
 
             try {
