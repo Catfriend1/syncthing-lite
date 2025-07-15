@@ -47,11 +47,11 @@ object ConnectionActor {
 
         CoroutineScope(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
             logger.debug("💣 Uncaught exception in connection actor coroutine: ${throwable.message}")
-            throwable.printStackTrace()
+            logger.debug("💣 Uncaught exception stack trace:", throwable)
         }).launch {
             Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-                println("💣 Uncaught exception in thread ${thread.name}: ${throwable.message}")
-                throwable.printStackTrace()
+                logger.debug("💣 Uncaught exception in thread ${thread.name}: ${throwable.message}")
+                logger.debug("💣 Uncaught exception stack trace:", throwable)
             }
 
             try {
@@ -86,9 +86,27 @@ object ConnectionActor {
                         logger.debug("📡 receivePostAuthMessage() delivered: ${result.first}, class=${result.second.javaClass.name}")
                         return result
                     } catch (e: Exception) {
-                        // Log "Connection reset" errors since they're expected
-                        // when the remote device hasn't accepted the connection yet
-                        logger.debug("🚨 receivePostAuthMessage failed: ${e.message}")
+                        // Log socket-level exceptions with more specific context
+                        when {
+                            e.message?.contains("Connection reset") == true -> {
+                                logger.debug("🔗 Socket connection reset in receivePostAuthMessage")
+                            }
+                            e.message?.contains("Broken pipe") == true -> {
+                                logger.debug("🔗 Socket broken pipe in receivePostAuthMessage")
+                            }
+                            e.message?.contains("Connection refused") == true -> {
+                                logger.debug("🔗 Socket connection refused in receivePostAuthMessage")
+                            }
+                            e is java.net.SocketException -> {
+                                logger.debug("🔗 Socket exception in receivePostAuthMessage: ${e.message}")
+                            }
+                            e is java.io.IOException -> {
+                                logger.debug("🔗 IO exception in receivePostAuthMessage: ${e.message}")
+                            }
+                            else -> {
+                                logger.debug("🚨 receivePostAuthMessage failed: ${e.message}")
+                            }
+                        }
                         // Re-throw to be handled by the outer connection setup catch block
                         throw e
                     }
@@ -107,9 +125,27 @@ object ConnectionActor {
                         }.await()
                     }
                 } catch (e: Exception) {
-                    // Log "Connection reset" errors since they're expected
-                    // when the remote device hasn't accepted the connection yet
-                    logger.debug("💥 Exception while receiving post-auth message: ${e.message}")
+                    // Log socket-level exceptions with more context
+                    when {
+                        e.message?.contains("Connection reset") == true -> {
+                            logger.debug("🔗 Socket connection reset during cluster config exchange")
+                        }
+                        e.message?.contains("Broken pipe") == true -> {
+                            logger.debug("🔗 Socket broken pipe during cluster config exchange")
+                        }
+                        e.message?.contains("Connection refused") == true -> {
+                            logger.debug("🔗 Socket connection refused during cluster config exchange")
+                        }
+                        e is java.net.SocketException -> {
+                            logger.debug("🔗 Socket exception during cluster config exchange: ${e.message}")
+                        }
+                        e is java.io.IOException -> {
+                            logger.debug("🔗 IO exception during cluster config exchange: ${e.message}")
+                        }
+                        else -> {
+                            logger.debug("💥 Exception while receiving post-auth message: ${e.message}")
+                        }
+                    }
                     // Re-throw to be handled by the outer connection setup catch block
                     throw e
                 }
@@ -137,7 +173,27 @@ object ConnectionActor {
                             val message = try {
                                 receivePostAuthMessage().second
                             } catch (e: Exception) {
-                                logger.debug("🚨 receivePostAuthMessage failed in message loop: ${e.message}")
+                                // Log socket-level errors more specifically
+                                when {
+                                    e.message?.contains("Connection reset") == true -> {
+                                        logger.debug("🔗 Socket connection reset detected in message loop")
+                                    }
+                                    e.message?.contains("Broken pipe") == true -> {
+                                        logger.debug("🔗 Socket broken pipe detected in message loop")
+                                    }
+                                    e.message?.contains("Connection refused") == true -> {
+                                        logger.debug("🔗 Socket connection refused detected in message loop")
+                                    }
+                                    e is java.net.SocketException -> {
+                                        logger.debug("🔗 Socket exception in message loop: ${e.message}")
+                                    }
+                                    e is java.io.IOException -> {
+                                        logger.debug("🔗 IO exception in message loop: ${e.message}")
+                                    }
+                                    else -> {
+                                        logger.debug("🚨 receivePostAuthMessage failed in message loop: ${e.message}")
+                                    }
+                                }
                                 break // Exit the loop to allow retry mechanism to work
                             }
 
@@ -264,10 +320,25 @@ object ConnectionActor {
             }
             } catch (e: Exception) {
                 // Handle connection setup failures gracefully to allow retry mechanism to work
-                if (e.message?.contains("Connection reset") == true) {
-                    logger.debug("🔄 Connection setup failed with Connection reset, allowing retry: ${e.message}")
-                } else {
-                    logger.debug("🔄 Connection setup failed, allowing retry: ${e.message}")
+                when {
+                    e.message?.contains("Connection reset") == true -> {
+                        logger.debug("🔗 Connection setup failed: Socket connection reset")
+                    }
+                    e.message?.contains("Broken pipe") == true -> {
+                        logger.debug("🔗 Connection setup failed: Socket broken pipe")
+                    }
+                    e.message?.contains("Connection refused") == true -> {
+                        logger.debug("🔗 Connection setup failed: Socket connection refused")
+                    }
+                    e is java.net.SocketException -> {
+                        logger.debug("🔗 Connection setup failed: Socket exception - ${e.message}")
+                    }
+                    e is java.io.IOException -> {
+                        logger.debug("🔗 Connection setup failed: IO exception - ${e.message}")
+                    }
+                    else -> {
+                        logger.debug("🔄 Connection setup failed, allowing retry: ${e.message}")
+                    }
                 }
                 // Exit gracefully so the retry mechanism can work
                 return@launch

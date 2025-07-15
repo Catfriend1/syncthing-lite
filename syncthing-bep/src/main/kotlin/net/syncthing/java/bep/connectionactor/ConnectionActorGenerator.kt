@@ -238,7 +238,7 @@ object ConnectionActorGenerator {
                     // Additional monitoring: periodically check if connection is still active
                     // This helps detect network disconnections that don't immediately close the channel
                     while (currentActor == connection.first && !connection.first.isClosedForSend) {
-                        delay(10000) // Check every 10 seconds
+                        delay(5000) // Check every 5 seconds for faster detection
                         
                         // If the connection actor channel is still open but the underlying connection might be broken,
                         // we can detect this by checking if the connection is still responsive
@@ -248,8 +248,8 @@ object ConnectionActorGenerator {
                                 val confirmDeferred = CompletableDeferred<ClusterConfigInfo>()
                                 connection.first.trySend(ConfirmIsConnectedAction(confirmDeferred))
                                 
-                                // Wait a short time for confirmation
-                                withTimeout(5000) {
+                                // Wait a shorter time for confirmation for faster detection
+                                withTimeout(3000) {
                                     confirmDeferred.await()
                                 }
                                 
@@ -355,8 +355,8 @@ object ConnectionActorGenerator {
                     // this does not reset if it has not counted down the whole time yet
                     reconnectTicker.tryReceive().getOrNull()
 
-                    // Use standard 15 second retry interval as requested
-                    val retryTimeout = 15L * 1000 // 15 seconds for all failures
+                    // Use shorter retry interval for faster reconnection
+                    val retryTimeout = 10L * 1000 // 10 seconds for faster detection
 
                     logger.debug("ConnectionActorGenerator: Waiting for retry (timeout: ${retryTimeout}ms)")
 
