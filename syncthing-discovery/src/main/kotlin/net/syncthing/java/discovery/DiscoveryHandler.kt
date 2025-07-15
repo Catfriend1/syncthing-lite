@@ -171,6 +171,8 @@ class DiscoveryHandler(
     fun enableLocalDiscovery() {
         logger.info("enableLocalDiscovery() called - local discovery is now enabled")
         localDiscoveryEnabled = true
+        // Actually start local discovery if it's not already running
+        initLocalDiscoveryIfNotYetDone()
     }
 
     /**
@@ -187,6 +189,8 @@ class DiscoveryHandler(
     fun enableGlobalDiscovery() {
         logger.info("enableGlobalDiscovery() called - global discovery is now enabled")
         globalDiscoveryEnabled = true
+        // Actually start global discovery if it's not already running
+        doGlobalDiscoveryIfNotYetDone()
     }
 
     /**
