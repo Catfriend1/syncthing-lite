@@ -39,6 +39,14 @@ object ConnectionActorGenerator {
     private val logger = LoggerFactory.getLogger(ConnectionActorGenerator::class.java)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    /**
+     * Safe way to check if a channel is open without using the delicate isClosedForSend API.
+     * We check if the channel is not the closed channel we created.
+     */
+    private fun isChannelOpen(channel: SendChannel<ConnectionAction>): Boolean {
+        return channel != closed
+    }
+
     private fun deviceAddressesGenerator(deviceAddress: ReceiveChannel<DeviceAddress>) = scope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
         val addresses = mutableMapOf<String, DeviceAddress>()
 
@@ -237,7 +245,7 @@ object ConnectionActorGenerator {
                     
                     // Additional monitoring: periodically check if connection is still active
                     // This helps detect network disconnections that don't immediately close the channel
-                    while (currentActor == connection.first && !connection.first.isClosedForSend) {
+                    while (currentActor == connection.first && isChannelOpen(connection.first)) {
                         delay(5000) // Check every 5 seconds for faster detection
                         
                         // If the connection actor channel is still open but the underlying connection might be broken,
@@ -276,8 +284,8 @@ object ConnectionActorGenerator {
             return true
         }
 
-        fun isConnected() = (currentActor != closed && !currentActor.isClosedForSend).also { connected ->
-            logger.debug("ConnectionActorGenerator: isConnected() = $connected, currentActor.isClosedForSend = ${currentActor.isClosedForSend}")
+        fun isConnected() = (currentActor != closed && isChannelOpen(currentActor)).also { connected ->
+            logger.debug("ConnectionActorGenerator: isConnected() = $connected, currentActor open = ${isChannelOpen(currentActor)}")
         }
 
         invokeOnClose {
