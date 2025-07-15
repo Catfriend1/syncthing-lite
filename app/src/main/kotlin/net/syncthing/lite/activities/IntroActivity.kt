@@ -698,7 +698,7 @@ class IntroActivity : AppIntro() {
             if (devices.isEmpty()) {
                 Log.d(TAG, "IntroFragmentThree no devices added yet, showing searching")
                 // No devices added yet, show searching
-                binding.discoveryStatusIcon.setImageResource(android.R.drawable.ic_menu_search)
+                binding.discoveryStatusText.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_search, 0, 0, 0)
                 binding.discoveryStatusText.text = getString(R.string.discovery_status_searching)
                 return
             }
@@ -720,7 +720,7 @@ class IntroActivity : AppIntro() {
                 devicesWithAddresses.isNotEmpty() -> {
                     Log.d(TAG, "IntroFragmentThree showing success status for devices with addresses")
                     // At least one device has addresses - show success
-                    binding.discoveryStatusIcon.setImageResource(android.R.drawable.checkbox_on_background)
+                    binding.discoveryStatusText.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.checkbox_on_background, 0, 0, 0)
                     if (devicesWithAddresses.size == 1) {
                         val connection = connectionInfo[devicesWithAddresses.first().deviceId]
                         val address = connection?.addresses?.firstOrNull()?.address ?: "unknown"
@@ -734,13 +734,13 @@ class IntroActivity : AppIntro() {
                 devicesWithoutAddresses.isNotEmpty() -> {
                     Log.d(TAG, "IntroFragmentThree showing not found status for devices without addresses")
                     // All devices have no addresses - show error
-                    binding.discoveryStatusIcon.setImageResource(android.R.drawable.ic_delete)
+                    binding.discoveryStatusText.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_delete, 0, 0, 0)
                     binding.discoveryStatusText.text = getString(R.string.discovery_status_not_found)
                 }
                 else -> {
                     Log.d(TAG, "IntroFragmentThree showing searching status")
                     // Still searching
-                    binding.discoveryStatusIcon.setImageResource(android.R.drawable.ic_menu_search)
+                    binding.discoveryStatusText.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_search, 0, 0, 0)
                     binding.discoveryStatusText.text = getString(R.string.discovery_status_searching)
                 }
             }
