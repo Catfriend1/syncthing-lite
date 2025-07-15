@@ -234,6 +234,40 @@ object ConnectionActorGenerator {
                             }
                         }
                     }
+                    
+                    // Additional monitoring: periodically check if connection is still active
+                    // This helps detect network disconnections that don't immediately close the channel
+                    while (currentActor == connection.first && !connection.first.isClosedForSend) {
+                        delay(10000) // Check every 10 seconds
+                        
+                        // If the connection actor channel is still open but the underlying connection might be broken,
+                        // we can detect this by checking if the connection is still responsive
+                        if (currentActor == connection.first && currentStatus.status == ConnectionStatus.Connected) {
+                            try {
+                                // Try to confirm the connection is still active
+                                val confirmDeferred = CompletableDeferred<ClusterConfigInfo>()
+                                connection.first.trySend(ConfirmIsConnectedAction(confirmDeferred))
+                                
+                                // Wait a short time for confirmation
+                                withTimeout(5000) {
+                                    confirmDeferred.await()
+                                }
+                                
+                                logger.debug("ConnectionActorGenerator: Connection health check passed")
+                            } catch (e: Exception) {
+                                logger.debug("ConnectionActorGenerator: Connection health check failed: ${e.message}")
+                                // Connection is no longer responsive, mark as disconnected
+                                if (currentActor == connection.first) {
+                                    logger.debug("ConnectionActorGenerator: Marking unresponsive connection as disconnected")
+                                    currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
+                                    currentActor = closed
+                                    connection.first.close()
+                                    dispatchStatus()
+                                }
+                                break
+                            }
+                        }
+                    }
                 } catch (e: Exception) {
                     logger.debug("ConnectionActorGenerator: Error monitoring connection: ${e.message}")
                 }
