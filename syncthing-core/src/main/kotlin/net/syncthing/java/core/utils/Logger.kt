@@ -60,11 +60,23 @@ class Logger private constructor(private val tag: String) {
                 verboseMethod.invoke(null, tag, formattedMessage, throwable)
             } catch (e: Exception) {
                 fallbackLog("TRACE", formattedMessage)
-                throwable?.printStackTrace()
+                // Convert System.err to debug log instead of printStackTrace
+                if (throwable != null) {
+                    fallbackLog("TRACE", "Exception: ${throwable.message}")
+                    throwable.stackTrace?.take(5)?.forEach { element ->
+                        fallbackLog("TRACE", "  at $element")
+                    }
+                }
             }
         } else {
             fallbackLog("TRACE", formattedMessage)
-            throwable?.printStackTrace()
+            // Convert System.err to debug log instead of printStackTrace
+            if (throwable != null) {
+                fallbackLog("TRACE", "Exception: ${throwable.message}")
+                throwable.stackTrace?.take(5)?.forEach { element ->
+                    fallbackLog("TRACE", "  at $element")
+                }
+            }
         }
     }
     
@@ -98,11 +110,23 @@ class Logger private constructor(private val tag: String) {
                 debugMethod.invoke(null, tag, formattedMessage, throwable)
             } catch (e: Exception) {
                 fallbackLog("DEBUG", formattedMessage)
-                throwable?.printStackTrace()
+                // Convert System.err to debug log instead of printStackTrace
+                if (throwable != null) {
+                    fallbackLog("DEBUG", "Exception: ${throwable.message}")
+                    throwable.stackTrace?.take(5)?.forEach { element ->
+                        fallbackLog("DEBUG", "  at $element")
+                    }
+                }
             }
         } else {
             fallbackLog("DEBUG", formattedMessage)
-            throwable?.printStackTrace()
+            // Convert System.err to debug log instead of printStackTrace
+            if (throwable != null) {
+                fallbackLog("DEBUG", "Exception: ${throwable.message}")
+                throwable.stackTrace?.take(5)?.forEach { element ->
+                    fallbackLog("DEBUG", "  at $element")
+                }
+            }
         }
     }
     
@@ -136,11 +160,23 @@ class Logger private constructor(private val tag: String) {
                 infoMethod.invoke(null, tag, formattedMessage, throwable)
             } catch (e: Exception) {
                 fallbackLog("INFO", formattedMessage)
-                throwable?.printStackTrace()
+                // Convert System.err to debug log instead of printStackTrace
+                if (throwable != null) {
+                    fallbackLog("INFO", "Exception: ${throwable.message}")
+                    throwable.stackTrace?.take(5)?.forEach { element ->
+                        fallbackLog("INFO", "  at $element")
+                    }
+                }
             }
         } else {
             fallbackLog("INFO", formattedMessage)
-            throwable?.printStackTrace()
+            // Convert System.err to debug log instead of printStackTrace
+            if (throwable != null) {
+                fallbackLog("INFO", "Exception: ${throwable.message}")
+                throwable.stackTrace?.take(5)?.forEach { element ->
+                    fallbackLog("INFO", "  at $element")
+                }
+            }
         }
     }
     
@@ -174,11 +210,23 @@ class Logger private constructor(private val tag: String) {
                 warnMethod.invoke(null, tag, formattedMessage, throwable)
             } catch (e: Exception) {
                 fallbackLog("WARN", formattedMessage)
-                throwable?.printStackTrace()
+                // Convert System.err to debug log instead of printStackTrace
+                if (throwable != null) {
+                    fallbackLog("WARN", "Exception: ${throwable.message}")
+                    throwable.stackTrace?.take(5)?.forEach { element ->
+                        fallbackLog("WARN", "  at $element")
+                    }
+                }
             }
         } else {
             fallbackLog("WARN", formattedMessage)
-            throwable?.printStackTrace()
+            // Convert System.err to debug log instead of printStackTrace
+            if (throwable != null) {
+                fallbackLog("WARN", "Exception: ${throwable.message}")
+                throwable.stackTrace?.take(5)?.forEach { element ->
+                    fallbackLog("WARN", "  at $element")
+                }
+            }
         }
     }
     
@@ -212,11 +260,23 @@ class Logger private constructor(private val tag: String) {
                 errorMethod.invoke(null, tag, formattedMessage, throwable)
             } catch (e: Exception) {
                 fallbackLog("ERROR", formattedMessage)
-                throwable?.printStackTrace()
+                // Convert System.err to debug log instead of printStackTrace
+                if (throwable != null) {
+                    fallbackLog("ERROR", "Exception: ${throwable.message}")
+                    throwable.stackTrace?.take(5)?.forEach { element ->
+                        fallbackLog("ERROR", "  at $element")
+                    }
+                }
             }
         } else {
             fallbackLog("ERROR", formattedMessage)
-            throwable?.printStackTrace()
+            // Convert System.err to debug log instead of printStackTrace
+            if (throwable != null) {
+                fallbackLog("ERROR", "Exception: ${throwable.message}")
+                throwable.stackTrace?.take(5)?.forEach { element ->
+                    fallbackLog("ERROR", "  at $element")
+                }
+            }
         }
     }
     

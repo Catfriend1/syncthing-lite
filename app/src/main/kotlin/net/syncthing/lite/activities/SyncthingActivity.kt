@@ -30,9 +30,9 @@ abstract class SyncthingActivity : CoroutineActivity() {
     private var snackBar: Snackbar? = null
     private var connectionManagerJob: Job? = null
     private var connectionRetryJob: Job? = null
-    private var retryDelayMs = 15000L // Start with 15 seconds
-    private val maxRetryDelayMs = 60000L // Maximum 1 minute
-    private val connectionRetryIntervalMs = 15000L // Retry connections every 15 seconds
+    private var retryDelayMs = 10000L // Start with 10 seconds
+    private val maxRetryDelayMs = 30000L // Maximum 30 seconds  
+    private val connectionRetryIntervalMs = 10000L // Retry connections every 10 seconds
     private var isStarted = false
 
     companion object {
@@ -315,7 +315,7 @@ abstract class SyncthingActivity : CoroutineActivity() {
      */
     fun resetRetryDelay() {
         Log.v(TAG, "resetRetryDelay() called for ${this.javaClass.simpleName}")
-        retryDelayMs = 15000L // Reset to 15 seconds
+        retryDelayMs = 10000L // Reset to 10 seconds
     }
 
     /**
