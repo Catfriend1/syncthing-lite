@@ -284,9 +284,13 @@ object ConnectionActorGenerator {
             return true
         }
 
+        fun isConnected() = (currentActor != closed && isChannelOpen(currentActor))
+
+        /*
         fun isConnected() = (currentActor != closed && isChannelOpen(currentActor)).also { connected ->
-            logger.debug("ConnectionActorGenerator: isConnected() = $connected, currentActor open = ${isChannelOpen(currentActor)}")
+            logger.trace("ConnectionActorGenerator: isConnected() = $connected, currentActor open = ${isChannelOpen(currentActor)}")
         }
+        */
 
         invokeOnClose {
             currentActor.close()
