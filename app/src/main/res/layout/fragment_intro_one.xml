@@ -38,9 +38,9 @@
                 android:textAlignment="center"
                 android:textColor="#eee"
                 android:text="@string/intro_page_one_description"
-                android:drawableTop="@mipmap/ic_launcher"
                 android:drawablePadding="24dp"
-                android:gravity="center" />
+                android:gravity="center"
+                app:drawableTopCompat="@mipmap/ic_launcher" />
 
         <TextView
             android:visibility="@{safeUnbox(listeningPortTaken) ? View.VISIBLE : View.GONE}"
