@@ -190,4 +190,30 @@ class LibraryHandler(private val context: Context) {
             }
         }
     }
+
+    fun enableDiscovery() {
+        android.util.Log.d(TAG, "enableDiscovery() called")
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                android.util.Log.d(TAG, "Calling syncthingClient.enableDiscovery()")
+                syncthingClient { it.enableDiscovery() }
+                android.util.Log.d(TAG, "syncthingClient.enableDiscovery() completed")
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error in enableDiscovery()", e)
+            }
+        }
+    }
+
+    fun disableDiscovery() {
+        android.util.Log.d(TAG, "disableDiscovery() called")
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                android.util.Log.d(TAG, "Calling syncthingClient.disableDiscovery()")
+                syncthingClient { it.disableDiscovery() }
+                android.util.Log.d(TAG, "syncthingClient.disableDiscovery() completed")
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error in disableDiscovery()", e)
+            }
+        }
+    }
 }

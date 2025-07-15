@@ -132,16 +132,23 @@ class IntroActivity : AppIntro() {
                 currentSlidePosition = 0
                 isSlideThreeActive = false
                 Log.d(TAG, "IntroActivity switched to slide 1")
+                // Disable discovery on slide 1
+                sharedLibraryHandler.disableDiscovery()
             }
             is IntroFragmentTwo -> {
                 currentSlidePosition = 1
                 isSlideThreeActive = false
                 Log.d(TAG, "IntroActivity switched to slide 2")
+                // Keep discovery disabled on slide 2
+                sharedLibraryHandler.disableDiscovery()
             }
             is IntroFragmentThree -> {
                 currentSlidePosition = 2
                 isSlideThreeActive = true
                 Log.d(TAG, "IntroActivity switched to slide 3")
+                // Enable discovery when we reach slide 3
+                Log.d(TAG, "IntroActivity enabling discovery on slide 3")
+                sharedLibraryHandler.enableDiscovery()
             }
         }
     }
@@ -422,6 +429,8 @@ class IntroActivity : AppIntro() {
             // Only trigger discovery if we're on slide 3
             if (isOnSlideThree()) {
                 Log.d(TAG, "IntroActivity triggering discovery on slide 3")
+                // Ensure discovery is enabled
+                sharedLibraryHandler.enableDiscovery()
                 tryConnectToAllDevices()
             } else {
                 Log.d(TAG, "IntroActivity not on slide 3, skipping discovery trigger")
@@ -456,6 +465,10 @@ class IntroActivity : AppIntro() {
         Log.d(TAG, "IntroActivity triggerDiscoveryOnSlideThree() called")
         lifecycleScope.launch {
             resetRetryDelay()
+            
+            // First ensure discovery is enabled
+            Log.d(TAG, "IntroActivity enabling discovery for slide 3")
+            sharedLibraryHandler.enableDiscovery()
             
             // First ensure we have devices configured
             val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
@@ -783,6 +796,10 @@ class IntroActivity : AppIntro() {
             lifecycleScope.launch {
                 delay(1000) // Wait 1 second for library to be ready
                 Log.d(TAG, "IntroFragmentThree triggering discovery on slide 3 after delay")
+                
+                // Enable discovery first
+                Log.d(TAG, "IntroFragmentThree enabling discovery")
+                libraryHandler.enableDiscovery()
                 
                 // Check if we have devices configured
                 val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }

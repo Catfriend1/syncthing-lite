@@ -58,11 +58,18 @@ class DiscoveryHandler(
 
     private var shouldLoadFromGlobal = true
     private var shouldStartLocalDiscovery = true
+    private var discoveryEnabled = false // Only start discovery when explicitly enabled
     private var lastGlobalDiscoveryTime = 0L
     private var globalDiscoveryRetryInterval = 30_000L // Start with 30 seconds
     private val maxRetryInterval = 300_000L // Max 5 minutes
 
     private fun doGlobalDiscoveryIfNotYetDone() {
+        // Only proceed if discovery is enabled
+        if (!discoveryEnabled) {
+            logger.debug("doGlobalDiscoveryIfNotYetDone() skipped - discovery not enabled")
+            return
+        }
+        
         val currentTime = System.currentTimeMillis()
         val timeSinceLastDiscovery = currentTime - lastGlobalDiscoveryTime
         
@@ -104,6 +111,12 @@ class DiscoveryHandler(
     }
 
     private fun initLocalDiscoveryIfNotYetDone() {
+        // Only proceed if discovery is enabled
+        if (!discoveryEnabled) {
+            logger.debug("initLocalDiscoveryIfNotYetDone() skipped - discovery not enabled")
+            return
+        }
+        
         if (shouldStartLocalDiscovery) {
             shouldStartLocalDiscovery = false
             localDiscoveryHandler.startListener()
@@ -134,6 +147,22 @@ class DiscoveryHandler(
         ).putAddress(deviceAddress)
     }
 
+    /**
+     * Enable discovery to start running. This must be called before discovery will actually start.
+     */
+    fun enableDiscovery() {
+        logger.info("enableDiscovery() called - discovery is now enabled")
+        discoveryEnabled = true
+    }
+
+    /**
+     * Disable discovery to prevent it from running
+     */
+    fun disableDiscovery() {
+        logger.info("disableDiscovery() called - discovery is now disabled")
+        discoveryEnabled = false
+    }
+
     fun newDeviceAddressSupplier(): DeviceAddressSupplier {
         if (isClosed) {
             throw IllegalStateException()
@@ -154,6 +183,11 @@ class DiscoveryHandler(
     fun retryDiscovery() {
         if (isClosed) {
             logger.debug("retryDiscovery() called but handler is closed")
+            return
+        }
+        
+        if (!discoveryEnabled) {
+            logger.debug("retryDiscovery() called but discovery is not enabled")
             return
         }
         

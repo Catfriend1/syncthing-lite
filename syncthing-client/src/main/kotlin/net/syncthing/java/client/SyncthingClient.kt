@@ -101,6 +101,16 @@ class SyncthingClient(
         discoveryHandler.retryDiscovery()
     }
 
+    fun enableDiscovery() {
+        logger.debug("SyncthingClient.enableDiscovery() called - delegating to discoveryHandler")
+        discoveryHandler.enableDiscovery()
+    }
+
+    fun disableDiscovery() {
+        logger.debug("SyncthingClient.disableDiscovery() called - delegating to discoveryHandler")
+        discoveryHandler.disableDiscovery()
+    }
+
     fun disconnectFromRemovedDevices() {
         // TODO: implement this
     }

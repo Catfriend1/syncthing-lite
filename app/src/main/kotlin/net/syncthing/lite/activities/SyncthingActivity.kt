@@ -91,6 +91,14 @@ abstract class SyncthingActivity : CoroutineActivity() {
 
     open fun onLibraryLoaded() {
         Log.d(TAG, "onLibraryLoaded() called for ${this.javaClass.simpleName}")
+        
+        // For MainActivity, always enable discovery when library is loaded
+        // This ensures discovery works properly after IntroActivity transition
+        if (this is MainActivity) {
+            Log.d(TAG, "MainActivity detected - enabling discovery")
+            libraryHandler.enableDiscovery()
+        }
+        
         // Start the centralized connection manager
         startConnectionManager()
         
