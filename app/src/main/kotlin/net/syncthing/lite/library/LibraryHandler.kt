@@ -3,6 +3,7 @@ package net.syncthing.lite.library
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.*
@@ -170,49 +171,49 @@ class LibraryHandler(private val context: Context) {
     fun subscribeToConnectionStatus() = connectionStatus.asStateFlow()
     
     fun retryDiscoveryForDevicesWithoutAddresses() {
-        android.util.Log.d(TAG, "retryDiscoveryForDevicesWithoutAddresses() called")
+        Log.v(TAG, "retryDiscoveryForDevicesWithoutAddresses() called")
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Additional logging to help debug discovery issues
                 libraryManager.withLibrary { library ->
                     val devices = library.configuration.peers
-                    android.util.Log.d(TAG, "LibraryHandler found ${devices.size} configured devices for discovery")
+                    Log.d(TAG, "LibraryHandler found ${devices.size} configured devices for discovery")
                     devices.forEach { device ->
-                        android.util.Log.d(TAG, "LibraryHandler device for discovery: ${device.deviceId.deviceId.substring(0, 8)}...")
+                        Log.d(TAG, "LibraryHandler device for discovery: ${device.deviceId.deviceId.substring(0, 8)}...")
                     }
                 }
                 
-                android.util.Log.d(TAG, "Calling syncthingClient.retryDiscovery()")
+                Log.v(TAG, "Calling syncthingClient.retryDiscovery()")
                 syncthingClient { it.retryDiscovery() }
-                android.util.Log.d(TAG, "syncthingClient.retryDiscovery() completed")
+                Log.v(TAG, "syncthingClient.retryDiscovery() completed")
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error in retryDiscoveryForDevicesWithoutAddresses()", e)
+                Log.e(TAG, "Error in retryDiscoveryForDevicesWithoutAddresses()", e)
             }
         }
     }
 
     fun enableDiscovery() {
-        android.util.Log.d(TAG, "enableDiscovery() called")
+        Log.d(TAG, "enableDiscovery() called")
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                android.util.Log.d(TAG, "Calling syncthingClient.enableDiscovery()")
+                Log.v(TAG, "Calling syncthingClient.enableDiscovery()")
                 syncthingClient { it.enableDiscovery() }
-                android.util.Log.d(TAG, "syncthingClient.enableDiscovery() completed")
+                Log.v(TAG, "syncthingClient.enableDiscovery() completed")
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error in enableDiscovery()", e)
+                Log.e(TAG, "Error in enableDiscovery()", e)
             }
         }
     }
 
     fun disableDiscovery() {
-        android.util.Log.d(TAG, "disableDiscovery() called")
+        Log.v(TAG, "disableDiscovery() called")
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                android.util.Log.d(TAG, "Calling syncthingClient.disableDiscovery()")
+                Log.v(TAG, "Calling syncthingClient.disableDiscovery()")
                 syncthingClient { it.disableDiscovery() }
-                android.util.Log.d(TAG, "syncthingClient.disableDiscovery() completed")
+                Log.v(TAG, "syncthingClient.disableDiscovery() completed")
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error in disableDiscovery()", e)
+                Log.e(TAG, "Error in disableDiscovery()", e)
             }
         }
     }
