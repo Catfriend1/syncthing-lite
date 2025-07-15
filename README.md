@@ -12,10 +12,10 @@ This project is an Android app, that works as a client for a [Syncthing][1] shar
 Syncthing devices in the same way a client-server file sharing app accesses its proprietary server). 
 
 This is a client-oriented implementation, designed to work online by downloading and 
-uploading files from an active device on the network (instead of synchronizing a local copy of 
-the entire repository).
+uploading files from an active device on the network instead of synchronizing a local copy of 
+the entire repository.
 Due to that, you will see a sync progress of 0% at other devices (and this is expected).
-This is quite different from the way the [syncthing-android][2] works, 
+This is quite different from the way the [Syncthing-Fork][2] app works, 
 and it's useful for those devices that cannot or do not wish to download the entire repository (for 
 example, mobile devices with limited storage available, wishing to access a syncthing share).
 
