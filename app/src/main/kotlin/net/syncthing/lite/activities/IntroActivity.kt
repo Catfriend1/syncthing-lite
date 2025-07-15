@@ -202,22 +202,22 @@ class IntroActivity : AppIntro() {
                 
                 val devicesNeedingConnection = devices.filter { device ->
                     val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
-                    connection.status == ConnectionStatus.Disconnected && connection.addresses.isNotEmpty()
+                    connection.addresses.isNotEmpty() && connection.status != ConnectionStatus.Connected
                 }
                 
                 Log.d(TAG, "IntroActivity devices needing discovery: ${devicesNeedingDiscovery.size}, needing connection: ${devicesNeedingConnection.size}")
                 
-                // Only trigger discovery if we're on slide 3 and there are devices needing discovery
-                // This prevents discovery from running too early
+                // Only trigger discovery if we're on slide 3 AND there are devices needing discovery
+                // This prevents discovery from running too early and for devices that already have addresses
                 if (devicesNeedingDiscovery.isNotEmpty() && isOnSlideThree()) {
                     Log.d(TAG, "IntroActivity triggering discovery retry for ${devicesNeedingDiscovery.size} devices (slide 3 active)")
                     retryDiscoveryWithBackoff()
                 }
                 
-                // Handle devices with addresses but not connected - need connection
+                // Handle devices with addresses but not connected - need connection retry
                 if (devicesNeedingConnection.isNotEmpty()) {
                     Log.d(TAG, "IntroActivity triggering connection attempt for ${devicesNeedingConnection.size} devices")
-                    tryConnectToAllDevices()
+                    tryConnectToDevicesWithAddresses(devicesNeedingConnection)
                 }
             }
         }
@@ -256,10 +256,12 @@ class IntroActivity : AppIntro() {
                     val connectionInfo = sharedLibraryHandler.subscribeToConnectionStatus().value
                     val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
                     
-                    // Find devices that have addresses but are disconnected
+                    // Find devices that have addresses but are disconnected or need reconnection
                     val devicesNeedingReconnection = devices.filter { device ->
                         val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
-                        connection.status == ConnectionStatus.Disconnected && connection.addresses.isNotEmpty()
+                        // Check for devices that have addresses but are not connected
+                        // This includes devices that failed during receivePostAuthMessage
+                        connection.addresses.isNotEmpty() && connection.status != ConnectionStatus.Connected
                     }
                     
                     if (devicesNeedingReconnection.isNotEmpty()) {
@@ -332,6 +334,34 @@ class IntroActivity : AppIntro() {
                 Log.d(TAG, "IntroActivity connectToNewlyAddedDevices() completed")
             } catch (e: Exception) {
                 Log.e(TAG, "IntroActivity error in connectToNewlyAddedDevices()", e)
+            }
+        }
+    }
+
+    /**
+     * Attempts to connect to devices that already have addresses (without triggering discovery)
+     */
+    private suspend fun tryConnectToDevicesWithAddresses(devicesNeedingConnection: List<DeviceInfo>) {
+        Log.d(TAG, "IntroActivity tryConnectToDevicesWithAddresses() called for ${devicesNeedingConnection.size} devices")
+        
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                Log.d(TAG, "IntroActivity calling connectToNewlyAddedDevices() for devices with addresses")
+                sharedLibraryHandler.libraryManager.withLibrary { library ->
+                    library.syncthingClient.connectToNewlyAddedDevices()
+                }
+                
+                // Also try individual reconnection for each device
+                devicesNeedingConnection.forEach { device ->
+                    Log.d(TAG, "IntroActivity attempting reconnect to device: ${device.deviceId.deviceId.substring(0, 8)}")
+                    sharedLibraryHandler.libraryManager.withLibrary { library ->
+                        library.syncthingClient.reconnect(device.deviceId)
+                    }
+                }
+                
+                Log.d(TAG, "IntroActivity connectToNewlyAddedDevices() completed")
+            } catch (e: Exception) {
+                Log.e(TAG, "IntroActivity error in tryConnectToDevicesWithAddresses()", e)
             }
         }
     }

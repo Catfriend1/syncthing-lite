@@ -157,7 +157,19 @@ class DiscoveryHandler(
             return
         }
         
-        logger.info("retryDiscovery() called - forcing global and local discovery")
+        logger.info("retryDiscovery() called - checking devices needing discovery")
+        
+        // Check if any devices actually need discovery (have no addresses)
+        val devicesNeedingDiscovery = configuration.peerIds.filter { deviceId ->
+            devicesAddressesManager.getDeviceAddressManager(deviceId).getCurrentDeviceAddresses().isEmpty()
+        }
+        
+        if (devicesNeedingDiscovery.isEmpty()) {
+            logger.info("retryDiscovery() skipped - all devices already have addresses")
+            return
+        }
+        
+        logger.info("retryDiscovery() proceeding for ${devicesNeedingDiscovery.size} devices without addresses")
         
         // Force a new global discovery attempt by resetting the flag
         // This bypasses the retry interval when explicitly called
