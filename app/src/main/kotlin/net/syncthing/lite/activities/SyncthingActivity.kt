@@ -30,8 +30,8 @@ abstract class SyncthingActivity : CoroutineActivity() {
     private var snackBar: Snackbar? = null
     private var connectionManagerJob: Job? = null
     private var connectionRetryJob: Job? = null
-    private var retryDelayMs = 15000L // Start with 15 seconds as requested
-    private val maxRetryDelayMs = 60000L // Maximum 1 minute as requested
+    private var retryDelayMs = 15000L // Start with 15 seconds
+    private val maxRetryDelayMs = 60000L // Maximum 1 minute
     private val connectionRetryIntervalMs = 15000L // Retry connections every 15 seconds
     private var isStarted = false
 
