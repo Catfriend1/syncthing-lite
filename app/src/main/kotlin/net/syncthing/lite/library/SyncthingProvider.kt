@@ -44,11 +44,6 @@ class SyncthingProvider : DocumentsProvider() {
         )
     }
 
-    override fun onCreate(): Boolean {
-        Log.d(Tag, "onCreate()")
-        return true
-    }
-
     // this instance is not started -> it connects and disconnects on demand
     private val libraryManager: LibraryManager by lazy { DefaultLibraryManager.with(requireContextCompat()) }
 
