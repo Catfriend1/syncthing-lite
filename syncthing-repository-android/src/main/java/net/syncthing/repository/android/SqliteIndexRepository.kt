@@ -16,7 +16,7 @@ class SqliteIndexRepository(
                 override fun call(): T {
                     val transaction = SqliteTransaction(
                             database = database,
-                            threadId = Thread.currentThread().id,
+                            threadId = System.identityHashCode(Thread.currentThread()).toLong(),
                             clearTempStorageHook = clearTempStorageHook
                     )
 

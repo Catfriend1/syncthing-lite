@@ -94,7 +94,7 @@ class DownloadFileDialogFragment : DialogFragment() {
             arguments?.getParcelable<Uri>(ARG_SAVE_AS_URI)
         }
 
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_download_progress, null)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_download_progress, null)
         progressBar = dialogView.findViewById(R.id.progress_bar)
         progressMessage = dialogView.findViewById(R.id.progress_message)
 
