@@ -144,6 +144,74 @@ class LibraryHandler(private val context: Context) {
         }
     }
 
+    /**
+     * Enhanced version of syncthingClient that ensures connection is available before executing callback.
+     * This method automatically triggers reconnection if devices are not connected and waits for connection.
+     */
+    suspend fun syncthingClientWithConnection(callback: suspend (SyncthingClient) -> Unit) {
+        withContext(Dispatchers.IO) {
+            library { configuration, syncthingClient, _ ->
+                // Check if we have any connected devices
+                val connectionStatus = syncthingClient.subscribeToConnectionStatus().value
+                val configuredDevices = configuration.peers
+                val connectedDevices = configuredDevices.filter { device ->
+                    val connection = connectionStatus[device.deviceId]
+                    connection?.status == net.syncthing.java.bep.connectionactor.ConnectionStatus.Connected
+                }
+                
+                Log.d(TAG, "syncthingClientWithConnection: ${connectedDevices.size} of ${configuredDevices.size} devices connected")
+                
+                // If no devices are connected, trigger reconnection and wait
+                if (connectedDevices.isEmpty() && configuredDevices.isNotEmpty()) {
+                    Log.d(TAG, "No devices connected, triggering reconnection attempts")
+                    
+                    // Try to reconnect to all configured devices
+                    configuredDevices.forEach { device ->
+                        Log.d(TAG, "Attempting to reconnect to device: ${device.deviceId.deviceId.substring(0, 8)}")
+                        syncthingClient.reconnect(device.deviceId)
+                    }
+                    
+                    // Also trigger discovery for devices without addresses
+                    syncthingClient.retryDiscovery()
+                    
+                    // Wait for at least one connection to be established
+                    Log.d(TAG, "Waiting for connection to be established...")
+                    val maxWaitMs = 30000L // 30 seconds timeout
+                    val startTime = System.currentTimeMillis()
+                    
+                    while (System.currentTimeMillis() - startTime < maxWaitMs) {
+                        delay(1000) // Check every second
+                        
+                        val currentStatus = syncthingClient.subscribeToConnectionStatus().value
+                        val currentConnected = configuredDevices.filter { device ->
+                            val connection = currentStatus[device.deviceId]
+                            connection?.status == net.syncthing.java.bep.connectionactor.ConnectionStatus.Connected
+                        }
+                        
+                        if (currentConnected.isNotEmpty()) {
+                            Log.d(TAG, "Connection established to ${currentConnected.size} device(s)")
+                            break
+                        }
+                    }
+                    
+                    // Final check - proceed even if no connection (let the operation fail with proper error)
+                    val finalStatus = syncthingClient.subscribeToConnectionStatus().value
+                    val finalConnected = configuredDevices.filter { device ->
+                        val connection = finalStatus[device.deviceId]
+                        connection?.status == net.syncthing.java.bep.connectionactor.ConnectionStatus.Connected
+                    }
+                    
+                    if (finalConnected.isEmpty()) {
+                        Log.w(TAG, "No connections established after waiting ${maxWaitMs}ms - proceeding anyway")
+                    }
+                }
+                
+                // Execute the callback
+                callback(syncthingClient)
+            }
+        }
+    }
+
     fun configuration(callback: suspend (Configuration) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             library { c, _, _ -> callback(c) }

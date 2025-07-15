@@ -16,6 +16,8 @@ import net.syncthing.lite.library.LibraryHandler
 import net.syncthing.lite.utils.MimeType
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class FileMenuDialogFragment: BottomSheetDialogFragment() {
     companion object {
@@ -77,13 +79,23 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
         }
 
         binding.deleteButton.setOnClickListener {
-            LibraryHandler(requireContext()).syncthingClient { syncthingClient ->
-                DeleteFileDialog(
-                    requireContext(),
-                    syncthingClient,
-                    fileSpec.folder,
-                    fileSpec.path
-                ) { dismiss() }.show()
+            // Use enhanced connection method for deletes
+            val libraryHandler = LibraryHandler(requireContext())
+            libraryHandler.start()
+            
+            // Launch coroutine to handle async connection
+            lifecycleScope.launch {
+                libraryHandler.syncthingClientWithConnection { syncthingClient ->
+                    DeleteFileDialog(
+                        requireContext(),
+                        syncthingClient,
+                        fileSpec.folder,
+                        fileSpec.path
+                    ) { 
+                        libraryHandler.stop()
+                        dismiss() 
+                    }.show()
+                }
             }
         }
 

@@ -61,22 +61,25 @@ class FolderBrowserActivity : SyncthingActivity() {
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
             if (result.resultCode == AppCompatActivity.RESULT_OK) {
-                libraryHandler.syncthingClient { syncthingClient ->
-                    val currentPath = path.value
-                    result.data?.data?.let { uri ->
-                        currentUploadDialog?.cleanup() // cleanup any existing dialog
-                        currentUploadDialog = FileUploadDialog(
-                            this@FolderBrowserActivity,
-                            syncthingClient,
-                            uri,
-                            folder,
-                            currentPath,
-                            { 
-                                // cleanup the dialog reference after successful upload
-                                currentUploadDialog = null
-                            }
-                        )
-                        currentUploadDialog?.show()
+                // Use enhanced connection method for uploads
+                MainScope().launch {
+                    libraryHandler.syncthingClientWithConnection { syncthingClient ->
+                        val currentPath = path.value
+                        result.data?.data?.let { uri ->
+                            currentUploadDialog?.cleanup() // cleanup any existing dialog
+                            currentUploadDialog = FileUploadDialog(
+                                this@FolderBrowserActivity,
+                                syncthingClient,
+                                uri,
+                                folder,
+                                currentPath,
+                                { 
+                                    // cleanup the dialog reference after successful upload
+                                    currentUploadDialog = null
+                                }
+                            )
+                            currentUploadDialog?.show()
+                        }
                     }
                 }
             }
