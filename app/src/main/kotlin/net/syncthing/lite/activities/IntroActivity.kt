@@ -94,10 +94,7 @@ class IntroActivity : AppIntro() {
         super.onStart()
         isStarted = true
         
-        // Start the shared LibraryHandler
-        Log.d(TAG, "Starting shared LibraryHandler for IntroActivity")
         sharedLibraryHandler.start {
-            Log.d(TAG, "Shared LibraryHandler started for IntroActivity")
             startConnectionManager()
             startConnectionRetryJob()
         }
@@ -107,18 +104,12 @@ class IntroActivity : AppIntro() {
         super.onStop()
         isStarted = false
         
-        // Stop the connection manager
-        Log.d(TAG, "Stopping connection manager for IntroActivity")
         connectionManagerJob?.cancel()
         connectionManagerJob = null
         
-        // Stop the connection retry job
-        Log.d(TAG, "Stopping connection retry job for IntroActivity")
         connectionRetryJob?.cancel()
         connectionRetryJob = null
         
-        // Stop the shared LibraryHandler
-        Log.d(TAG, "Stopping shared LibraryHandler for IntroActivity")
         sharedLibraryHandler.stop()
     }
 
@@ -130,26 +121,18 @@ class IntroActivity : AppIntro() {
             is IntroFragmentOne -> {
                 currentSlidePosition = 0
                 isSlideThreeActive = false
-                Log.d(TAG, "IntroActivity switched to slide 1")
-                // Disable all discovery on slide 1
                 sharedLibraryHandler.disableLocalDiscovery()
                 sharedLibraryHandler.disableGlobalDiscovery()
             }
             is IntroFragmentTwo -> {
                 currentSlidePosition = 1
                 isSlideThreeActive = false
-                Log.d(TAG, "IntroActivity switched to slide 2")
-                // Enable local discovery from slide 2 (for finding devices to display)
                 sharedLibraryHandler.enableLocalDiscovery()
-                // Keep global discovery disabled until device ID is imported
                 sharedLibraryHandler.disableGlobalDiscovery()
             }
             is IntroFragmentThree -> {
                 currentSlidePosition = 2
                 isSlideThreeActive = true
-                Log.d(TAG, "IntroActivity switched to slide 3")
-                // Import device ID and enable global discovery when we reach slide 3
-                Log.d(TAG, "IntroActivity importing device ID and enabling global discovery on slide 3")
                 importDeviceIdOnSlideThree()
                 sharedLibraryHandler.enableLocalDiscovery()
                 sharedLibraryHandler.enableGlobalDiscovery()
@@ -162,11 +145,12 @@ class IntroActivity : AppIntro() {
     }
 
     override fun onDonePressed(currentFragment: Fragment?) {
-        Log.v(TAG, "IntroActivity onDonePressed() called, transitioning to MainActivity")
         getSharedPreferences("default", Context.MODE_PRIVATE).edit {
             putBoolean(MainActivity.PREF_IS_FIRST_START, false)
         }
-        Log.d(TAG, "Starting MainActivity from IntroActivity")
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
+    }
         startActivity(Intent(this, MainActivity::class.java))
         Log.d(TAG, "Finishing IntroActivity")
         // Add a slight delay to ensure MainActivity starts before we finish

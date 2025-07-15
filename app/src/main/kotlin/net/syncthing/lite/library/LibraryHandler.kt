@@ -159,20 +159,15 @@ class LibraryHandler(private val context: Context) {
                     connection?.status == net.syncthing.java.bep.connectionactor.ConnectionStatus.Connected
                 }
                 
-                Log.d(TAG, "syncthingClientWithConnection: ${connectedDevices.size} of ${configuredDevices.size} devices connected")
-                
                 // If no devices are connected, trigger reconnection and wait
                 if (connectedDevices.isEmpty() && configuredDevices.isNotEmpty()) {
-                    Log.d(TAG, "No devices connected, triggering reconnection attempts")
-                    
                     try {
                         // Try to reconnect to all configured devices
                         configuredDevices.forEach { device ->
-                            Log.d(TAG, "Attempting to reconnect to device: ${device.deviceId.deviceId.substring(0, 8)}")
                             try {
                                 syncthingClient.reconnect(device.deviceId)
                             } catch (e: Exception) {
-                                Log.d(TAG, "Reconnect failed for device ${device.deviceId.deviceId.substring(0, 8)}: ${e.message}")
+                                Log.d(TAG, "Reconnect failed for device: ${e.message}")
                             }
                         }
                         
@@ -184,7 +179,6 @@ class LibraryHandler(private val context: Context) {
                         }
                         
                         // Wait for at least one connection to be established
-                        Log.d(TAG, "Waiting for connection to be established...")
                         val maxWaitMs = 30000L // 30 seconds timeout
                         val startTime = System.currentTimeMillis()
                         
@@ -199,42 +193,19 @@ class LibraryHandler(private val context: Context) {
                                 }
                                 
                                 if (currentConnected.isNotEmpty()) {
-                                    Log.d(TAG, "Connection established to ${currentConnected.size} device(s)")
                                     break
                                 }
                             } catch (e: Exception) {
-                                Log.d(TAG, "Connection status check failed: ${e.message}")
                                 // Continue waiting
                             }
                         }
-                        
-                        // Final check - proceed even if no connection (let the operation fail with proper error)
-                        try {
-                            val finalStatus = syncthingClient.subscribeToConnectionStatus().value
-                            val finalConnected = configuredDevices.filter { device ->
-                                val connection = finalStatus[device.deviceId]
-                                connection?.status == net.syncthing.java.bep.connectionactor.ConnectionStatus.Connected
-                            }
-                            
-                            if (finalConnected.isEmpty()) {
-                                Log.w(TAG, "No connections established after waiting ${maxWaitMs}ms - proceeding anyway")
-                            }
-                        } catch (e: Exception) {
-                            Log.w(TAG, "Final connection check failed: ${e.message} - proceeding anyway")
-                        }
                     } catch (e: Exception) {
-                        Log.w(TAG, "Error during connection setup: ${e.message}", e)
-                        // Continue with callback execution even if reconnection fails
+                        Log.w(TAG, "Error during connection setup: ${e.message}")
                     }
                 }
                 
                 // Execute the callback
-                try {
-                    callback(syncthingClient)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Callback execution failed: ${e.message}", e)
-                    throw e
-                }
+                callback(syncthingClient)
             }
         }
     }
@@ -266,21 +237,9 @@ class LibraryHandler(private val context: Context) {
     fun subscribeToConnectionStatus() = connectionStatus.asStateFlow()
     
     fun retryDiscoveryForDevicesWithoutAddresses() {
-        Log.v(TAG, "retryDiscoveryForDevicesWithoutAddresses() called")
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Additional logging to help debug discovery issues
-                libraryManager.withLibrary { library ->
-                    val devices = library.configuration.peers
-                    Log.d(TAG, "LibraryHandler found ${devices.size} configured devices for discovery")
-                    devices.forEach { device ->
-                        Log.d(TAG, "LibraryHandler device for discovery: ${device.deviceId.deviceId.substring(0, 8)}...")
-                    }
-                }
-                
-                Log.v(TAG, "Calling syncthingClient.retryDiscovery()")
                 syncthingClient { it.retryDiscovery() }
-                Log.v(TAG, "syncthingClient.retryDiscovery() completed")
             } catch (e: Exception) {
                 Log.e(TAG, "Error in retryDiscoveryForDevicesWithoutAddresses()", e)
             }
@@ -290,9 +249,7 @@ class LibraryHandler(private val context: Context) {
     fun disableDiscovery() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                Log.v(TAG, "Calling syncthingClient.disableDiscovery()")
                 syncthingClient { it.disableDiscovery() }
-                Log.v(TAG, "syncthingClient.disableDiscovery() completed")
             } catch (e: Exception) {
                 Log.e(TAG, "Error in disableDiscovery()", e)
             }
@@ -302,9 +259,7 @@ class LibraryHandler(private val context: Context) {
     fun enableLocalDiscovery() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                Log.v(TAG, "Calling syncthingClient.enableLocalDiscovery()")
                 syncthingClient { it.enableLocalDiscovery() }
-                Log.v(TAG, "syncthingClient.enableLocalDiscovery() completed")
             } catch (e: Exception) {
                 Log.e(TAG, "Error in enableLocalDiscovery()", e)
             }
@@ -314,9 +269,7 @@ class LibraryHandler(private val context: Context) {
     fun disableLocalDiscovery() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                Log.v(TAG, "Calling syncthingClient.disableLocalDiscovery()")
                 syncthingClient { it.disableLocalDiscovery() }
-                Log.v(TAG, "syncthingClient.disableLocalDiscovery() completed")
             } catch (e: Exception) {
                 Log.e(TAG, "Error in disableLocalDiscovery()", e)
             }
@@ -326,9 +279,7 @@ class LibraryHandler(private val context: Context) {
     fun enableGlobalDiscovery() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                Log.v(TAG, "Calling syncthingClient.enableGlobalDiscovery()")
                 syncthingClient { it.enableGlobalDiscovery() }
-                Log.v(TAG, "syncthingClient.enableGlobalDiscovery() completed")
             } catch (e: Exception) {
                 Log.e(TAG, "Error in enableGlobalDiscovery()", e)
             }
@@ -338,9 +289,7 @@ class LibraryHandler(private val context: Context) {
     fun disableGlobalDiscovery() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                Log.v(TAG, "Calling syncthingClient.disableGlobalDiscovery()")
                 syncthingClient { it.disableGlobalDiscovery() }
-                Log.v(TAG, "syncthingClient.disableGlobalDiscovery() completed")
             } catch (e: Exception) {
                 Log.e(TAG, "Error in disableGlobalDiscovery()", e)
             }
