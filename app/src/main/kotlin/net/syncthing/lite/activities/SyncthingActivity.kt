@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import com.google.android.material.snackbar.Snackbar
 import android.view.LayoutInflater
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -233,7 +234,12 @@ abstract class SyncthingActivity : CoroutineActivity() {
                         Log.d(TAG, "Connection retry job found no devices needing reconnection for ${this.javaClass.simpleName}")
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Connection retry job error for ${this.javaClass.simpleName}", e)
+                    // CancellationException is normal when coroutine is cancelled
+                    if (e is CancellationException) {
+                        Log.d(TAG, "Connection retry job cancelled for ${this.javaClass.simpleName}")
+                    } else {
+                        Log.e(TAG, "Connection retry job error for ${this.javaClass.simpleName}", e)
+                    }
                 }
             }
             

@@ -22,6 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.appcompat.app.AppCompatActivity
 import com.github.appintro.AppIntro
 import com.github.appintro.SlidePolicy
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -292,7 +293,12 @@ class IntroActivity : AppIntro() {
                         Log.d(TAG, "IntroActivity connection retry job found no devices needing reconnection")
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "IntroActivity connection retry job error", e)
+                    // CancellationException is normal when coroutine is cancelled
+                    if (e is CancellationException) {
+                        Log.d(TAG, "IntroActivity connection retry job cancelled")
+                    } else {
+                        Log.e(TAG, "IntroActivity connection retry job error", e)
+                    }
                 }
             }
             
