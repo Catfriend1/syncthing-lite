@@ -206,7 +206,6 @@ class LibraryHandler(private val context: Context) {
     }
 
     fun disableDiscovery() {
-        Log.v(TAG, "disableDiscovery() called")
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 Log.v(TAG, "Calling syncthingClient.disableDiscovery()")
