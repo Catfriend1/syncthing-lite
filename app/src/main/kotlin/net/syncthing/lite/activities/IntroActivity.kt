@@ -177,11 +177,6 @@ class IntroActivity : AppIntro() {
         Log.d(TAG, "Starting connection manager for IntroActivity")
         connectionManagerJob?.cancel()
         connectionManagerJob = lifecycleScope.launch {
-            Log.d(TAG, "IntroActivity connection manager coroutine started")
-            
-            // DON'T trigger immediate discovery - wait for slide 3
-            Log.d(TAG, "IntroActivity connection manager waiting for slide 3 to trigger discovery")
-            
             // Monitor connection status continuously
             Log.d(TAG, "Starting connection status monitoring for IntroActivity")
             sharedLibraryHandler.subscribeToConnectionStatus().collect { connectionInfo ->
