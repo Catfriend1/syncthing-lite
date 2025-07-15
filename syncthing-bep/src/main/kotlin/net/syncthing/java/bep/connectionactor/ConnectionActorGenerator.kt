@@ -200,11 +200,32 @@ object ConnectionActorGenerator {
             )
             dispatchConnection(connection.first, connection.second, deviceAddress)
 
+            // Monitor the connection actor to detect when it terminates
+            scope.launch {
+                try {
+                    // Wait for the connection actor to close
+                    connection.first.invokeOnClose { cause ->
+                        logger.debug("ConnectionActorGenerator: Connection actor closed: $cause")
+                        scope.launch {
+                            // Set status to disconnected when connection actor closes
+                            if (currentActor == connection.first) {
+                                currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
+                                currentActor = closed
+                                dispatchStatus()
+                                logger.debug("ConnectionActorGenerator: Connection lost, status set to Disconnected")
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    logger.debug("ConnectionActorGenerator: Error monitoring connection: ${e.message}")
+                }
+            }
+
             return true
         }
 
-        fun isConnected() = (currentActor != closed).also { connected ->
-            logger.debug("ConnectionActorGenerator: isConnected() = $connected")
+        fun isConnected() = (currentActor != closed && !currentActor.isClosedForSend).also { connected ->
+            logger.debug("ConnectionActorGenerator: isConnected() = $connected, currentActor.isClosedForSend = ${currentActor.isClosedForSend}")
         }
 
         invokeOnClose {
@@ -245,21 +266,30 @@ object ConnectionActorGenerator {
                     delay(500)  // don't take too much CPU
                 } else /* is not connected */ {
                     if (currentStatus.status == ConnectionStatus.Connected) {
+                        logger.debug("ConnectionActorGenerator: Status was Connected but isConnected() returned false, setting to Disconnected")
                         currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
                         dispatchStatus()
                     }
 
                     val deviceAddressList = currentStatus.addresses
-                    logger.debug("ConnectionActorGenerator: Not connected, trying to connect to ${deviceAddressList.size} addresses")
+                    logger.debug("ConnectionActorGenerator: Not connected (status: ${currentStatus.status}), trying to connect to ${deviceAddressList.size} addresses")
 
-                    // try all addresses
-                    for (address in deviceAddressList) {
-                        logger.debug("ConnectionActorGenerator: Attempting to connect to address: $address")
-                        if (tryConnectingToAddress(address)) {
-                            logger.debug("ConnectionActorGenerator: Successfully connected to address: $address")
-                            break
-                        } else {
-                            logger.debug("ConnectionActorGenerator: Failed to connect to address: $address")
+                    if (deviceAddressList.isEmpty()) {
+                        logger.debug("ConnectionActorGenerator: No addresses available, waiting for discovery")
+                    } else {
+                        // try all addresses
+                        for (address in deviceAddressList) {
+                            logger.debug("ConnectionActorGenerator: Attempting to connect to address: $address")
+                            try {
+                                if (tryConnectingToAddress(address)) {
+                                    logger.debug("ConnectionActorGenerator: Successfully connected to address: $address")
+                                    break
+                                } else {
+                                    logger.debug("ConnectionActorGenerator: Failed to connect to address: $address")
+                                }
+                            } catch (e: Exception) {
+                                logger.debug("ConnectionActorGenerator: Exception while connecting to address $address: ${e.message}")
+                            }
                         }
                     }
 
