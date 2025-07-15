@@ -31,9 +31,8 @@ Special thanks to the former maintainers:
 - [davide-imbriaco](https://github.com/davide-imbriaco)
 
 ## License
-All code is licensed under the [MPLv2 License][4].
+All code is licensed under the [MPLv2 License][3].
 
 [1]: https://syncthing.net/
 [2]: https://github.com/Catfriend1/syncthing-android
-[3]: https://developer.android.com/studio/index.html
-[4]: LICENSE
+[3]: LICENSE
