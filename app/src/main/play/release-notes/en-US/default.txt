@@ -1,3 +1,5 @@
-Initial release after making the codebase build again.
-Expect nothing.
-Be happy if it works.
+⚡ Revival of the app which was abandoned years ago.
+
+✅ Safety warning: Please always ensure that you have backed up your data by other means and that this backup is up to date before using this app. The app is still in early development.
+
+⚠️ We assume no liability for data corruption or loss, although we make every effort to deliver quality.

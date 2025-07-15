@@ -1,8 +1,12 @@
-This is an experiment to revive the Syncthing-Lite App. Let's discuss it on [Syncthing-Forum](https://forum.syncthing.net/).
-
 # Syncthing-Lite for Android
 
 [![MPLv2 License](https://img.shields.io/badge/license-MPLv2-blue.svg?style=flat-square)](https://www.mozilla.org/MPL/2.0/)<a href="https://tooomm.github.io/github-release-stats/?username=Catfriend1&repository=syncthing-lite" alt="GitHub Stats"><img src="https://img.shields.io/github/downloads/Catfriend1/syncthing-lite/total.svg" /></a>[![Build App](https://github.com/Catfriend1/syncthing-lite/actions/workflows/build-app.yaml/badge.svg)](https://github.com/Catfriend1/syncthing-lite/actions/workflows/build-app.yaml)
+
+⚡ Revival of the app which was abandoned years ago. Let's discuss it on [Syncthing-Forum](https://forum.syncthing.net/).
+
+✅ Safety warning: Please always ensure that you have backed up your data by other means and that this backup is up to date before using this app. The app is still in early development.
+
+⚠️ We assume no liability for data corruption or loss, although we make every effort to deliver quality.
 
 This project is an Android app, that works as a client for a [Syncthing][1] share (accessing 
 Syncthing devices in the same way a client-server file sharing app accesses its proprietary server). 
