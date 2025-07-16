@@ -22,17 +22,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.appcompat.app.AppCompatActivity
 import com.github.appintro.AppIntro
 import com.github.appintro.SlidePolicy
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import net.syncthing.java.bep.connectionactor.ConnectionInfo
-import net.syncthing.java.bep.connectionactor.ConnectionStatus
 import net.syncthing.java.core.beans.DeviceId
-import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.lite.R
 import net.syncthing.lite.activities.QRScannerActivity
 import net.syncthing.lite.databinding.FragmentIntroOneBinding
@@ -40,11 +31,11 @@ import net.syncthing.lite.databinding.FragmentIntroThreeBinding
 import net.syncthing.lite.databinding.FragmentIntroTwoBinding
 import net.syncthing.lite.fragments.SyncthingFragment
 import net.syncthing.lite.library.LibraryHandler
+import net.syncthing.lite.library.ConnectionManager
 import net.syncthing.lite.utils.Util
 import java.io.IOException
 import java.util.Locale
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.min
 
 /**
  * Shown when a user first starts the app. Shows some info and helps the user to add their first
@@ -63,21 +54,16 @@ class IntroActivity : AppIntro() {
         LibraryHandler(context = this@IntroActivity)
     }
     
-    private var connectionManagerJob: Job? = null
-    private var connectionRetryJob: Job? = null
-    private var retryDelayMs = 15000L // Start with 15 seconds as requested
-    private val maxRetryDelayMs = 60000L // Maximum 1 minute as requested
-    private val connectionRetryIntervalMs = 15000L // Retry connections every 15 seconds
+    private lateinit var connectionManager: ConnectionManager
     private var isStarted = false
     private var currentSlidePosition = 0 // Track current slide position
     private var isSlideThreeActive = false // Track if slide 3 is active
 
-    /**
-     * Initialize fragments and library parameters.
-     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        connectionManager = ConnectionManager(sharedLibraryHandler, lifecycleScope, TAG)
+        
         addSlide(IntroFragmentOne())
         addSlide(IntroFragmentTwo())
         addSlide(IntroFragmentThree())
@@ -95,8 +81,8 @@ class IntroActivity : AppIntro() {
         isStarted = true
         
         sharedLibraryHandler.start {
-            startConnectionManager()
-            startConnectionRetryJob()
+            // Start connection manager with condition that discovery only runs on slide 3
+            connectionManager.start { isOnSlideThree() }
         }
     }
 
@@ -104,12 +90,7 @@ class IntroActivity : AppIntro() {
         super.onStop()
         isStarted = false
         
-        connectionManagerJob?.cancel()
-        connectionManagerJob = null
-        
-        connectionRetryJob?.cancel()
-        connectionRetryJob = null
-        
+        connectionManager.stop()
         sharedLibraryHandler.stop()
     }
 
@@ -153,242 +134,6 @@ class IntroActivity : AppIntro() {
     }
 
     /**
-     * Centralized connection manager that handles discovery and connection establishment
-     * with proper backoff strategy and lifecycle management.
-     * 
-     * NOTE: For IntroActivity, we DON'T start discovery immediately. Discovery should only
-     * start when IntroFragmentThree is displayed (slide 3).
-     */
-    private fun startConnectionManager() {
-        Log.v(TAG, "Starting connection manager for IntroActivity")
-        connectionManagerJob?.cancel()
-        connectionManagerJob = lifecycleScope.launch {
-            // Monitor connection status continuously
-            Log.v(TAG, "Starting connection status monitoring for IntroActivity")
-            sharedLibraryHandler.subscribeToConnectionStatus().collect { connectionInfo ->
-                if (isDestroyed || !isStarted) {
-                    Log.v(TAG, "IntroActivity connection manager stopping due to destroyed/stopped state")
-                    return@collect
-                }
-                
-                Log.d(TAG, "IntroActivity connection status update received: ${connectionInfo.size} devices")
-                
-                val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
-                Log.v(TAG, "IntroActivity found ${devices.size} configured devices")
-                
-                // Check for devices that need discovery or connection
-                val devicesNeedingDiscovery = devices.filter { device ->
-                    val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
-                    connection.status == ConnectionStatus.Disconnected && connection.addresses.isEmpty()
-                }
-                
-                val devicesNeedingConnection = devices.filter { device ->
-                    val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
-                    connection.addresses.isNotEmpty() && connection.status != ConnectionStatus.Connected
-                }
-                
-                Log.v(TAG, "IntroActivity devices needing discovery: ${devicesNeedingDiscovery.size}, needing connection: ${devicesNeedingConnection.size}")
-                
-                // Only trigger discovery if we're on slide 3 AND there are devices needing discovery
-                // This prevents discovery from running too early and for devices that already have addresses
-                if (devicesNeedingDiscovery.isNotEmpty() && isOnSlideThree()) {
-                    Log.d(TAG, "IntroActivity triggering discovery retry for ${devicesNeedingDiscovery.size} devices (slide 3 active)")
-                    retryDiscoveryWithBackoff()
-                }
-                
-                // Handle devices with addresses but not connected - need connection retry
-                if (devicesNeedingConnection.isNotEmpty()) {
-                    Log.d(TAG, "IntroActivity triggering connection attempt for ${devicesNeedingConnection.size} devices")
-                    tryConnectToDevicesWithAddresses(devicesNeedingConnection)
-                }
-            }
-        }
-    }
-
-    /**
-     * Periodic connection retry job that continuously attempts to reconnect
-     * to devices that have addresses but are disconnected.
-     * This is crucial for handling the "socket close after certificate exchange" scenario.
-     */
-    private fun startConnectionRetryJob() {
-        Log.d(TAG, "Starting connection retry job for IntroActivity")
-        connectionRetryJob?.cancel()
-        connectionRetryJob = lifecycleScope.launch {
-            // Log.d(TAG, "IntroActivity connection retry job coroutine started")
-            
-            while (isStarted && !isDestroyed) {
-                try {
-                    // Wait before checking
-                    delay(connectionRetryIntervalMs)
-                    
-                    if (!isStarted || isDestroyed) {
-                        // Log.v(TAG, "IntroActivity connection retry job stopping due to destroyed/stopped state")
-                        break
-                    }
-                    
-                    // Only run connection retry if we're on slide 3 - no point retrying on earlier slides
-                    if (!isOnSlideThree()) {
-                        // Log.v(TAG, "IntroActivity connection retry job skipping - not on slide 3")
-                        continue
-                    }
-                    
-                    Log.v(TAG, "IntroActivity connection retry job checking for disconnected devices with addresses")
-                    
-                    // Get current connection status
-                    val connectionInfo = sharedLibraryHandler.subscribeToConnectionStatus().value
-                    val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
-                    
-                    // Find devices that have addresses but are disconnected or need reconnection
-                    val devicesNeedingReconnection = devices.filter { device ->
-                        val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
-                        // Check for devices that have addresses but are not connected
-                        // This includes devices that failed during receivePostAuthMessage
-                        connection.addresses.isNotEmpty() && connection.status != ConnectionStatus.Connected
-                    }
-                    
-                    if (devicesNeedingReconnection.isNotEmpty()) {
-                        Log.d(TAG, "IntroActivity connection retry job found ${devicesNeedingReconnection.size} devices needing reconnection")
-                        
-                        // Attempt to reconnect to these devices
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            try {
-                                Log.d(TAG, "IntroActivity connection retry job calling connectToNewlyAddedDevices()")
-                                sharedLibraryHandler.libraryManager.withLibrary { library ->
-                                    library.syncthingClient.connectToNewlyAddedDevices()
-                                }
-                                
-                                // Also try individual reconnection for each device
-                                devicesNeedingReconnection.forEach { device ->
-                                    Log.d(TAG, "IntroActivity connection retry job attempting reconnect to device: ${device.deviceId.deviceId.substring(0, 8)}")
-                                    sharedLibraryHandler.libraryManager.withLibrary { library ->
-                                        library.syncthingClient.reconnect(device.deviceId)
-                                    }
-                                }
-                                
-                                Log.d(TAG, "IntroActivity connection retry job completed reconnection attempts")
-                            } catch (e: Exception) {
-                                Log.e(TAG, "IntroActivity connection retry job error in reconnection", e)
-                            }
-                        }
-                    } else {
-                        Log.d(TAG, "IntroActivity connection retry job found no devices needing reconnection")
-                    }
-                } catch (e: Exception) {
-                    // CancellationException is normal when coroutine is cancelled
-                    if (e is CancellationException) {
-                        Log.d(TAG, "IntroActivity connection retry job cancelled")
-                    } else {
-                        Log.e(TAG, "IntroActivity connection retry job error", e)
-                    }
-                }
-            }
-            
-            Log.d(TAG, "IntroActivity connection retry job coroutine ended")
-        }
-    }
-
-    /**
-     * Immediately attempts to connect to all devices and trigger discovery
-     */
-    private suspend fun tryConnectToAllDevices() {
-        Log.v(TAG, "IntroActivity tryConnectToAllDevices() called")
-        
-        // First trigger global and local discovery with more aggressive retry
-        Log.d(TAG, "IntroActivity triggering discovery for all devices with aggressive retry")
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                // Multiple discovery attempts to ensure both local and global discovery run
-                for (i in 1..3) {
-                    Log.d(TAG, "IntroActivity discovery attempt $i")
-                    sharedLibraryHandler.retryDiscoveryForDevicesWithoutAddresses()
-                    delay(2000) // 2 second delay between attempts
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "IntroActivity error in discovery attempts", e)
-            }
-        }
-        
-        // Then try to connect to devices that already have addresses
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                Log.d(TAG, "IntroActivity calling connectToNewlyAddedDevices()")
-                sharedLibraryHandler.libraryManager.withLibrary { library ->
-                    library.syncthingClient.connectToNewlyAddedDevices()
-                }
-                Log.d(TAG, "IntroActivity connectToNewlyAddedDevices() completed")
-            } catch (e: Exception) {
-                Log.e(TAG, "IntroActivity error in connectToNewlyAddedDevices()", e)
-            }
-        }
-    }
-
-    /**
-     * Attempts to connect to devices that already have addresses (without triggering discovery)
-     */
-    private suspend fun tryConnectToDevicesWithAddresses(devicesNeedingConnection: List<DeviceInfo>) {
-        Log.v(TAG, "IntroActivity tryConnectToDevicesWithAddresses() called for ${devicesNeedingConnection.size} devices")
-        
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                Log.d(TAG, "IntroActivity calling connectToNewlyAddedDevices() for devices with addresses")
-                sharedLibraryHandler.libraryManager.withLibrary { library ->
-                    library.syncthingClient.connectToNewlyAddedDevices()
-                }
-                
-                // Also try individual reconnection for each device
-                devicesNeedingConnection.forEach { device ->
-                    Log.d(TAG, "IntroActivity attempting reconnect to device: ${device.deviceId.deviceId.substring(0, 8)}")
-                    sharedLibraryHandler.libraryManager.withLibrary { library ->
-                        library.syncthingClient.reconnect(device.deviceId)
-                    }
-                }
-                
-                Log.d(TAG, "IntroActivity connectToNewlyAddedDevices() completed")
-            } catch (e: Exception) {
-                Log.e(TAG, "IntroActivity error in tryConnectToDevicesWithAddresses()", e)
-            }
-        }
-    }
-
-    /**
-     * Retry discovery with exponential backoff strategy
-     */
-    private suspend fun retryDiscoveryWithBackoff() {
-        Log.v(TAG, "IntroActivity retryDiscoveryWithBackoff() called with delay ${retryDelayMs}ms")
-        
-        // Apply exponential backoff
-        delay(retryDelayMs)
-        
-        // Trigger discovery multiple times to ensure global discovery runs
-        Log.d(TAG, "IntroActivity triggering discovery retry after backoff")
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                // Try discovery multiple times to ensure global discovery server is contacted
-                for (i in 1..2) {
-                    Log.d(TAG, "IntroActivity retryDiscovery attempt $i after backoff")
-                    sharedLibraryHandler.retryDiscoveryForDevicesWithoutAddresses()
-                    delay(1000) // 1 second between attempts
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "IntroActivity error in retryDiscoveryWithBackoff()", e)
-            }
-        }
-        
-        // Increase delay for next retry (exponential backoff)
-        val oldDelay = retryDelayMs
-        retryDelayMs = min(retryDelayMs * 2, maxRetryDelayMs)
-        Log.d(TAG, "IntroActivity backoff delay increased from ${oldDelay}ms to ${retryDelayMs}ms")
-    }
-
-    /**
-     * Reset the retry delay when a successful connection is established
-     */
-    fun resetRetryDelay() {
-        Log.d(TAG, "IntroActivity resetRetryDelay() called")
-        retryDelayMs = 15000L // Reset to 15 seconds
-    }
-
-    /**
      * Check if we're currently on slide 3 (IntroFragmentThree)
      */
     private fun isOnSlideThree(): Boolean {
@@ -402,7 +147,7 @@ class IntroActivity : AppIntro() {
     fun triggerImmediateConnectionAttempt() {
         Log.v(TAG, "IntroActivity triggerImmediateConnectionAttempt() called")
         lifecycleScope.launch {
-            resetRetryDelay()
+            connectionManager.resetRetryDelay()
             
             // Enable discovery based on current slide
             if (currentSlidePosition >= 1) { // Slide 2 or later
@@ -411,31 +156,11 @@ class IntroActivity : AppIntro() {
                 // Only enable global discovery if we're on slide 3 (and device ID is imported)
                 if (isOnSlideThree()) {
                     sharedLibraryHandler.enableGlobalDiscovery()
-                    tryConnectToAllDevices()
+                    connectionManager.tryConnectToAllDevices()
                 } else {
                     // On slide 2, only use local discovery and connect to devices with addresses
                     sharedLibraryHandler.disableGlobalDiscovery()
-                    
-                    // Still trigger connection attempts for devices that already have addresses
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        try {
-                            val devices = sharedLibraryHandler.libraryManager.withLibrary { it.configuration.peers }
-                            val connectionInfo = sharedLibraryHandler.subscribeToConnectionStatus().value
-                            val devicesWithAddresses = devices.filter { device ->
-                                val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
-                                connection.addresses.isNotEmpty()
-                            }
-                            
-                            if (devicesWithAddresses.isNotEmpty()) {
-                                Log.v(TAG, "IntroActivity triggering connection attempt for ${devicesWithAddresses.size} devices with addresses")
-                                sharedLibraryHandler.libraryManager.withLibrary { library ->
-                                    library.syncthingClient.connectToNewlyAddedDevices()
-                                }
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "IntroActivity error in triggerImmediateConnectionAttempt()", e)
-                        }
-                    }
+                    connectionManager.tryConnectToAllDevices()
                 }
             } else {
                 // On slide 1, disable all discovery
@@ -472,7 +197,7 @@ class IntroActivity : AppIntro() {
     fun triggerDiscoveryOnSlideThree() {
         Log.v(TAG, "IntroActivity triggerDiscoveryOnSlideThree() called")
         lifecycleScope.launch {
-            resetRetryDelay()
+            connectionManager.resetRetryDelay()
             
             // First ensure local and global discovery are enabled
             sharedLibraryHandler.enableLocalDiscovery()
@@ -487,7 +212,7 @@ class IntroActivity : AppIntro() {
 
             // Trigger discovery with additional logging
             Log.v(TAG, "IntroActivity triggering discovery for ${devices.size} devices")
-            tryConnectToAllDevices()
+            connectionManager.tryConnectToAllDevices()
         }
     }
 
