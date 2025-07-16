@@ -23,7 +23,12 @@ import androidx.appcompat.app.AppCompatActivity
 import com.github.appintro.AppIntro
 import com.github.appintro.SlidePolicy
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import net.syncthing.java.core.beans.DeviceId
+import net.syncthing.java.core.beans.DeviceInfo
+import net.syncthing.java.bep.connectionactor.ConnectionInfo
 import net.syncthing.lite.R
 import net.syncthing.lite.activities.QRScannerActivity
 import net.syncthing.lite.databinding.FragmentIntroOneBinding
