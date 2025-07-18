@@ -45,7 +45,6 @@ class SyncthingProvider : DocumentsProvider() {
     }
 
     override fun onCreate(): Boolean {
-        Log.d(Tag, "onCreate()")
         return true
     }
 

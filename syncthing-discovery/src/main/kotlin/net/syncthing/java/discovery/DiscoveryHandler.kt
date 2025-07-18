@@ -58,24 +58,82 @@ class DiscoveryHandler(
 
     private var shouldLoadFromGlobal = true
     private var shouldStartLocalDiscovery = true
+    private var discoveryEnabled = false // Only start discovery when explicitly enabled
+    private var localDiscoveryEnabled = false // Control local discovery separately
+    private var globalDiscoveryEnabled = false // Control global discovery separately
+    private var lastGlobalDiscoveryTime = 0L
+    private var globalDiscoveryRetryInterval = 30_000L // Start with 30 seconds
+    private val maxRetryInterval = 300_000L // Max 5 minutes
 
     private fun doGlobalDiscoveryIfNotYetDone() {
-        // TODO: timeout for reload
-        // TODO: retry if connectivity changed
-
-        if (shouldLoadFromGlobal) {
+        // Only proceed if global discovery is specifically enabled
+        // Global discovery should work independently of general discovery flag
+        if (!globalDiscoveryEnabled) {
+            logger.trace("doGlobalDiscoveryIfNotYetDone() skipped - global discovery enabled: $globalDiscoveryEnabled")
+            return
+        }
+        
+        // But we still need configured devices to search for
+        if (configuration.peerIds.isEmpty()) {
+            logger.trace("doGlobalDiscoveryIfNotYetDone() skipped - no configured devices to search for")
+            return
+        }
+        
+        val currentTime = System.currentTimeMillis()
+        val timeSinceLastDiscovery = currentTime - lastGlobalDiscoveryTime
+        
+        logger.debug("doGlobalDiscoveryIfNotYetDone() called - shouldLoadFromGlobal: $shouldLoadFromGlobal, timeSinceLastDiscovery: ${timeSinceLastDiscovery}ms, retryInterval: ${globalDiscoveryRetryInterval}ms")
+        
+        if (shouldLoadFromGlobal || timeSinceLastDiscovery > globalDiscoveryRetryInterval) {
+            logger.info("Starting global discovery - shouldLoadFromGlobal: $shouldLoadFromGlobal, timeSinceLastDiscovery: ${timeSinceLastDiscovery}ms")
             shouldLoadFromGlobal = false
+            lastGlobalDiscoveryTime = currentTime
+            
             CoroutineScope(Dispatchers.Default).launch {
-                processDeviceAddressBg(globalDiscoveryHandler.query(configuration.peerIds))
+                try {
+                    logger.info("Calling globalDiscoveryHandler.query() for ${configuration.peerIds.size} devices")
+                    val deviceAddresses = globalDiscoveryHandler.query(configuration.peerIds)
+                    logger.info("Global discovery completed, received ${deviceAddresses.size} addresses")
+                    processDeviceAddressBg(deviceAddresses)
+                    
+                    // If no addresses were found for any device, schedule a retry with exponential backoff
+                    val hasAddressesForAllDevices = configuration.peerIds.all { deviceId ->
+                        devicesAddressesManager.getDeviceAddressManager(deviceId).getCurrentDeviceAddresses().isNotEmpty()
+                    }
+                    
+                    if (!hasAddressesForAllDevices) {
+                        // Increase retry interval with exponential backoff, but cap at max
+                        globalDiscoveryRetryInterval = minOf(globalDiscoveryRetryInterval * 2, maxRetryInterval)
+                        logger.info("Global discovery found no addresses for some devices, will retry in ${globalDiscoveryRetryInterval}ms")
+                    } else {
+                        // Reset retry interval if successful
+                        globalDiscoveryRetryInterval = 30_000L
+                        logger.info("Global discovery successful for all devices, reset retry interval to 30s")
+                    }
+                } catch (e: Exception) {
+                    logger.error("Global discovery failed with exception", e)
+                }
             }
+        } else {
+            logger.debug("Global discovery skipped - waiting for retry interval (${globalDiscoveryRetryInterval - timeSinceLastDiscovery}ms remaining)")
         }
     }
 
     private fun initLocalDiscoveryIfNotYetDone() {
+        // Only proceed if local discovery is specifically enabled
+        // Local discovery should work independently of general discovery flag
+        if (!localDiscoveryEnabled) {
+            logger.trace("initLocalDiscoveryIfNotYetDone() skipped - local discovery enabled: $localDiscoveryEnabled")
+            return
+        }
+        
         if (shouldStartLocalDiscovery) {
             shouldStartLocalDiscovery = false
+            logger.info("Starting local discovery listener and sending announcement")
             localDiscoveryHandler.startListener()
             localDiscoveryHandler.sendAnnounceMessage()
+        } else {
+            logger.debug("initLocalDiscoveryIfNotYetDone() called but local discovery already started")
         }
     }
 
@@ -102,11 +160,64 @@ class DiscoveryHandler(
         ).putAddress(deviceAddress)
     }
 
+    /**
+     * Enable discovery to start running. This must be called before discovery will actually start.
+     */
+    fun enableDiscovery() {
+        logger.info("enableDiscovery() called - discovery is now enabled")
+        discoveryEnabled = true
+    }
+
+    /**
+     * Disable discovery to prevent it from running
+     */
+    fun disableDiscovery() {
+        logger.info("disableDiscovery() called - discovery is now disabled")
+        discoveryEnabled = false
+    }
+
+    /**
+     * Enable local discovery specifically
+     */
+    fun enableLocalDiscovery() {
+        logger.info("enableLocalDiscovery() called - local discovery is now enabled")
+        localDiscoveryEnabled = true
+        // Actually start local discovery if it's not already running
+        initLocalDiscoveryIfNotYetDone()
+    }
+
+    /**
+     * Disable local discovery specifically
+     */
+    fun disableLocalDiscovery() {
+        logger.info("disableLocalDiscovery() called - local discovery is now disabled")
+        localDiscoveryEnabled = false
+    }
+
+    /**
+     * Enable global discovery specifically
+     */
+    fun enableGlobalDiscovery() {
+        logger.info("enableGlobalDiscovery() called - global discovery is now enabled")
+        globalDiscoveryEnabled = true
+        // Actually start global discovery if it's not already running
+        doGlobalDiscoveryIfNotYetDone()
+    }
+
+    /**
+     * Disable global discovery specifically
+     */
+    fun disableGlobalDiscovery() {
+        logger.info("disableGlobalDiscovery() called - global discovery is now disabled")
+        globalDiscoveryEnabled = false
+    }
+
     fun newDeviceAddressSupplier(): DeviceAddressSupplier {
         if (isClosed) {
             throw IllegalStateException()
         }
 
+        // Try to start discovery processes if they are enabled
         doGlobalDiscoveryIfNotYetDone()
         initLocalDiscoveryIfNotYetDone()
 
@@ -114,6 +225,42 @@ class DiscoveryHandler(
                 peerDevices = configuration.peerIds,
                 devicesAddressesManager = devicesAddressesManager
         )
+    }
+
+    /**
+     * Force a new discovery attempt, used when devices have no known addresses
+     */
+    fun retryDiscovery() {
+        if (isClosed) {
+            logger.debug("retryDiscovery() called but handler is closed")
+            return
+        }
+        
+        logger.info("retryDiscovery() called - checking devices needing discovery")
+        
+        // Check if any devices actually need discovery (have no addresses)
+        val devicesNeedingDiscovery = configuration.peerIds.filter { deviceId ->
+            devicesAddressesManager.getDeviceAddressManager(deviceId).getCurrentDeviceAddresses().isEmpty()
+        }
+        
+        if (devicesNeedingDiscovery.isEmpty()) {
+            logger.info("retryDiscovery() skipped - all devices already have addresses")
+            return
+        }
+        
+        logger.info("retryDiscovery() proceeding for ${devicesNeedingDiscovery.size} devices without addresses")
+        
+        // Force a new global discovery attempt by resetting the flag if global discovery is enabled
+        if (globalDiscoveryEnabled) {
+            shouldLoadFromGlobal = true
+            doGlobalDiscoveryIfNotYetDone()
+        }
+        
+        // Also restart local discovery announcements if local discovery is enabled
+        if (localDiscoveryEnabled) {
+            logger.debug("Sending local discovery announcement")
+            localDiscoveryHandler.sendAnnounceMessage()
+        }
     }
 
     override fun close() {

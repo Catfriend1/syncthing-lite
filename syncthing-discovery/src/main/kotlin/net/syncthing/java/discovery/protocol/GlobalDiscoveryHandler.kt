@@ -39,21 +39,29 @@ internal class GlobalDiscoveryHandler(private val configuration: Configuration) 
     }
 
     suspend fun query(deviceIds: Collection<DeviceId>): List<DeviceAddress> {
+        logger.info("GlobalDiscoveryHandler.query() called for ${deviceIds.size} devices: ${deviceIds.joinToString { it.deviceId.substring(0, 8) }}")
         val discoveryServers = getLookupServers()
+        logger.info("Using ${discoveryServers.size} discovery servers for lookup")
 
         return coroutineScope {
             deviceIds
                     .distinct()
                     .map { deviceId ->
                         async {
-                            queryAnnounceServers(
+                            logger.debug("Starting query for device ${deviceId.deviceId.substring(0, 8)}")
+                            val addresses = queryAnnounceServers(
                                     servers = discoveryServers,
                                     deviceId = deviceId
                             )
+                            logger.debug("Query completed for device ${deviceId.deviceId.substring(0, 8)}, found ${addresses.size} addresses")
+                            addresses
                         }
                     }
                     .map { it.await() }
                     .flatten()
+                    .also { addresses ->
+                        logger.info("GlobalDiscoveryHandler.query() completed, total addresses found: ${addresses.size}")
+                    }
         }
     }
 
@@ -62,14 +70,20 @@ internal class GlobalDiscoveryHandler(private val configuration: Configuration) 
             deviceId = deviceId
     )
 
-    fun getLookupServers() = configuration.discoveryServers.filter { it.useForLookup }
+    fun getLookupServers() = configuration.discoveryServers.filter { it.useForLookup }.also { servers ->
+        logger.debug("getLookupServers() found ${servers.size} servers: ${servers.joinToString { it.hostname }}")
+    }
 
     suspend fun queryAnnounceServers(servers: List<DiscoveryServer>, deviceId: DeviceId) = coroutineScope {
+        logger.debug("queryAnnounceServers() called for device ${deviceId.deviceId.substring(0, 8)} with ${servers.size} servers")
         servers
                 .map { server ->
                     async {
                         try {
-                            queryAnnounceServer(server, deviceId)
+                            logger.debug("Querying server ${server.hostname} for device ${deviceId.deviceId.substring(0, 8)}")
+                            val addresses = queryAnnounceServer(server, deviceId)
+                            logger.debug("Server ${server.hostname} returned ${addresses.size} addresses for device ${deviceId.deviceId.substring(0, 8)}")
+                            addresses
                         } catch (ex: Exception) {
                             logger.warn("Failed to query $server for $deviceId", ex)
 
@@ -86,6 +100,9 @@ internal class GlobalDiscoveryHandler(private val configuration: Configuration) 
                 }
                 .map { it.await() }
                 .flatten()
+                .also { addresses ->
+                    logger.debug("queryAnnounceServers() completed for device ${deviceId.deviceId.substring(0, 8)}, total addresses: ${addresses.size}")
+                }
         // .distinct() is not required because the device addresses contain the used discovery server
     }
 
