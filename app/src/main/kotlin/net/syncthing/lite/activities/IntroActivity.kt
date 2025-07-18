@@ -58,7 +58,7 @@ class IntroActivity : SyncthingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_intro)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_intro) as ActivityIntroBinding
         
         adapter = IntroFragmentAdapter(this)
         binding.viewPager.adapter = adapter
