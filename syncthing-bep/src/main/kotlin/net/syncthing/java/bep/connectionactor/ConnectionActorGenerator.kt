@@ -40,11 +40,11 @@ object ConnectionActorGenerator {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     /**
-     * Safe way to check if a channel is open without using the delicate isClosedForSend API.
-     * We check if the channel is not the closed channel we created.
+     * Check if a channel is open for sending.
+     * We check both that it's not the closed sentinel and that it's actually open for sending.
      */
     private fun isChannelOpen(channel: SendChannel<ConnectionAction>): Boolean {
-        return channel != closed
+        return channel != closed && !channel.isClosedForSend
     }
 
     private fun deviceAddressesGenerator(deviceAddress: ReceiveChannel<DeviceAddress>) = scope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
@@ -235,46 +235,26 @@ object ConnectionActorGenerator {
                         scope.launch {
                             // Set status to disconnected when connection actor closes
                             if (currentActor == connection.first) {
+                                logger.debug("ConnectionActorGenerator: Setting connection status to Disconnected due to channel closure")
                                 currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
                                 currentActor = closed
                                 dispatchStatus()
-                                logger.debug("ConnectionActorGenerator: Connection lost, status set to Disconnected")
                             }
                         }
                     }
                     
                     // Connection monitoring: check if the connection is still active
                     while (currentActor == connection.first && isChannelOpen(connection.first)) {
-                        delay(3000) // Check every 3 seconds
+                        delay(2000) // Check every 2 seconds for faster detection
                         
-                        // Double-check that the connection is really active
-                        if (currentActor == connection.first && currentStatus.status == ConnectionStatus.Connected) {
-                            // If the channel appears open but the connection might be broken,
-                            // check responsiveness to detect broken connections
-                            try {
-                                val confirmDeferred = CompletableDeferred<ClusterConfigInfo>()
-                                val sendResult = connection.first.trySend(ConfirmIsConnectedAction(confirmDeferred))
-                                
-                                if (sendResult.isSuccess) {
-                                    // Wait for confirmation that connection is responsive
-                                    withTimeout(3000) {
-                                        confirmDeferred.await()
-                                    }
-                                } else {
-                                    // Channel send failed, connection is broken
-                                    throw Exception("Channel send failed")
-                                }
-                            } catch (e: Exception) {
-                                // Connection is no longer responsive, close it properly
-                                if (currentActor == connection.first) {
-                                    logger.debug("ConnectionActorGenerator: Connection broken, closing: ${e.message}")
-                                    currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
-                                    currentActor = closed
-                                    connection.first.close()
-                                    dispatchStatus()
-                                }
-                                break
-                            }
+                        // Check if the channel is still open after delay
+                        if (currentActor == connection.first && !isChannelOpen(connection.first)) {
+                            // Channel was closed, update status immediately
+                            logger.debug("ConnectionActorGenerator: Channel closed detected in monitoring loop")
+                            currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
+                            currentActor = closed
+                            dispatchStatus()
+                            break
                         }
                     }
                 } catch (e: Exception) {
