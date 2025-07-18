@@ -220,7 +220,8 @@ object ConnectionActor {
                                         logger.debug("🚨 receivePostAuthMessage failed in message loop: ${e.message}")
                                     }
                                 }
-                                break // Exit the loop to allow retry mechanism to work
+                                // Exit the loop and terminate this coroutine to allow retry mechanism to work
+                                throw CancellationException("Connection lost: ${e.message}")
                             }
 
                             when (message) {

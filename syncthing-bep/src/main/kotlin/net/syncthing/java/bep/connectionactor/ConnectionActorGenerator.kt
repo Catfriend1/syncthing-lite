@@ -243,30 +243,31 @@ object ConnectionActorGenerator {
                         }
                     }
                     
-                    // Additional monitoring: frequently check if connection is still active
-                    // This helps detect network disconnections that don't immediately close the channel
+                    // Connection monitoring: check if the connection is still active
                     while (currentActor == connection.first && isChannelOpen(connection.first)) {
-                        delay(2000) // Check every 2 seconds for immediate detection
+                        delay(3000) // Check every 3 seconds
                         
-                        // If the connection actor channel is still open but the underlying connection might be broken,
-                        // we can detect this by checking if the connection is still responsive
+                        // Double-check that the connection is really active
                         if (currentActor == connection.first && currentStatus.status == ConnectionStatus.Connected) {
+                            // If the channel appears open but the connection might be broken,
+                            // check responsiveness to detect broken connections
                             try {
-                                // Try to confirm the connection is still active
                                 val confirmDeferred = CompletableDeferred<ClusterConfigInfo>()
-                                connection.first.trySend(ConfirmIsConnectedAction(confirmDeferred))
+                                val sendResult = connection.first.trySend(ConfirmIsConnectedAction(confirmDeferred))
                                 
-                                // Wait a shorter time for confirmation for immediate detection
-                                withTimeout(1500) {
-                                    confirmDeferred.await()
+                                if (sendResult.isSuccess) {
+                                    // Wait for confirmation that connection is responsive
+                                    withTimeout(3000) {
+                                        confirmDeferred.await()
+                                    }
+                                } else {
+                                    // Channel send failed, connection is broken
+                                    throw Exception("Channel send failed")
                                 }
-                                
-                                logger.debug("ConnectionActorGenerator: Connection health check passed for $deviceAddress")
                             } catch (e: Exception) {
-                                logger.debug("ConnectionActorGenerator: Connection health check failed for $deviceAddress: ${e.message}")
-                                // Connection is no longer responsive, mark as disconnected immediately
+                                // Connection is no longer responsive, close it properly
                                 if (currentActor == connection.first) {
-                                    logger.debug("ConnectionActorGenerator: Immediately marking unresponsive connection as disconnected for $deviceAddress")
+                                    logger.debug("ConnectionActorGenerator: Connection broken, closing: ${e.message}")
                                     currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
                                     currentActor = closed
                                     connection.first.close()
