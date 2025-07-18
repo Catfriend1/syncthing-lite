@@ -24,9 +24,9 @@ class ConnectionManager(
 ) {
     private var connectionManagerJob: Job? = null
     private var connectionRetryJob: Job? = null
-    private var retryDelayMs = 15000L // Start with 15 seconds
-    private val maxRetryDelayMs = 30000L // Maximum 30 seconds
-    private val connectionRetryIntervalMs = 15000L // Retry connections every 15 seconds
+    private var retryDelayMs = 10000L // Start with 10 seconds for faster response
+    private val maxRetryDelayMs = 20000L // Maximum 20 seconds
+    private val connectionRetryIntervalMs = 10000L // Retry connections every 10 seconds
     private var isStarted = false
     private var shouldRunDiscovery: () -> Boolean = { true }
 
@@ -96,10 +96,28 @@ class ConnectionManager(
                     retryDiscoveryWithBackoff()
                 }
                 
-                // Handle devices with addresses but not connected - need connection retry
+                // Handle devices with addresses but not connected - need immediate connection retry
                 if (devicesNeedingConnection.isNotEmpty()) {
-                    Log.d(tag, "ConnectionManager triggering connection attempt for ${devicesNeedingConnection.size} devices")
-                    tryConnectToDevicesWithAddresses(devicesNeedingConnection)
+                    Log.d(tag, "ConnectionManager detected ${devicesNeedingConnection.size} devices needing immediate reconnection")
+                    // Immediate connection attempt without delay
+                    scope.launch(Dispatchers.IO) {
+                        try {
+                            libraryHandler.libraryManager.withLibrary { library ->
+                                library.syncthingClient.connectToNewlyAddedDevices()
+                            }
+                            
+                            // Also try individual reconnection for each device
+                            devicesNeedingConnection.forEach { device ->
+                                libraryHandler.libraryManager.withLibrary { library ->
+                                    library.syncthingClient.reconnect(device.deviceId)
+                                }
+                            }
+                            
+                            Log.d(tag, "ConnectionManager completed immediate reconnection attempts")
+                        } catch (e: Exception) {
+                            Log.e(tag, "ConnectionManager error in immediate reconnection", e)
+                        }
+                    }
                 }
             }
         }
@@ -254,7 +272,7 @@ class ConnectionManager(
      * Reset the retry delay when a successful connection is established
      */
     fun resetRetryDelay() {
-        retryDelayMs = 15000L // Reset to 15 seconds
+        retryDelayMs = 10000L // Reset to 10 seconds for faster response
     }
 
     /**

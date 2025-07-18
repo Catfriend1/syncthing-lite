@@ -243,10 +243,10 @@ object ConnectionActorGenerator {
                         }
                     }
                     
-                    // Additional monitoring: periodically check if connection is still active
+                    // Additional monitoring: frequently check if connection is still active
                     // This helps detect network disconnections that don't immediately close the channel
                     while (currentActor == connection.first && isChannelOpen(connection.first)) {
-                        delay(3000) // Check every 3 seconds for faster detection
+                        delay(2000) // Check every 2 seconds for immediate detection
                         
                         // If the connection actor channel is still open but the underlying connection might be broken,
                         // we can detect this by checking if the connection is still responsive
@@ -256,17 +256,17 @@ object ConnectionActorGenerator {
                                 val confirmDeferred = CompletableDeferred<ClusterConfigInfo>()
                                 connection.first.trySend(ConfirmIsConnectedAction(confirmDeferred))
                                 
-                                // Wait a shorter time for confirmation for faster detection
-                                withTimeout(2000) {
+                                // Wait a shorter time for confirmation for immediate detection
+                                withTimeout(1500) {
                                     confirmDeferred.await()
                                 }
                                 
                                 logger.debug("ConnectionActorGenerator: Connection health check passed for $deviceAddress")
                             } catch (e: Exception) {
                                 logger.debug("ConnectionActorGenerator: Connection health check failed for $deviceAddress: ${e.message}")
-                                // Connection is no longer responsive, mark as disconnected
+                                // Connection is no longer responsive, mark as disconnected immediately
                                 if (currentActor == connection.first) {
-                                    logger.debug("ConnectionActorGenerator: Marking unresponsive connection as disconnected for $deviceAddress")
+                                    logger.debug("ConnectionActorGenerator: Immediately marking unresponsive connection as disconnected for $deviceAddress")
                                     currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
                                     currentActor = closed
                                     connection.first.close()
@@ -292,7 +292,7 @@ object ConnectionActorGenerator {
             currentActor.close()
         }
 
-        val reconnectTicker = ticker(delayMillis = 15 * 1000, initialDelayMillis = 0)
+        val reconnectTicker = ticker(delayMillis = 10 * 1000, initialDelayMillis = 0)
 
         deviceAddressSource.consume {
             while (true) {
@@ -363,8 +363,8 @@ object ConnectionActorGenerator {
                     // this does not reset if it has not counted down the whole time yet
                     reconnectTicker.tryReceive().getOrNull()
 
-                    // Use shorter retry interval for faster reconnection
-                    val retryTimeout = 5L * 1000 // 5 seconds for faster detection
+                    // Use shorter retry interval for immediate reconnection after connection reset
+                    val retryTimeout = 3L * 1000 // 3 seconds for immediate response to connection issues
 
                     logger.debug("ConnectionActorGenerator: Waiting for retry (timeout: ${retryTimeout}ms)")
 

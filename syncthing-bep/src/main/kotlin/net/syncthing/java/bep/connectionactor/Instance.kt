@@ -46,12 +46,38 @@ object ConnectionActor {
         val channel = Channel<ConnectionAction>(Channel.RENDEZVOUS)
 
         CoroutineScope(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
-            logger.warn("💣 Uncaught exception in connection actor coroutine: ${throwable.message}")
-            // logger.error("💣 Uncaught exception stack trace:", throwable)
+            // Catch expected connection exceptions gracefully without logging
+            when {
+                throwable.message?.contains("Broken pipe") == true -> {
+                    // Expected during connection termination - no logging needed
+                }
+                throwable.message?.contains("Connection reset") == true -> {
+                    // Expected during connection issues - no logging needed
+                }
+                throwable is java.net.SocketException -> {
+                    // Expected socket exceptions during disconnection - no logging needed
+                }
+                else -> {
+                    logger.debug("Connection actor exception: ${throwable.message}")
+                }
+            }
         }).launch {
             Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-                logger.warn ("💣 Uncaught exception in thread ${thread.name}: ${throwable.message}")
-                // logger.error("💣 Uncaught exception stack trace:", throwable)
+                // Catch expected connection exceptions gracefully without logging
+                when {
+                    throwable.message?.contains("Broken pipe") == true -> {
+                        // Expected during connection termination - no logging needed
+                    }
+                    throwable.message?.contains("Connection reset") == true -> {
+                        // Expected during connection issues - no logging needed
+                    }
+                    throwable is java.net.SocketException -> {
+                        // Expected socket exceptions during disconnection - no logging needed
+                    }
+                    else -> {
+                        logger.debug("Thread exception in ${thread.name}: ${throwable.message}")
+                    }
+                }
             }
 
             try {
@@ -86,22 +112,22 @@ object ConnectionActor {
                         logger.debug("📡 receivePostAuthMessage() delivered: ${result.first}, class=${result.second.javaClass.name}")
                         return result
                     } catch (e: Exception) {
-                        // Log socket-level exceptions with more specific context
+                        // Handle connection exceptions gracefully
                         when {
                             e.message?.contains("Connection reset") == true -> {
                                 logger.debug("🔗 Socket connection reset in receivePostAuthMessage")
                             }
                             e.message?.contains("Broken pipe") == true -> {
-                                logger.debug("🔗 Socket broken pipe in receivePostAuthMessage")
+                                // Expected during connection termination - no logging needed
                             }
                             e.message?.contains("Connection refused") == true -> {
                                 logger.debug("🔗 Socket connection refused in receivePostAuthMessage")
                             }
                             e is java.net.SocketException -> {
-                                logger.debug("🔗 Socket exception in receivePostAuthMessage: ${e.message}")
+                                // Expected socket exceptions - no logging needed
                             }
                             e is java.io.IOException -> {
-                                logger.debug("🔗 IO exception in receivePostAuthMessage: ${e.message}")
+                                // Expected IO exceptions - no logging needed
                             }
                             else -> {
                                 logger.debug("🚨 receivePostAuthMessage failed: ${e.message}")
@@ -125,22 +151,22 @@ object ConnectionActor {
                         }.await()
                     }
                 } catch (e: Exception) {
-                    // Log socket-level exceptions with more context
+                    // Handle connection exceptions gracefully
                     when {
                         e.message?.contains("Connection reset") == true -> {
                             logger.debug("🔗 Socket connection reset during cluster config exchange")
                         }
                         e.message?.contains("Broken pipe") == true -> {
-                            logger.debug("🔗 Socket broken pipe during cluster config exchange")
+                            // Expected during connection termination - no logging needed
                         }
                         e.message?.contains("Connection refused") == true -> {
                             logger.debug("🔗 Socket connection refused during cluster config exchange")
                         }
                         e is java.net.SocketException -> {
-                            logger.debug("🔗 Socket exception during cluster config exchange: ${e.message}")
+                            // Expected socket exceptions - no logging needed
                         }
                         e is java.io.IOException -> {
-                            logger.debug("🔗 IO exception during cluster config exchange: ${e.message}")
+                            // Expected IO exceptions - no logging needed
                         }
                         else -> {
                             logger.debug("💥 Exception while receiving post-auth message: ${e.message}")
@@ -173,22 +199,22 @@ object ConnectionActor {
                             val message = try {
                                 receivePostAuthMessage().second
                             } catch (e: Exception) {
-                                // Log socket-level errors more specifically
+                                // Handle connection exceptions gracefully
                                 when {
                                     e.message?.contains("Connection reset") == true -> {
                                         logger.debug("🔗 Socket connection reset detected in message loop")
                                     }
                                     e.message?.contains("Broken pipe") == true -> {
-                                        logger.debug("🔗 Socket broken pipe detected in message loop")
+                                        // Expected during connection termination - no logging needed
                                     }
                                     e.message?.contains("Connection refused") == true -> {
                                         logger.debug("🔗 Socket connection refused detected in message loop")
                                     }
                                     e is java.net.SocketException -> {
-                                        logger.debug("🔗 Socket exception in message loop: ${e.message}")
+                                        // Expected socket exceptions - no logging needed
                                     }
                                     e is java.io.IOException -> {
-                                        logger.debug("🔗 IO exception in message loop: ${e.message}")
+                                        // Expected IO exceptions - no logging needed
                                     }
                                     else -> {
                                         logger.debug("🚨 receivePostAuthMessage failed in message loop: ${e.message}")
@@ -325,16 +351,16 @@ object ConnectionActor {
                         logger.debug("🔗 Connection setup failed: Socket connection reset")
                     }
                     e.message?.contains("Broken pipe") == true -> {
-                        logger.debug("🔗 Connection setup failed: Socket broken pipe")
+                        // Expected during connection termination - no logging needed
                     }
                     e.message?.contains("Connection refused") == true -> {
                         logger.debug("🔗 Connection setup failed: Socket connection refused")
                     }
                     e is java.net.SocketException -> {
-                        logger.debug("🔗 Connection setup failed: Socket exception - ${e.message}")
+                        // Expected socket exceptions - no logging needed
                     }
                     e is java.io.IOException -> {
-                        logger.debug("🔗 Connection setup failed: IO exception - ${e.message}")
+                        // Expected IO exceptions - no logging needed
                     }
                     else -> {
                         logger.debug("🔄 Connection setup failed, allowing retry: ${e.message}")
