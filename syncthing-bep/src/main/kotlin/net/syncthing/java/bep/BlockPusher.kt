@@ -225,7 +225,8 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 .setFolder(folderId)
                 .addFiles(builtFileInfo )
                 .build()
-        logger.debug("Update index with file information. File info: {}.", builtFileInfo)
+        // logger.trace("Update index with file information. File info: {}.", builtFileInfo)
+        logger.debug("Update index with file information.")
 
         connectionHandler.sendIndexUpdate(indexUpdate)
 

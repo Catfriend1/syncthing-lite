@@ -1,6 +1,5 @@
 /* 
  * Copyright (C) 2016 Davide Imbriaco
- * Copyright (C) 2018 Jonas Lochmann
  *
  * This Java file is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,6 +22,4 @@ interface TempRepository: Closeable {
     fun popTempData(key: String): ByteArray
 
     fun deleteTempData(keys: List<String>)
-
-    fun deleteAllTempData()
 }
