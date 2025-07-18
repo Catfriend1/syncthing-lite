@@ -135,10 +135,12 @@ class IntroActivity : SyncthingActivity() {
     private fun updateNavigationButtons(position: Int) {
         when (position) {
             adapter.itemCount - 1 -> {
+                // Last page - show Done button
                 binding.btnNext.visibility = View.GONE
                 binding.btnDone.visibility = View.VISIBLE
             }
             else -> {
+                // Other pages - show Next button
                 binding.btnNext.visibility = View.VISIBLE
                 binding.btnDone.visibility = View.GONE
             }
