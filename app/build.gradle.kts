@@ -99,7 +99,6 @@ dependencies {
 
     implementation(project(":syncthing-client"))
     implementation(project(":syncthing-repository-android"))
-    implementation(project(":syncthing-temp-repository-encryption"))
 }
 
 tasks.register("validateAppVersionCode") {
