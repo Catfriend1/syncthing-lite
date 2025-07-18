@@ -79,9 +79,6 @@
     <string name="scan_qr_code">Scan QR code</string>
     <string name="device_id_placeholder">XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX</string>
     <string name="zxing_msg_default_status">Place a QR code inside the viewfinder rectangle to scan it.</string>
-    <string name="discovery_status_searching">Searching for device addresses…</string>
-    <string name="discovery_status_not_found">No addresses found</string>
-    <string name="discovery_status_found">Found address: %s</string>
     <string name="skip">Skip</string>
     <string name="next">Next</string>
     <string name="done">Done</string>
