@@ -21,7 +21,7 @@ abstract class SyncthingActivity : CoroutineActivity() {
     }
     private var loadingDialog: AlertDialog? = null
     private var snackBar: Snackbar? = null
-    private lateinit var connectionManager: ConnectionManager
+    protected lateinit var connectionManager: ConnectionManager
     private var isStarted = false
 
     companion object {
