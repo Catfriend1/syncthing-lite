@@ -18,7 +18,7 @@ This constraint does not apply for connections directly established through the 
 
 ## Translations
 
-The project is currently not translated on [Weblate](https://hosted.weblate.org/projects/syncthing/#components), but may be in the future.
+The project is translated on [Weblate](https://hosted.weblate.org/projects/syncthing/android/catfriend1/lite-stringsxml/).
 
 ## Aknowledgements
 
