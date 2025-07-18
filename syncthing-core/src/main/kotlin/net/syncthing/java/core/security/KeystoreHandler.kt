@@ -176,9 +176,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val certificateHolder = certificateBuilder.build(contentSigner)
 
                 val certificateDerData = certificateHolder.encoded
-
                 // logger.trace("Generated certificate: {}.", derToPem(certificateDerData))
-
                 val deviceId = derDataToDeviceId(certificateDerData)
                 logger.info("Device ID from certificate: {}.", deviceId)
 

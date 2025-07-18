@@ -60,23 +60,11 @@ class Logger private constructor(private val tag: String) {
                 verboseMethod.invoke(null, tag, formattedMessage, throwable)
             } catch (e: Exception) {
                 fallbackLog("TRACE", formattedMessage)
-                // Convert System.err to debug log instead of printStackTrace
-                if (throwable != null) {
-                    fallbackLog("TRACE", "Exception: ${throwable.message}")
-                    throwable.stackTrace?.take(5)?.forEach { element ->
-                        fallbackLog("TRACE", "  at $element")
-                    }
-                }
+                throwable?.printStackTrace()
             }
         } else {
             fallbackLog("TRACE", formattedMessage)
-            // Convert System.err to debug log instead of printStackTrace
-            if (throwable != null) {
-                fallbackLog("TRACE", "Exception: ${throwable.message}")
-                throwable.stackTrace?.take(5)?.forEach { element ->
-                    fallbackLog("TRACE", "  at $element")
-                }
-            }
+            throwable?.printStackTrace()
         }
     }
     
