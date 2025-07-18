@@ -82,4 +82,7 @@
     <string name="discovery_status_searching">Searching for device addresses…</string>
     <string name="discovery_status_not_found">No addresses found</string>
     <string name="discovery_status_found">Found address: %s</string>
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="done">Done</string>
 </resources>
