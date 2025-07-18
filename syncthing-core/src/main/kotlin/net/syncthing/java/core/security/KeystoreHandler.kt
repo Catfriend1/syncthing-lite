@@ -176,7 +176,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val certificateHolder = certificateBuilder.build(contentSigner)
 
                 val certificateDerData = certificateHolder.encoded
-                logger.info("Generated certificate: {}.", derToPem(certificateDerData))
+                // logger.trace("Generated certificate: {}.", derToPem(certificateDerData))
                 val deviceId = derDataToDeviceId(certificateDerData)
                 logger.info("Device ID from certificate: {}.", deviceId)
 
@@ -271,7 +271,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
             val derData = certificate.encoded
             val deviceIdFromCertificate = derDataToDeviceId(derData)
-            logger.trace("Remote PEM Certificate: {}.", derToPem(derData))
+            // logger.trace("Remote PEM Certificate: {}.", derToPem(derData))
 
             NetworkUtils.assertProtocol(deviceIdFromCertificate == deviceId) {
                 "Device ID mismatch! Expected = $deviceId, Received = $deviceIdFromCertificate."

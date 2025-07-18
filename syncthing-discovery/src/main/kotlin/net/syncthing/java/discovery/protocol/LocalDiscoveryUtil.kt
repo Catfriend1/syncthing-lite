@@ -118,7 +118,7 @@ object LocalDiscoveryUtil {
             for (interfaceAddress in networkInterface.interfaceAddresses) {
                 val broadcastAddress = interfaceAddress.broadcast
 
-                logger.trace("Interface: {}, Address: {}, Broadcast: {}.", networkInterface, interfaceAddress, broadcastAddress)
+                // logger.trace("Interface: {}, Address: {}, Broadcast: {}.", networkInterface, interfaceAddress, broadcastAddress)
 
                 if (broadcastAddress != null) {
                     logger.debug("Sending broadcast announcement on {}.", broadcastAddress)

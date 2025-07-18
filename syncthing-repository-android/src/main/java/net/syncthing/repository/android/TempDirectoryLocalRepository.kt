@@ -1,16 +1,3 @@
-/*
- * Copyright (C) 2018 Jonas Lochmann
- *
- * This Java file is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package net.syncthing.repository.android
 
 import net.syncthing.java.core.interfaces.TempRepository
@@ -27,7 +14,7 @@ class TempDirectoryLocalRepository(private val directory: File): TempRepository 
         directory.mkdirs()
 
         // there could be garbage from the previous session which we don't need anymore
-        deleteAllTempData()
+        deleteAllData()
     }
 
     override fun pushTempData(data: ByteArray): String {
@@ -72,10 +59,10 @@ class TempDirectoryLocalRepository(private val directory: File): TempRepository 
     }
 
     override fun close() {
-        deleteAllTempData()
+        deleteAllData()
     }
 
-    override fun deleteAllTempData() {
+    fun deleteAllData() {
         directory.listFiles()?.forEach { file ->
             if (file.isFile) {
                 file.delete()

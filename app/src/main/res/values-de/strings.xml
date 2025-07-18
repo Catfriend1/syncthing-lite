@@ -61,4 +61,13 @@ Dies gilt nicht für Verbindungen, die per lokaler Gerätesuche hergestellt wurd
     <string name="dialog_folder_info_device_list">Ordner teilen mit:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
     <string name="toast_error">Etwas in Syncthing-Lite hat nicht funktioniert. Sie können die Details in den Einstellungen von Syncthing-Lite anzeigen.</string>
+    <string name="qr_code_description">QR-Code</string>
+    <string name="device_icon">Gerätesymbol</string>
+    <string name="file_icon">Dateisymbol</string>
+    <string name="scan_qr_code">QR-Code scannen</string>
+    <string name="device_id_placeholder">XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX</string>
+    <string name="zxing_msg_default_status">Platzieren Sie einen QR-Code im Suchfeld-Rechteck, um ihn zu scannen.</string>
+    <string name="skip">Überspringen</string>
+    <string name="next">Weiter</string>
+    <string name="done">Fertig</string>
 </resources>

@@ -16,4 +16,4 @@ dependencyResolutionManagement {
     }
 }
 
-include(":app", ":syncthing-repository-android", ":syncthing-relay-client", ":syncthing-bep", ":syncthing-core", ":syncthing-client", ":syncthing-discovery", ":syncthing-temp-repository-encryption")
+include(":app", ":syncthing-repository-android", ":syncthing-relay-client", ":syncthing-bep", ":syncthing-core", ":syncthing-client", ":syncthing-discovery")

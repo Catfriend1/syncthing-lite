@@ -52,7 +52,7 @@ object DefaultLibraryManager {
                             userCounterListener = {
                                 newUserCounter ->
 
-                                Log.d(LOG_TAG, "user counter updated to $newUserCounter")
+                                // Log.v(LOG_TAG, "user counter updated to $newUserCounter")
 
                                 val isUsed = newUserCounter > 0
 

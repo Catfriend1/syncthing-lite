@@ -79,7 +79,6 @@ object ConnectionActor {
                             inputStream = inputStream,
                             markActivityOnSocket = {}
                         )
-                        logger.debug("📡 receivePostAuthMessage() delivered: ${result.first}, class=${result.second.javaClass.name}")
                         return result
                     } catch (e: Exception) {
                         logger.error("🚨 receivePostAuthMessage failed: ${e.message}")
