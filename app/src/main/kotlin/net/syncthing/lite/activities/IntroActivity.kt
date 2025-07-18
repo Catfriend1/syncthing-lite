@@ -16,16 +16,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import com.github.appintro.AppIntro
-import com.github.appintro.SlidePolicy
+import androidx.viewpager2.widget.ViewPager2
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.lite.R
 import net.syncthing.lite.activities.QRScannerActivity
+import net.syncthing.lite.adapters.IntroFragmentAdapter
+import net.syncthing.lite.databinding.ActivityIntroBinding
 import net.syncthing.lite.databinding.FragmentIntroOneBinding
 import net.syncthing.lite.databinding.FragmentIntroThreeBinding
 import net.syncthing.lite.databinding.FragmentIntroTwoBinding
@@ -37,7 +40,7 @@ import java.io.IOException
  * Shown when a user first starts the app. Shows some info and helps the user to add their first
  * device and folder.
  */
-class IntroActivity : AppIntro() {
+class IntroActivity : SyncthingActivity() {
 
     companion object {
         private const val ENABLE_TEST_DATA: Boolean = true
@@ -45,34 +48,108 @@ class IntroActivity : AppIntro() {
         private const val TAG = "IntroActivity"
     }
 
+    private lateinit var binding: ActivityIntroBinding
+    private lateinit var adapter: IntroFragmentAdapter
+    private val pageIndicators = mutableListOf<ImageView>()
+
     /**
      * Initialize fragments and library parameters.
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        addSlide(IntroFragmentOne())
-        addSlide(IntroFragmentTwo())
-        addSlide(IntroFragmentThree())
-
-        val typedValue = TypedValue()
-        theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
-        setColorDoneText(ContextCompat.getColor(this, typedValue.resourceId))
-        isSkipButtonEnabled = true
-        isSystemBackButtonLocked = true
-        isWizardMode = false
+        
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_intro)
+        
+        adapter = IntroFragmentAdapter(this)
+        binding.viewPager.adapter = adapter
+        
+        setupNavigationButtons()
+        setupPageIndicators()
+        setupViewPager()
     }
 
-    override fun onSkipPressed(currentFragment: Fragment?) {
-        onDonePressed(currentFragment)
+    private fun setupNavigationButtons() {
+        binding.btnSkip.setOnClickListener { onDonePressed() }
+        binding.btnNext.setOnClickListener { 
+            val currentPosition = binding.viewPager.currentItem
+            if (currentPosition < adapter.itemCount - 1) {
+                binding.viewPager.currentItem = currentPosition + 1
+            } else {
+                onDonePressed()
+            }
+        }
+        binding.btnDone.setOnClickListener { onDonePressed() }
     }
 
-    override fun onDonePressed(currentFragment: Fragment?) {
+    private fun setupPageIndicators() {
+        for (i in 0 until adapter.itemCount) {
+            val indicator = ImageView(this)
+            val size = 12.dpToPx()
+            val params = LinearLayout.LayoutParams(size, size)
+            params.setMargins(4.dpToPx(), 0, 4.dpToPx(), 0)
+            indicator.layoutParams = params
+            indicator.setImageResource(R.drawable.ic_circle_outline)
+            indicator.setColorFilter(ContextCompat.getColor(this, android.R.color.white))
+            binding.pageIndicators.addView(indicator)
+            pageIndicators.add(indicator)
+        }
+        updatePageIndicators(0)
+    }
+
+    private fun setupViewPager() {
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                updatePageIndicators(position)
+                updateNavigationButtons(position)
+                
+                // Validate current page if it's the device ID page
+                if (position == 1) {
+                    val fragment = supportFragmentManager.findFragmentByTag("f$position") as? IntroFragmentTwo
+                    fragment?.let {
+                        binding.btnNext.isEnabled = it.isDeviceIdValid()
+                    }
+                }
+            }
+        })
+    }
+
+    private fun updatePageIndicators(position: Int) {
+        pageIndicators.forEachIndexed { index, indicator ->
+            if (index == position) {
+                indicator.setImageResource(R.drawable.ic_circle_filled)
+            } else {
+                indicator.setImageResource(R.drawable.ic_circle_outline)
+            }
+        }
+    }
+
+    private fun updateNavigationButtons(position: Int) {
+        when (position) {
+            adapter.itemCount - 1 -> {
+                binding.btnNext.visibility = View.GONE
+                binding.btnDone.visibility = View.VISIBLE
+            }
+            else -> {
+                binding.btnNext.visibility = View.VISIBLE
+                binding.btnDone.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun Int.dpToPx(): Int {
+        return (this * resources.displayMetrics.density).toInt()
+    }
+
+    fun onDonePressed() {
         getSharedPreferences("default", Context.MODE_PRIVATE).edit {
             putBoolean(MainActivity.PREF_IS_FIRST_START, false)
         }
         startActivity(Intent(this, MainActivity::class.java))
         finish()
+    }
+
+    fun enableNextButton(enabled: Boolean) {
+        binding.btnNext.isEnabled = enabled
     }
 
     /**
@@ -108,7 +185,7 @@ class IntroActivity : AppIntro() {
     /**
      * Display device ID entry field and QR scanner option.
      */
-    class IntroFragmentTwo : SyncthingFragment(), SlidePolicy {
+    class IntroFragmentTwo : SyncthingFragment() {
 
         private lateinit var binding: FragmentIntroTwoBinding
         private var qrCodeLauncher: ActivityResultLauncher<Intent>? = null
@@ -122,6 +199,7 @@ class IntroActivity : AppIntro() {
                     if (scanResult != null && scanResult.isNotBlank()) {
                         binding.enterDeviceId.deviceId.setText(scanResult)
                         binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                        (activity as? IntroActivity)?.enableNextButton(true)
                     }
                 }
             }
@@ -136,6 +214,16 @@ class IntroActivity : AppIntro() {
                 }
             }
             binding.enterDeviceId.scanQrCode.setImageResource(R.drawable.ic_qr_code_white_24dp)
+
+            // Add text watcher to validate device ID
+            binding.enterDeviceId.deviceId.addTextChangedListener(object : android.text.TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                override fun afterTextChanged(s: android.text.Editable?) {
+                    val isValid = isDeviceIdValid()
+                    (activity as? IntroActivity)?.enableNextButton(isValid)
+                }
+            })
 
             if (ENABLE_TEST_DATA) {
                 binding.enterDeviceId.deviceId.setText(TEST_DEVICE_ID)
@@ -152,19 +240,14 @@ class IntroActivity : AppIntro() {
         fun isDeviceIdValid(): Boolean {
             return try {
                 val deviceId = binding.enterDeviceId.deviceId.text.toString()
+                if (deviceId.isBlank()) return false
                 Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId, { })
+                binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
                 true
             } catch (e: IOException) {
-                binding.enterDeviceId.deviceId.error = getString(R.string.invalid_device_id)
+                binding.enterDeviceId.deviceIdHolder.error = getString(R.string.invalid_device_id)
                 false
             }
-        }
-
-        override val isPolicyRespected: Boolean
-            get() = isDeviceIdValid()
-
-        override fun onUserIllegallyRequestedNextPage() {
-            // nothing to do, but some user feedback would be nice
         }
 
         private val addedDeviceIds = HashSet<DeviceId>()
@@ -199,6 +282,7 @@ class IntroActivity : AppIntro() {
                                 setOnClickListener {
                                     binding.enterDeviceId.deviceId.setText(deviceId.deviceId)
                                     binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                                    (activity as? IntroActivity)?.enableNextButton(true)
 
                                     binding.scroll.scrollTo(0, 0)
                                 }
@@ -238,7 +322,7 @@ class IntroActivity : AppIntro() {
             launch {
                 libraryHandler.subscribeToFolderStatusList().collect {
                     if (it.isNotEmpty()) {
-                        (activity as IntroActivity?)?.onDonePressed(null)
+                        (activity as IntroActivity?)?.onDonePressed()
                     }
                 }
             }
