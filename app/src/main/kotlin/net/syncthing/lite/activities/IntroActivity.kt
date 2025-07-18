@@ -72,6 +72,15 @@ class IntroActivity : SyncthingActivity() {
         binding.btnSkip.setOnClickListener { onDonePressed() }
         binding.btnNext.setOnClickListener { 
             val currentPosition = binding.viewPager.currentItem
+            
+            // If we're on page 1 (device ID page), validate and import the device ID before proceeding
+            if (currentPosition == 1) {
+                val fragment = supportFragmentManager.findFragmentByTag("f$currentPosition") as? IntroFragmentTwo
+                if (fragment?.validateAndImportDeviceId() == false) {
+                    return@setOnClickListener // Don't proceed if validation failed
+                }
+            }
+            
             if (currentPosition < adapter.itemCount - 1) {
                 binding.viewPager.currentItem = currentPosition + 1
             } else {
@@ -102,11 +111,11 @@ class IntroActivity : SyncthingActivity() {
                 updatePageIndicators(position)
                 updateNavigationButtons(position)
                 
-                // Validate current page if it's the device ID page
+                // Validate current page if it's the device ID page (but don't import yet)
                 if (position == 1) {
                     val fragment = supportFragmentManager.findFragmentByTag("f$position") as? IntroFragmentTwo
                     fragment?.let {
-                        binding.btnNext.isEnabled = it.isDeviceIdValid()
+                        binding.btnNext.isEnabled = it.isDeviceIdValidForNavigation()
                     }
                 }
             }
@@ -215,12 +224,12 @@ class IntroActivity : SyncthingActivity() {
             }
             binding.enterDeviceId.scanQrCode.setImageResource(R.drawable.ic_qr_code_white_24dp)
 
-            // Add text watcher to validate device ID
+            // Add text watcher to validate device ID (but don't import yet)
             binding.enterDeviceId.deviceId.addTextChangedListener(object : android.text.TextWatcher {
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
                 override fun afterTextChanged(s: android.text.Editable?) {
-                    val isValid = isDeviceIdValid()
+                    val isValid = isDeviceIdValidForNavigation()
                     (activity as? IntroActivity)?.enableNextButton(isValid)
                 }
             })
@@ -234,8 +243,43 @@ class IntroActivity : SyncthingActivity() {
         }
 
         /**
+         * Validates the device ID format without importing it.
+         * Used for navigation button enable/disable.
+         */
+        fun isDeviceIdValidForNavigation(): Boolean {
+            return try {
+                val deviceId = binding.enterDeviceId.deviceId.text.toString()
+                if (deviceId.isBlank()) return false
+                DeviceId(deviceId) // Just validate format, don't import
+                binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                true
+            } catch (e: Exception) {
+                binding.enterDeviceId.deviceIdHolder.error = getString(R.string.invalid_device_id)
+                false
+            }
+        }
+
+        /**
+         * Validates and imports the device ID. Called when user clicks Next.
+         * Returns true if successful, false if validation failed.
+         */
+        fun validateAndImportDeviceId(): Boolean {
+            return try {
+                val deviceId = binding.enterDeviceId.deviceId.text.toString()
+                if (deviceId.isBlank()) return false
+                Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId, { })
+                binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                true
+            } catch (e: IOException) {
+                binding.enterDeviceId.deviceIdHolder.error = getString(R.string.invalid_device_id)
+                false
+            }
+        }
+
+        /**
          * Checks if the entered device ID is valid. If yes, imports it and returns true. If not,
          * sets an error on the textview and returns false.
+         * @deprecated Use isDeviceIdValidForNavigation() for UI validation and validateAndImportDeviceId() for import
          */
         fun isDeviceIdValid(): Boolean {
             return try {

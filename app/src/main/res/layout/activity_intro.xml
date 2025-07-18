@@ -51,6 +51,8 @@
             android:layout_height="wrap_content"
             android:text="@string/next"
             android:textColor="@android:color/white"
+            android:drawableEnd="@drawable/ic_arrow_forward_white_24dp"
+            android:drawablePadding="8dp"
             android:layout_marginStart="8dp" />
 
         <Button
