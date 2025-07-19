@@ -26,7 +26,7 @@ The developer doesn't collect personally identifiable data while the software is
 
 
 ## Security Of Data
-The security of your information is imperative, however, recall that no strategy for transmission over the internet, or technique for electronic capacity is 100% secure. Therefore the developer doesn't ensure its supreme security. Syncthing-Lite is mainly an implementation of Syncthing's block exchange protocol [BEP](https://docs.syncthing.net/specs/bep-v1.html) which is used by Syncthing devices to exchange files using encrypted connections. At the time of writing, it's TLSv1.3 handshake and encryption. If you believe you've found a Syncthing-related security vulnerability, please contact the Syncthing team at [https://syncthing.net/security.html](https://syncthing.net/security.html).
+The security of your information is imperative, however, recall that no strategy for transmission over the internet, or technique for electronic capacity is 100% secure. Therefore the developer doesn't ensure its supreme security. Syncthing-Lite is mainly an implementation of the block exchange protocol [BEP](https://docs.syncthing.net/specs/bep-v1.html) which is used by Syncthing devices to exchange files using encrypted connections. At the time of writing, it's TLSv1.3 handshake and encryption. If you believe you've found a Syncthing-related security vulnerability, please contact the Syncthing team at [https://syncthing.net/security.html](https://syncthing.net/security.html).
 
 
 ## Age Restrictions
