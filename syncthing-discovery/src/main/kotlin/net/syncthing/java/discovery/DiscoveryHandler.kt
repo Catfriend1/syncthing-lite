@@ -58,22 +58,70 @@ class DiscoveryHandler(
 
     private var shouldLoadFromGlobal = true
     private var shouldStartLocalDiscovery = true
+    private var discoveryEnabled = true
+    private var localDiscoveryEnabled = true
+    private var globalDiscoveryEnabled = true
+    private var lastGlobalDiscoveryTime = 0L
+    private var globalDiscoveryRetryInterval = 30_000L // Start with 30 seconds
+    private val maxRetryInterval = 300_000L // Max 5 minutes
 
     private fun doGlobalDiscoveryIfNotYetDone() {
-        // TODO: timeout for reload
-        // TODO: retry if connectivity changed
-
-        if (shouldLoadFromGlobal) {
+        // Only proceed if global discovery is specifically enabled
+        // Global discovery should work independently of general discovery flag
+        if (!globalDiscoveryEnabled) {
+            logger.trace("doGlobalDiscoveryIfNotYetDone() skipped - global discovery is disabled")
+            return
+        }
+        
+        // But we still need configured devices to search for
+        if (configuration.peerIds.isEmpty()) {
+            logger.trace("doGlobalDiscoveryIfNotYetDone() skipped - no configured devices to search for")
+            return
+        }
+        
+        val currentTime = System.currentTimeMillis()
+        val timeSinceLastDiscovery = currentTime - lastGlobalDiscoveryTime
+        
+        // logger.trace("doGlobalDiscoveryIfNotYetDone() called - shouldLoadFromGlobal: $shouldLoadFromGlobal, timeSinceLastDiscovery: ${timeSinceLastDiscovery}ms, retryInterval: ${globalDiscoveryRetryInterval}ms")
+        
+        if (shouldLoadFromGlobal || timeSinceLastDiscovery > globalDiscoveryRetryInterval) {
+            logger.trace("Starting global discovery - timeSinceLastDiscovery: ${timeSinceLastDiscovery}ms")
             shouldLoadFromGlobal = false
+            lastGlobalDiscoveryTime = currentTime
+            
             CoroutineScope(Dispatchers.Default).launch {
-                processDeviceAddressBg(globalDiscoveryHandler.query(configuration.peerIds))
+                try {
+                    // logger.trace("Calling globalDiscoveryHandler.query() for ${configuration.peerIds.size} devices")
+                    val deviceAddresses = globalDiscoveryHandler.query(configuration.peerIds)
+                    logger.trace("Global discovery completed, received ${deviceAddresses.size} addresses")
+                    processDeviceAddressBg(deviceAddresses)
+                    
+                    // If no addresses were found for any device, schedule a retry with exponential backoff
+                    val hasAddressesForAllDevices = configuration.peerIds.all { deviceId ->
+                        devicesAddressesManager.getDeviceAddressManager(deviceId).getCurrentDeviceAddresses().isNotEmpty()
+                    }
+                    
+                    if (!hasAddressesForAllDevices) {
+                        // Increase retry interval with exponential backoff, but cap at max
+                        globalDiscoveryRetryInterval = minOf(globalDiscoveryRetryInterval * 2, maxRetryInterval)
+                        logger.trace("Global discovery found no addresses for some devices, will retry in ${globalDiscoveryRetryInterval}ms")
+                    } else {
+                        // Reset retry interval if successful
+                        globalDiscoveryRetryInterval = 30_000L
+                        logger.info("Global discovery successful for all devices, reset retry interval to 30s")
+                    }
+                } catch (e: Exception) {
+                    logger.error("Global discovery failed with exception", e)
+                }
             }
+        } else {
+            logger.trace("Global discovery skipped - waiting for retry interval (${globalDiscoveryRetryInterval - timeSinceLastDiscovery}ms remaining)")
         }
     }
 
     private fun initLocalDiscoveryIfNotYetDone() {
         if (!localDiscoveryEnabled) {
-            logger.trace("initLocalDiscoveryIfNotYetDone() skipped")
+            logger.trace("initLocalDiscoveryIfNotYetDone() skipped - local discovery is disabled")
             return
         }
         
