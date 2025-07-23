@@ -107,6 +107,7 @@ class DiscoveryHandler(
             throw IllegalStateException()
         }
 
+        // Try to start discovery processes if they are enabled
         doGlobalDiscoveryIfNotYetDone()
         initLocalDiscoveryIfNotYetDone()
 
@@ -114,6 +115,42 @@ class DiscoveryHandler(
                 peerDevices = configuration.peerIds,
                 devicesAddressesManager = devicesAddressesManager
         )
+    }
+
+    /**
+     * Force a new discovery attempt, used when devices have no known addresses
+     */
+    fun retryDiscovery() {
+        if (isClosed) {
+            logger.debug("retryDiscovery() called but handler is closed")
+            return
+        }
+        
+        logger.info("retryDiscovery() called - checking devices needing discovery")
+        
+        // Check if any devices actually need discovery (have no addresses)
+        val devicesNeedingDiscovery = configuration.peerIds.filter { deviceId ->
+            devicesAddressesManager.getDeviceAddressManager(deviceId).getCurrentDeviceAddresses().isEmpty()
+        }
+        
+        if (devicesNeedingDiscovery.isEmpty()) {
+            logger.info("retryDiscovery() skipped - all devices already have addresses")
+            return
+        }
+        
+        logger.info("retryDiscovery() proceeding for ${devicesNeedingDiscovery.size} devices without addresses")
+        
+        // Force a new global discovery attempt by resetting the flag if global discovery is enabled
+        if (globalDiscoveryEnabled) {
+            shouldLoadFromGlobal = true
+            doGlobalDiscoveryIfNotYetDone()
+        }
+        
+        // Also restart local discovery announcements if local discovery is enabled
+        if (localDiscoveryEnabled) {
+            logger.debug("Sending local discovery announcement")
+            localDiscoveryHandler.sendAnnounceMessage()
+        }
     }
 
     override fun close() {
