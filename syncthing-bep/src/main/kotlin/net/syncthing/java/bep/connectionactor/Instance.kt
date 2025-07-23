@@ -111,16 +111,15 @@ object ConnectionActor {
                         )
                         return result
                     } catch (e: Exception) {
-                        // Handle connection exceptions gracefully
                         when {
                             e.message?.contains("Connection reset") == true -> {
-                                logger.debug("receivePostAuthMessage: Socket connection reset")
+                                logger.trace("receivePostAuthMessage: connection reset")
                             }
                             e.message?.contains("Broken pipe") == true -> {
                                 // Expected during connection termination - no logging needed
                             }
                             e.message?.contains("Connection refused") == true -> {
-                                logger.debug("receivePostAuthMessage: Socket connection refused")
+                                logger.trace("receivePostAuthMessage: connection refused")
                             }
                             e is java.net.SocketException -> {
                                 // Expected socket exceptions - no logging needed
