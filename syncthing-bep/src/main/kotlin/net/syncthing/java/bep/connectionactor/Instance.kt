@@ -348,7 +348,6 @@ object ConnectionActor {
                 }
             }
             } catch (e: Exception) {
-                // Handle connection setup failures gracefully to allow retry mechanism to work
                 when {
                     e.message?.contains("Connection reset") == true -> {
                         logger.trace("openSocketConnection: Socket connection reset")
