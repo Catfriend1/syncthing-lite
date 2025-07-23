@@ -46,7 +46,6 @@ object ConnectionActor {
         val channel = Channel<ConnectionAction>(Channel.RENDEZVOUS)
 
         CoroutineScope(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
-            // Catch expected connection exceptions gracefully without logging
             when {
                 throwable.message?.contains("Broken pipe") == true -> {
                     // Expected during connection termination - no logging needed
@@ -63,7 +62,6 @@ object ConnectionActor {
             }
         }).launch {
             Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-                // Catch expected connection exceptions gracefully without logging
                 when {
                     throwable.message?.contains("Broken pipe") == true -> {
                         // Expected during connection termination - no logging needed
