@@ -196,8 +196,10 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             } catch (e: CertificateException) {
                 throw CryptoException(e)
             } catch (e: NoSuchAlgorithmException) {
+                logger.trace("generateKeystore: NoSuchAlgorithmException", e)
                 throw CryptoException(e)
             } catch (e: KeyStoreException) {
+                // logger.trace("generateKeystore: KeyStoreException", e)
                 throw CryptoException(e)
             } catch (e: Exception) {
                 logger.error("generateKeystore: Uncaught exception", e)
