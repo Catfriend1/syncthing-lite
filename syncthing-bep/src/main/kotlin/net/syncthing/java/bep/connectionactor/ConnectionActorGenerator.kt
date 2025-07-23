@@ -335,11 +335,11 @@ object ConnectionActorGenerator {
                             }
                         }
                         
-						/*
+                        /*
                         if (!connectionSuccessful) {
                             logger.trace("All connection attempts failed, will retry after delay")
                         }
-						*/
+                        */
                     }
 
                     // reset countdown before trying other connection if it would be time now
