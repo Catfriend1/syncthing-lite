@@ -124,7 +124,7 @@ object PostAuthenticationMessageHandler {
         // logger.debug("🔍 [readHeader] Raw headerLength read: $headerLength")
 
         if (headerLength == 0) {
-            logger.debug("📭 headerLength == 0, message may be keepalive or without header")
+            // logger.trace("📭 headerLength == 0")
             return ByteArray(0)
         }
 
