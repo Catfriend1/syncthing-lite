@@ -73,6 +73,7 @@ object Util {
 
                 if (didAddDevice) {
                     library.configuration.persistLater()
+                    library.syncthingClient.retryDiscovery()
                     library.syncthingClient.connectToNewlyAddedDevices()
 
                     Toast.makeText(
