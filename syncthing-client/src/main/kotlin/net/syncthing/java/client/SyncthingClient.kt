@@ -97,38 +97,8 @@ class SyncthingClient(
     }
 
     fun retryDiscovery() {
-        logger.trace("SyncthingClient.retryDiscovery() called - delegating to discoveryHandler")
+        // logger.trace("retryDiscovery called - delegating to discoveryHandler")
         discoveryHandler.retryDiscovery()
-    }
-
-    fun enableDiscovery() {
-        logger.trace("SyncthingClient.enableDiscovery() called - delegating to discoveryHandler")
-        discoveryHandler.enableDiscovery()
-    }
-
-    fun disableDiscovery() {
-        logger.trace("SyncthingClient.disableDiscovery() called - delegating to discoveryHandler")
-        discoveryHandler.disableDiscovery()
-    }
-
-    fun enableLocalDiscovery() {
-        logger.trace("SyncthingClient.enableLocalDiscovery() called - delegating to discoveryHandler")
-        discoveryHandler.enableLocalDiscovery()
-    }
-
-    fun disableLocalDiscovery() {
-        logger.trace("SyncthingClient.disableLocalDiscovery() called - delegating to discoveryHandler")
-        discoveryHandler.disableLocalDiscovery()
-    }
-
-    fun enableGlobalDiscovery() {
-        logger.trace("SyncthingClient.enableGlobalDiscovery() called - delegating to discoveryHandler")
-        discoveryHandler.enableGlobalDiscovery()
-    }
-
-    fun disableGlobalDiscovery() {
-        logger.trace("SyncthingClient.disableGlobalDiscovery() called - delegating to discoveryHandler")
-        discoveryHandler.disableGlobalDiscovery()
     }
 
     fun disconnectFromRemovedDevices() {

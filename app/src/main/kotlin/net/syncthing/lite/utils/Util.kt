@@ -73,6 +73,7 @@ object Util {
 
                 if (didAddDevice) {
                     library.configuration.persistLater()
+                    library.syncthingClient.retryDiscovery()
                     library.syncthingClient.connectToNewlyAddedDevices()
                     // Immediately trigger discovery for the newly added device
                     library.syncthingClient.retryDiscovery()

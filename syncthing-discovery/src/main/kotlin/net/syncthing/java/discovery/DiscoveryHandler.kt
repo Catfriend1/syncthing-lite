@@ -58,9 +58,9 @@ class DiscoveryHandler(
 
     private var shouldLoadFromGlobal = true
     private var shouldStartLocalDiscovery = true
-    private var discoveryEnabled = false // Only start discovery when explicitly enabled
-    private var localDiscoveryEnabled = false // Control local discovery separately
-    private var globalDiscoveryEnabled = false // Control global discovery separately
+    private var discoveryEnabled = true
+    private var localDiscoveryEnabled = true
+    private var globalDiscoveryEnabled = true
     private var lastGlobalDiscoveryTime = 0L
     private var globalDiscoveryRetryInterval = 30_000L // Start with 30 seconds
     private val maxRetryInterval = 300_000L // Max 5 minutes
@@ -69,7 +69,7 @@ class DiscoveryHandler(
         // Only proceed if global discovery is specifically enabled
         // Global discovery should work independently of general discovery flag
         if (!globalDiscoveryEnabled) {
-            logger.trace("doGlobalDiscoveryIfNotYetDone() skipped - global discovery enabled: $globalDiscoveryEnabled")
+            logger.trace("doGlobalDiscoveryIfNotYetDone() skipped - global discovery is disabled")
             return
         }
         
@@ -82,18 +82,18 @@ class DiscoveryHandler(
         val currentTime = System.currentTimeMillis()
         val timeSinceLastDiscovery = currentTime - lastGlobalDiscoveryTime
         
-        logger.debug("doGlobalDiscoveryIfNotYetDone() called - shouldLoadFromGlobal: $shouldLoadFromGlobal, timeSinceLastDiscovery: ${timeSinceLastDiscovery}ms, retryInterval: ${globalDiscoveryRetryInterval}ms")
+        // logger.trace("doGlobalDiscoveryIfNotYetDone() called - shouldLoadFromGlobal: $shouldLoadFromGlobal, timeSinceLastDiscovery: ${timeSinceLastDiscovery}ms, retryInterval: ${globalDiscoveryRetryInterval}ms")
         
         if (shouldLoadFromGlobal || timeSinceLastDiscovery > globalDiscoveryRetryInterval) {
-            logger.info("Starting global discovery - shouldLoadFromGlobal: $shouldLoadFromGlobal, timeSinceLastDiscovery: ${timeSinceLastDiscovery}ms")
+            logger.trace("Starting global discovery - timeSinceLastDiscovery: ${timeSinceLastDiscovery}ms")
             shouldLoadFromGlobal = false
             lastGlobalDiscoveryTime = currentTime
             
             CoroutineScope(Dispatchers.Default).launch {
                 try {
-                    logger.info("Calling globalDiscoveryHandler.query() for ${configuration.peerIds.size} devices")
+                    // logger.trace("Calling globalDiscoveryHandler.query() for ${configuration.peerIds.size} devices")
                     val deviceAddresses = globalDiscoveryHandler.query(configuration.peerIds)
-                    logger.info("Global discovery completed, received ${deviceAddresses.size} addresses")
+                    logger.trace("Global discovery completed, received ${deviceAddresses.size} addresses")
                     processDeviceAddressBg(deviceAddresses)
                     
                     // If no addresses were found for any device, schedule a retry with exponential backoff
@@ -104,7 +104,7 @@ class DiscoveryHandler(
                     if (!hasAddressesForAllDevices) {
                         // Increase retry interval with exponential backoff, but cap at max
                         globalDiscoveryRetryInterval = minOf(globalDiscoveryRetryInterval * 2, maxRetryInterval)
-                        logger.info("Global discovery found no addresses for some devices, will retry in ${globalDiscoveryRetryInterval}ms")
+                        logger.trace("Global discovery found no addresses for some devices, will retry in ${globalDiscoveryRetryInterval}ms")
                     } else {
                         // Reset retry interval if successful
                         globalDiscoveryRetryInterval = 30_000L
@@ -115,25 +115,21 @@ class DiscoveryHandler(
                 }
             }
         } else {
-            logger.debug("Global discovery skipped - waiting for retry interval (${globalDiscoveryRetryInterval - timeSinceLastDiscovery}ms remaining)")
+            logger.trace("Global discovery skipped - waiting for retry interval (${globalDiscoveryRetryInterval - timeSinceLastDiscovery}ms remaining)")
         }
     }
 
     private fun initLocalDiscoveryIfNotYetDone() {
-        // Only proceed if local discovery is specifically enabled
-        // Local discovery should work independently of general discovery flag
         if (!localDiscoveryEnabled) {
-            logger.trace("initLocalDiscoveryIfNotYetDone() skipped - local discovery enabled: $localDiscoveryEnabled")
+            logger.trace("initLocalDiscoveryIfNotYetDone() skipped - local discovery is disabled")
             return
         }
         
         if (shouldStartLocalDiscovery) {
             shouldStartLocalDiscovery = false
-            logger.info("Starting local discovery listener and sending announcement")
+            // logger.trace("Starting local discovery listener and sending announcement")
             localDiscoveryHandler.startListener()
             localDiscoveryHandler.sendAnnounceMessage()
-        } else {
-            logger.debug("initLocalDiscoveryIfNotYetDone() called but local discovery already started")
         }
     }
 
@@ -158,58 +154,6 @@ class DiscoveryHandler(
         devicesAddressesManager.getDeviceAddressManager(
                 deviceId = deviceAddress.deviceId
         ).putAddress(deviceAddress)
-    }
-
-    /**
-     * Enable discovery to start running. This must be called before discovery will actually start.
-     */
-    fun enableDiscovery() {
-        logger.info("enableDiscovery() called - discovery is now enabled")
-        discoveryEnabled = true
-    }
-
-    /**
-     * Disable discovery to prevent it from running
-     */
-    fun disableDiscovery() {
-        logger.info("disableDiscovery() called - discovery is now disabled")
-        discoveryEnabled = false
-    }
-
-    /**
-     * Enable local discovery specifically
-     */
-    fun enableLocalDiscovery() {
-        logger.info("enableLocalDiscovery() called - local discovery is now enabled")
-        localDiscoveryEnabled = true
-        // Actually start local discovery if it's not already running
-        initLocalDiscoveryIfNotYetDone()
-    }
-
-    /**
-     * Disable local discovery specifically
-     */
-    fun disableLocalDiscovery() {
-        logger.info("disableLocalDiscovery() called - local discovery is now disabled")
-        localDiscoveryEnabled = false
-    }
-
-    /**
-     * Enable global discovery specifically
-     */
-    fun enableGlobalDiscovery() {
-        logger.info("enableGlobalDiscovery() called - global discovery is now enabled")
-        globalDiscoveryEnabled = true
-        // Actually start global discovery if it's not already running
-        doGlobalDiscoveryIfNotYetDone()
-    }
-
-    /**
-     * Disable global discovery specifically
-     */
-    fun disableGlobalDiscovery() {
-        logger.info("disableGlobalDiscovery() called - global discovery is now disabled")
-        globalDiscoveryEnabled = false
     }
 
     fun newDeviceAddressSupplier(): DeviceAddressSupplier {
