@@ -168,9 +168,9 @@ object ConnectionActorGenerator {
         } catch (ex: Exception) {
             // Log "Connection reset" at debug level since it's expected when remote device hasn't accepted connection yet
             if (ex.message?.contains("Connection reset") == true) {
-                logger.debug("ConnectionActorGenerator: Connection reset detected - this is expected when remote device hasn't accepted connection yet")
+                logger.trace("Connection reset detected - this is expected when remote device hasn't accepted connection yet")
             } else {
-                logger.debug("ConnectionActorGenerator: Failed to connect to $deviceAddress: ${ex.message}")
+                logger.debug("Failed to connect to $deviceAddress: ${ex.message}")
             }
 
             when (ex) {
@@ -191,7 +191,7 @@ object ConnectionActorGenerator {
                         status = ConnectionStatus.Disconnected
                 )
                 dispatchStatus()
-                logger.debug("ConnectionActorGenerator: Connection attempt to $deviceAddress failed, status set to Disconnected")
+                logger.debug("Connection attempt to $deviceAddress failed, status set to Disconnected")
             }
 
             currentStatus = currentStatus.copy(
@@ -199,10 +199,10 @@ object ConnectionActorGenerator {
                     currentAddress = deviceAddress
             )
             dispatchStatus()
-            logger.debug("ConnectionActorGenerator: Attempting to connect to $deviceAddress")
+            logger.debug("Attempting to connect to $deviceAddress")
 
             var connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {
-                logger.debug("ConnectionActorGenerator: Connection to $deviceAddress failed, will retry later")
+                logger.debug("Connection to $deviceAddress failed, will retry later")
                 handleCancel()
                 false
             }
@@ -212,7 +212,7 @@ object ConnectionActorGenerator {
                 // reconnect to send new cluster config
                 connection.first.close()
                 connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {
-                    logger.debug("ConnectionActorGenerator: Reconnection to $deviceAddress failed, will retry later")
+                    logger.debug("Reconnection to $deviceAddress failed, will retry later")
                     handleCancel()
                     false
                 }
@@ -231,11 +231,11 @@ object ConnectionActorGenerator {
                 try {
                     // Wait for the connection actor to close
                     connection.first.invokeOnClose { cause ->
-                        logger.debug("ConnectionActorGenerator: Connection actor closed: $cause")
+                        logger.debug("Connection actor closed: $cause")
                         scope.launch {
                             // Set status to disconnected when connection actor closes
                             if (currentActor == connection.first) {
-                                logger.debug("ConnectionActorGenerator: Setting connection status to Disconnected due to channel closure")
+                                logger.debug("Setting connection status to Disconnected due to channel closure")
                                 currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
                                 currentActor = closed
                                 dispatchStatus()
@@ -250,7 +250,7 @@ object ConnectionActorGenerator {
                         // Check if the channel is still open after delay
                         if (currentActor == connection.first && !isChannelOpen(connection.first)) {
                             // Channel was closed, update status immediately
-                            logger.debug("ConnectionActorGenerator: Channel closed detected in monitoring loop")
+                            logger.debug("Channel closed detected in monitoring loop")
                             currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
                             currentActor = closed
                             dispatchStatus()
@@ -258,7 +258,7 @@ object ConnectionActorGenerator {
                         }
                     }
                 } catch (e: Exception) {
-                    logger.debug("ConnectionActorGenerator: Error monitoring connection: ${e.message}")
+                    logger.debug("Error monitoring connection: ${e.message}")
                 }
             }
 
@@ -266,7 +266,7 @@ object ConnectionActorGenerator {
         }
 
         fun isConnected() = (currentActor != closed && isChannelOpen(currentActor)).also { connected ->
-            logger.debug("ConnectionActorGenerator: isConnected() = $connected, currentActor open = ${isChannelOpen(currentActor)}")
+            logger.debug("isConnected() = $connected, currentActor open = ${isChannelOpen(currentActor)}")
         }
 
         invokeOnClose {
@@ -307,36 +307,36 @@ object ConnectionActorGenerator {
                     delay(500)  // don't take too much CPU
                 } else /* is not connected */ {
                     if (currentStatus.status == ConnectionStatus.Connected) {
-                        logger.debug("ConnectionActorGenerator: Status was Connected but isConnected() returned false, setting to Disconnected")
+                        logger.debug("Status was Connected but isConnected() returned false, setting to Disconnected")
                         currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
                         dispatchStatus()
                     }
 
                     val deviceAddressList = currentStatus.addresses
-                    logger.debug("ConnectionActorGenerator: Not connected (status: ${currentStatus.status}), trying to connect to ${deviceAddressList.size} addresses")
+                    logger.debug("Not connected (status: ${currentStatus.status}), trying to connect to ${deviceAddressList.size} addresses")
 
                     if (deviceAddressList.isEmpty()) {
-                        logger.debug("ConnectionActorGenerator: No addresses available, waiting for discovery")
+                        logger.debug("No addresses available, waiting for discovery")
                     } else {
                         // try all addresses
                         var connectionSuccessful = false
                         for (address in deviceAddressList) {
-                            logger.debug("ConnectionActorGenerator: Attempting to connect to address: $address")
+                            logger.debug("Attempting to connect to address: $address")
                             try {
                                 if (tryConnectingToAddress(address)) {
-                                    logger.debug("ConnectionActorGenerator: Successfully connected to address: $address")
+                                    logger.debug("Successfully connected to address: $address")
                                     connectionSuccessful = true
                                     break
                                 } else {
-                                    logger.debug("ConnectionActorGenerator: Failed to connect to address: $address")
+                                    logger.debug("Failed to connect to address: $address")
                                 }
                             } catch (e: Exception) {
-                                logger.debug("ConnectionActorGenerator: Exception while connecting to address $address: ${e.message}")
+                                logger.debug("Exception while connecting to address $address: ${e.message}")
                             }
                         }
                         
                         if (!connectionSuccessful) {
-                            logger.debug("ConnectionActorGenerator: All connection attempts failed, will retry after delay")
+                            logger.debug("All connection attempts failed, will retry after delay")
                         }
                     }
 
@@ -347,7 +347,7 @@ object ConnectionActorGenerator {
                     // Use shorter retry interval for immediate reconnection after connection reset
                     val retryTimeout = 3L * 1000 // 3 seconds for immediate response to connection issues
 
-                    logger.debug("ConnectionActorGenerator: Waiting for retry (timeout: ${retryTimeout}ms)")
+                    logger.debug("Waiting for retry (timeout: ${retryTimeout}ms)")
 
                     // Always use the standard retry timeout for consistent behavior
                     val actualRetryTimeout = retryTimeout
@@ -358,17 +358,17 @@ object ConnectionActorGenerator {
                     }
 
                     if (newDeviceAddressList != null) {
-                        logger.debug("ConnectionActorGenerator: Received new device address list with ${newDeviceAddressList.size} addresses")
+                        logger.debug("Received new device address list with ${newDeviceAddressList.size} addresses")
                         currentStatus = currentStatus.copy(addresses = newDeviceAddressList)
                         dispatchStatus()
                     } else {
-                        logger.debug("ConnectionActorGenerator: Retry timeout reached, will try again in next iteration")
+                        logger.debug("Retry timeout reached, will try again in next iteration")
                     }
                     
                     // After the timeout, force a retry attempt even if no new addresses arrived
                     // This ensures retry attempts happen even when device already has addresses
                     if (newDeviceAddressList == null && currentStatus.addresses.isNotEmpty()) {
-                        logger.debug("ConnectionActorGenerator: Forcing retry attempt with existing addresses after timeout")
+                        logger.debug("Forcing retry attempt with existing addresses after timeout")
                     }
                 }
             }
