@@ -29,22 +29,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:layout_marginBottom="@dimen/appIntroBottomBarHeight"
                 android:textSize="16sp"
                 android:textAlignment="center"
                 android:textColor="#eee"
                 tools:text="@string/intro_page_three_description" />
-
-            <TextView
-                android:id="@+id/discovery_status_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="@dimen/appIntroBottomBarHeight"
-                android:textSize="14sp"
-                android:textColor="#eee"
-                android:drawablePadding="8dp"
-                android:gravity="center"
-                tools:text="@string/discovery_status_searching" />
 
     </LinearLayout>
 
