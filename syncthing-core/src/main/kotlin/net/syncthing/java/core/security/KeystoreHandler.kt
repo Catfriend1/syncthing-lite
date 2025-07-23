@@ -287,8 +287,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
         private const val JKS_PASSWORD = "password"
         private const val KEY_PASSWORD = "password"
-        private const val KEY_ALGO = "EC"
-        private const val SIGNATURE_ALGO = "SHA256withECDSA"
+        private const val KEY_ALGO = "RSA"
+        private const val SIGNATURE_ALGO = "SHA256withRSA"
         private const val CERTIFICATE_SUBJECT = "CN=syncthing, OU=Automatically Generated, O=Syncthing"
         private const val SOCKET_TIMEOUT = 2000
         private const val TLS_VERSION = "TLSv1.3"
