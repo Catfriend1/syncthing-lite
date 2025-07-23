@@ -96,6 +96,11 @@ class SyncthingClient(
         getConnections()
     }
 
+    fun retryDiscovery() {
+        // logger.trace("retryDiscovery called - delegating to discoveryHandler")
+        discoveryHandler.retryDiscovery()
+    }
+
     fun disconnectFromRemovedDevices() {
         // TODO: implement this
     }
