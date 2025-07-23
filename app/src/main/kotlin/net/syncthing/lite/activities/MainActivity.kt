@@ -86,7 +86,7 @@ class MainActivity : SyncthingActivity() {
     }
 
     private fun onNavigationItemSelectedListener(menuItem: MenuItem): Boolean {
-        Log.d(TAG, "MainActivity navigation item selected: ${menuItem.title}")
+        Log.v(TAG, "Navigation item selected: ${menuItem.title}")
         when (menuItem.itemId) {
             R.id.folders -> setContentFragment(FoldersFragment())
             R.id.devices -> setContentFragment(DevicesFragment())
