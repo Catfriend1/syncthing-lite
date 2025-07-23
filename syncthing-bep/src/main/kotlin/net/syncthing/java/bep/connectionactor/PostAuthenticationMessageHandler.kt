@@ -44,7 +44,8 @@ object PostAuthenticationMessageHandler {
         val headerData = header.toByteArray()
         val messageData = message.toByteArray() //TODO support compression
 
-        logger.trace("Sending message type: {} {}.", header.type, MessageTypes.getIdForMessage(message))
+        // logger.trace("Sending message type: {} {}.", header.type, MessageTypes.getIdForMessage(message))
+        logger.trace("Sending message type: {} {}.", header.type)
         markActivityOnSocket()
 
         outputStream.apply {
