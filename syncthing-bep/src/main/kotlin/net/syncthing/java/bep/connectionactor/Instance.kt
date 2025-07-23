@@ -364,8 +364,6 @@ object ConnectionActor {
                         logger.error("openSocketConnection: Uncaught exception, allowing retry: ${e.message}")
                     }
                 }
-                // Exit gracefully so the retry mechanism can work
-                return@launch
             }
         }.invokeOnCompletion { ex ->
             if (ex != null) {
