@@ -198,16 +198,15 @@ object ConnectionActor {
                             val message = try {
                                 receivePostAuthMessage().second
                             } catch (e: Exception) {
-                                // Handle connection exceptions gracefully
                                 when {
                                     e.message?.contains("Connection reset") == true -> {
-                                        logger.debug("🔗 Socket connection reset detected in message loop")
+                                        logger.trace("receivePostAuthMessage: connection reset detected in message loop")
                                     }
                                     e.message?.contains("Broken pipe") == true -> {
                                         // Expected during connection termination - no logging needed
                                     }
                                     e.message?.contains("Connection refused") == true -> {
-                                        logger.debug("🔗 Socket connection refused detected in message loop")
+                                        logger.trace("receivePostAuthMessage: connection refused detected in message loop")
                                     }
                                     e is java.net.SocketException -> {
                                         // Expected socket exceptions - no logging needed
@@ -216,7 +215,7 @@ object ConnectionActor {
                                         // Expected IO exceptions - no logging needed
                                     }
                                     else -> {
-                                        logger.debug("🚨 receivePostAuthMessage failed in message loop: ${e.message}")
+                                        logger.error("receivePostAuthMessage: Uncaught exception, ${e.message}")
                                     }
                                 }
                                 // Exit the loop and terminate this coroutine to allow retry mechanism to work
