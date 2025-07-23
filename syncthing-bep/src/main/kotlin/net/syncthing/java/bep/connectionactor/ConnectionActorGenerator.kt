@@ -146,7 +146,7 @@ object ConnectionActorGenerator {
         suspend fun tryConnectingToAddressHandleBaseErrors(deviceAddress: DeviceAddress): Pair<SendChannel<ConnectionAction>, ClusterConfigInfo>? = try {
             val newActor = ConnectionActor.createInstance(deviceAddress, configuration, indexHandler, requestHandler)
             
-            logger.debug("ConnectionActorGenerator: Created connection actor for $deviceAddress, waiting for connection setup")
+            // logger.trace("Created connection actor for $deviceAddress, waiting for connection setup")
             
             // Use a timeout for connection setup to avoid hanging indefinitely
             val clusterConfig = try {
@@ -154,16 +154,16 @@ object ConnectionActorGenerator {
                     ConnectionActorUtil.waitUntilConnected(newActor)
                 }
             } catch (e: TimeoutCancellationException) {
-                logger.debug("ConnectionActorGenerator: Connection setup timed out for $deviceAddress")
+                logger.trace("Connection setup timed out for $deviceAddress")
                 newActor.close()
                 throw IOException("Connection setup timeout for $deviceAddress")
             } catch (e: Exception) {
-                logger.debug("ConnectionActorGenerator: Connection setup failed for $deviceAddress: ${e.message}")
+                logger.trace("Connection setup failed for $deviceAddress: ${e.message}")
                 newActor.close()
                 throw e
             }
             
-            logger.debug("ConnectionActorGenerator: Connection setup succeeded for $deviceAddress")
+            // logger.trace("Connection setup succeeded for $deviceAddress")
             newActor to clusterConfig
         } catch (ex: Exception) {
             // Log "Connection reset" at debug level since it's expected when remote device hasn't accepted connection yet
