@@ -199,8 +199,6 @@ object ConnectionActor {
                                         logger.error("receivePostAuthMessage: Uncaught exception, ${e.message}")
                                     }
                                 }
-                                // Exit the loop and terminate this coroutine to allow retry mechanism to work
-                                throw CancellationException("Connection lost: ${e.message}")
                             }
 
                             when (message) {
