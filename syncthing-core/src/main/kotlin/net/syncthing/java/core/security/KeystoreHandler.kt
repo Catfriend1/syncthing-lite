@@ -18,8 +18,17 @@ import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.interfaces.RelayConnection
 import net.syncthing.java.core.utils.NetworkUtils
 import org.apache.commons.codec.binary.Base32
+import org.bouncycastle.asn1.x509.Extension
+import org.bouncycastle.asn1.x509.BasicConstraints
+import org.bouncycastle.asn1.x509.KeyUsage
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage
+import org.bouncycastle.asn1.x509.KeyPurposeId
+import org.bouncycastle.asn1.x509.GeneralName
+import org.bouncycastle.asn1.x509.GeneralNames
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils
 import org.bouncycastle.cert.jcajce.JcaX509v1CertificateBuilder
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.operator.OperatorCreationException
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
@@ -171,25 +180,64 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                     .build(keyPair.private)
 
                 val startDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1))
-                val endDate = Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(10 * 365))
+                val endDate = Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(365 * 10))
 
-                val certificateBuilder = JcaX509v1CertificateBuilder(X500Principal(CERTIFICATE_CN), BigInteger.ZERO,
-                        startDate, endDate, X500Principal(CERTIFICATE_CN), keyPair.public)
+                val subject = X500Principal(CERTIFICATE_SUBJECT)
+                val certificateBuilder = JcaX509v1CertificateBuilder(
+                    subject,
+                    BigInteger.ZERO,
+                    startDate,
+                    endDate,
+                    subject,
+                    keyPair.public
+                )
 
-                val certificateHolder = certificateBuilder.build(contentSigner)
+                val certHolder = certificateBuilder.build(contentSigner)
 
-                val certificateDerData = certificateHolder.encoded
+                val certBuilder = JcaX509v3CertificateBuilder(subject, BigInteger.ONE, startDate, endDate, subject, keyPair.public)
+                val extUtils = JcaX509ExtensionUtils()
+
+                certBuilder.addExtension(
+                    Extension.basicConstraints, true,
+                    BasicConstraints(false) // Not a CA
+                )
+
+                certBuilder.addExtension(
+                    Extension.keyUsage, true,
+                    KeyUsage(KeyUsage.digitalSignature or KeyUsage.keyEncipherment)
+                )
+
+                certBuilder.addExtension(
+                    Extension.subjectKeyIdentifier, false,
+                    extUtils.createSubjectKeyIdentifier(keyPair.public)
+                )
+
+                certBuilder.addExtension(
+                    Extension.extendedKeyUsage, false,
+                    ExtendedKeyUsage(arrayOf(KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth))
+                )
+
+                certBuilder.addExtension(
+                    Extension.subjectAlternativeName, false,
+                    GeneralNames(GeneralName(GeneralName.dNSName, "syncthing"))
+                )
+
+                val certHolderFinal = certBuilder.build(contentSigner)
+
+                val certificateDerData = certHolderFinal.encoded
                 logger.trace("Generated certificate: {}.", derToPem(certificateDerData))
                 val deviceId = derDataToDeviceId(certificateDerData)
-                // logger.trace("Device ID from certificate: {}.", deviceId)
+                logger.trace("Device ID from certificate: {}.", deviceId)
 
                 val keyStore = KeyStore.getInstance(keystoreAlgorithm)
                 keyStore.load(null, null)
-                val certChain = arrayOfNulls<Certificate>(1)
-                certChain[0] = JcaX509CertificateConverter()
-                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                    .getCertificate(certificateHolder)
+                val certChain = arrayOf(
+                    JcaX509CertificateConverter()
+                        .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                        .getCertificate(certHolderFinal)
+                )
                 keyStore.setKeyEntry("key", keyPair.private, KEY_PASSWORD.toCharArray(), certChain)
+
                 return Pair(keyStore, deviceId)
             } catch (e: OperatorCreationException) {
                 logger.trace("generateKeystore: OperatorCreationException", e)
@@ -201,13 +249,12 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 logger.trace("generateKeystore: NoSuchAlgorithmException", e)
                 throw CryptoException(e)
             } catch (e: KeyStoreException) {
-                // logger.trace("generateKeystore: KeyStoreException", e)
+                logger.trace("generateKeystore: KeyStoreException", e)
                 throw CryptoException(e)
             } catch (e: Exception) {
                 logger.error("generateKeystore: Uncaught exception", e)
                 throw Exception(e)
             }
-
         }
 
         @Throws(CryptoException::class, IOException::class)
@@ -244,7 +291,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private const val KEY_PASSWORD = "password"
         private const val KEY_ALGO = "Ed25519"
         private const val SIGNATURE_ALGO = "Ed25519"
-        private const val CERTIFICATE_CN = "CN=syncthing"
+        private const val CERTIFICATE_SUBJECT = "CN=syncthing, OU=Automatically Generated, O=Syncthing"
         private const val SOCKET_TIMEOUT = 2000
         private const val TLS_VERSION = "TLSv1.3"
 
