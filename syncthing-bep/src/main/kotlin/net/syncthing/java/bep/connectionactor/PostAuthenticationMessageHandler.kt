@@ -44,7 +44,8 @@ object PostAuthenticationMessageHandler {
         val headerData = header.toByteArray()
         val messageData = message.toByteArray() //TODO support compression
 
-        logger.trace("Sending message type: {} {}.", header.type, MessageTypes.getIdForMessage(message))
+        // logger.trace("Sending message type: {} {}", header.type, MessageTypes.getIdForMessage(message))
+        logger.trace("Sending message type: {}", header.type)
         markActivityOnSocket()
 
         outputStream.apply {
@@ -72,7 +73,7 @@ object PostAuthenticationMessageHandler {
 
         // logger.debug("🔹 Raw header bytes: ${headerBytes.toHexString()}")
         val header: BlockExchangeProtos.Header = if (headerBytes.isEmpty()) {
-            logger.warn("📭 Header bytes were empty — using default Header")
+            // logger.trace("📭 Header bytes were empty — using default Header")
             BlockExchangeProtos.Header.getDefaultInstance()
         } else {
             BlockExchangeProtos.Header.parseFrom(headerBytes)
@@ -148,7 +149,7 @@ object PostAuthenticationMessageHandler {
         // logger.debug("📏 Raw messageLength read: $messageLength")
 
         if (messageLength == 0) {
-            logger.warn("⚠️ Message length is zero — skipping readFully, maybe keepalive?")
+            // logger.trace("⚠️ Message length is zero — skipping readFully, maybe ping?")
             return ByteArray(0)
         }
 

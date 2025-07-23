@@ -75,7 +75,7 @@ object ConnectionActor {
                         // Expected socket exceptions during disconnection - no logging needed
                     }
                     else -> {
-                        logger.debug("Thread exception in ${thread.name}: ${throwable.message}")
+                        logger.warn("Uncaught exception in thread ${thread.name}: ${throwable.message}")
                     }
                 }
             }
@@ -114,13 +114,13 @@ object ConnectionActor {
                         // Handle connection exceptions gracefully
                         when {
                             e.message?.contains("Connection reset") == true -> {
-                                logger.debug("🔗 Socket connection reset in receivePostAuthMessage")
+                                logger.debug("receivePostAuthMessage: Socket connection reset")
                             }
                             e.message?.contains("Broken pipe") == true -> {
                                 // Expected during connection termination - no logging needed
                             }
                             e.message?.contains("Connection refused") == true -> {
-                                logger.debug("🔗 Socket connection refused in receivePostAuthMessage")
+                                logger.debug("receivePostAuthMessage: Socket connection refused")
                             }
                             e is java.net.SocketException -> {
                                 // Expected socket exceptions - no logging needed
@@ -129,7 +129,7 @@ object ConnectionActor {
                                 // Expected IO exceptions - no logging needed
                             }
                             else -> {
-                                logger.debug("🚨 receivePostAuthMessage failed: ${e.message}")
+                                logger.warn("receivePostAuthMessage failed: ${e.message}")
                             }
                         }
                         // Re-throw to be handled by the outer connection setup catch block
@@ -319,6 +319,9 @@ object ConnectionActor {
                                 // otherwise, Kotlin would warn that the return
                                 // type does not match to the other branches
                                 null
+                            }
+                            is PingAction -> {
+                                sendPostAuthMessage(action.ping)
                             }
                             is SendIndexUpdateAction -> {
                                 async {

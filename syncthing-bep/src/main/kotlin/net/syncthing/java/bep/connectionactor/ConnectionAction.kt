@@ -17,7 +17,13 @@ import kotlinx.coroutines.CompletableDeferred
 import net.syncthing.java.bep.BlockExchangeProtos
 
 sealed class ConnectionAction
+
 object CloseConnectionAction: ConnectionAction()
+
+class PingAction(
+    val ping: BlockExchangeProtos.Ping = BlockExchangeProtos.Ping.getDefaultInstance()
+) : ConnectionAction()
+
 class SendRequestConnectionAction(
         val request: BlockExchangeProtos.Request,
         val completableDeferred: CompletableDeferred<BlockExchangeProtos.Response>

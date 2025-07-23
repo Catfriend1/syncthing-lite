@@ -63,7 +63,7 @@ class DownloadFileTask(private val fileStorageDirectory: File,
 
         downloadJob = MainScope().launch(Dispatchers.IO) {
             if (file.targetFile.exists()) {
-                Log.d(TAG, "there is already a file")
+                Log.d(TAG, "File already exists from prior download: " + file.targetFile.getAbsolutePath())
 
                 callComplete(file.targetFile)
 
