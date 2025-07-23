@@ -226,42 +226,6 @@ object ConnectionActorGenerator {
             )
             dispatchConnection(connection.first, connection.second, deviceAddress)
 
-            // Monitor the connection actor to detect when it terminates
-            scope.launch {
-                try {
-                    // Wait for the connection actor to close
-                    connection.first.invokeOnClose { cause ->
-                        // logger.trace("Connection actor closed: $cause")
-                        scope.launch {
-                            // Set status to disconnected when connection actor closes
-                            if (currentActor == connection.first) {
-                                logger.trace("Setting connection status to Disconnected due to channel closure")
-                                currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
-                                currentActor = closed
-                                dispatchStatus()
-                            }
-                        }
-                    }
-                    
-                    // Connection monitoring: check if the connection is still active
-                    while (currentActor == connection.first && isChannelOpen(connection.first)) {
-                        delay(2000) // Check every 2 seconds for faster detection
-                        
-                        // Check if the channel is still open after delay
-                        if (currentActor == connection.first && !isChannelOpen(connection.first)) {
-                            // Channel was closed, update status immediately
-                            logger.trace("Channel closed detected in monitoring loop")
-                            currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
-                            currentActor = closed
-                            dispatchStatus()
-                            break
-                        }
-                    }
-                } catch (e: Exception) {
-                    logger.warn("Error monitoring connection: ${e.message}")
-                }
-            }
-
             return true
         }
 
