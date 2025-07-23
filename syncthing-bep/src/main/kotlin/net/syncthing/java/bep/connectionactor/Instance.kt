@@ -45,7 +45,22 @@ object ConnectionActor {
     ): SendChannel<ConnectionAction> {
         val channel = Channel<ConnectionAction>(Channel.RENDEZVOUS)
 
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
+            when {
+                throwable.message?.contains("Broken pipe") == true -> {
+                    // Expected during connection termination - no logging needed
+                }
+                throwable.message?.contains("Connection reset") == true -> {
+                    // Expected during connection issues - no logging needed
+                }
+                throwable is java.net.SocketException -> {
+                    // Expected socket exceptions during disconnection - no logging needed
+                }
+                else -> {
+                    logger.error("Uncaught exception in connection actor: ${throwable.message}")
+                }
+            }
+        }).launch {
             Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
                 when {
                     throwable.message?.contains("Broken pipe") == true -> {
