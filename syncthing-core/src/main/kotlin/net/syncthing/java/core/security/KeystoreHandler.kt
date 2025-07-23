@@ -92,6 +92,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         try {
             logger.debug("Wrapping plain socket, server mode: {}.", isServerSocket)
             val sslSocket = socketFactory.createSocket(socket, null, socket.port, true) as SSLSocket
+            sslSocket.enabledProtocols = arrayOf(TLS_VERSION)
             sslSocket.enabledCipherSuites = sslSocket.supportedCipherSuites
             if (isServerSocket) {
                 sslSocket.useClientMode = false
@@ -113,6 +114,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     fun createSocket(relaySocketAddress: InetSocketAddress): SSLSocket {
         try {
             val socket = socketFactory.createSocket() as SSLSocket
+            socket.enabledProtocols = arrayOf(TLS_VERSION)
+            socket.enabledCipherSuites = socket.supportedCipherSuites
             socket.connect(relaySocketAddress, SOCKET_TIMEOUT)
             return socket
         } catch (e: KeyManagementException) {
