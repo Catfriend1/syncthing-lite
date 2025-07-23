@@ -44,7 +44,11 @@ object ConnectionActorGenerator {
      * We check both that it's not the closed sentinel and that it's actually open for sending.
      */
     private fun isChannelOpen(channel: SendChannel<ConnectionAction>): Boolean {
-        return channel != closed && !channel.isClosedForSend
+        return try {
+            channel.trySend(PingAction()).isSuccess
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun deviceAddressesGenerator(deviceAddress: ReceiveChannel<DeviceAddress>) = scope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
