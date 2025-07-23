@@ -139,7 +139,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             val keystoreData = keystoreHandler.exportKeystoreToData()
             val hash = MessageDigest.getInstance("SHA-256").digest(keystoreData)
             keystoreHandlersCacheByHash[Base32().encodeAsString(hash)] = keystoreHandler
-            logger.info("Keystore is ready for device ID: {}.", keystore.second)
+            logger.trace("Keystore is ready for device ID: {}.", keystore.second)
             return Triple(keystore.second, keystoreData, keystoreAlgorithm)
         }
 
@@ -153,7 +153,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             val keystore = importKeystore(configuration.keystoreData, keystoreAlgo)
             val keystoreHandler = KeystoreHandler(keystore.first)
             keystoreHandlersCacheByHash[Base32().encodeAsString(hash)] = keystoreHandler
-            logger.info("Keystore is ready for device ID: {}.", keystore.second)
+            logger.trace("Keystore is ready for device ID: {}.", keystore.second)
             return keystoreHandler
         }
 
@@ -178,7 +178,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val certificateDerData = certificateHolder.encoded
                 // logger.trace("Generated certificate: {}.", derToPem(certificateDerData))
                 val deviceId = derDataToDeviceId(certificateDerData)
-                logger.info("Device ID from certificate: {}.", deviceId)
+                // logger.trace("Device ID from certificate: {}.", deviceId)
 
                 val keyStore = KeyStore.getInstance(keystoreAlgorithm)
                 keyStore.load(null, null)
