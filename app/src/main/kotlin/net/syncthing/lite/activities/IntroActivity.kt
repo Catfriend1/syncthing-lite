@@ -110,7 +110,6 @@ class IntroActivity : SyncthingActivity() {
             override fun onPageSelected(position: Int) {
                 updatePageIndicators(position)
                 updateNavigationButtons(position)
-                updateDiscoveryForCurrentSlide()
                 
                 // Validate current page if it's the device ID page (but don't import yet)
                 if (position == 1) {
@@ -150,35 +149,6 @@ class IntroActivity : SyncthingActivity() {
 
     private fun Int.dpToPx(): Int {
         return (this * resources.displayMetrics.density).toInt()
-    }
-
-    override fun onLibraryLoaded() {
-        // For IntroActivity, start with discovery disabled on slide 1
-        // Discovery will be enabled based on slide position via updateDiscoveryForCurrentSlide()
-        updateDiscoveryForCurrentSlide()
-        
-        // Start connection manager
-        connectionManager.start()
-    }
-    
-    private fun updateDiscoveryForCurrentSlide() {
-        when (binding.viewPager.currentItem) {
-            0 -> {
-                // Slide 1: Disable both local and global discovery
-                libraryHandler.disableLocalDiscovery()
-                libraryHandler.disableGlobalDiscovery()
-            }
-            1 -> {
-                // Slide 2: Enable local discovery only, disable global
-                libraryHandler.enableLocalDiscovery()
-                libraryHandler.disableGlobalDiscovery()
-            }
-            2 -> {
-                // Slide 3: Enable both local and global discovery
-                libraryHandler.enableLocalDiscovery()
-                libraryHandler.enableGlobalDiscovery()
-            }
-        }
     }
 
     fun onDonePressed() {
