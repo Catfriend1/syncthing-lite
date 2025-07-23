@@ -92,6 +92,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         try {
             logger.debug("Wrapping plain socket, server mode: {}.", isServerSocket)
             val sslSocket = socketFactory.createSocket(socket, null, socket.port, true) as SSLSocket
+            sslSocket.enabledCipherSuites = sslSocket.supportedCipherSuites
             if (isServerSocket) {
                 sslSocket.useClientMode = false
             }
