@@ -39,7 +39,7 @@ class DevicesAdapter: RecyclerView.Adapter<DeviceViewHolder>() {
 
         // Ensure device name is never empty - fallback to device ID if name is null/empty
         binding.name = deviceInfo.name?.takeIf { it.isNotBlank() } 
-            ?: deviceInfo.deviceId.deviceId.take(7) + "..."
+            ?: deviceInfo.deviceId.deviceId.take(7)
         binding.isConnected = connectionInfo.status == ConnectionStatus.Connected
 
         binding.status = when (connectionInfo.status) {
