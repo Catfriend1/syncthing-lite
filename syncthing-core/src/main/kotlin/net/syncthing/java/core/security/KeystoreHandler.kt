@@ -192,8 +192,10 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 keyStore.setKeyEntry("key", keyPair.private, KEY_PASSWORD.toCharArray(), certChain)
                 return Pair(keyStore, deviceId)
             } catch (e: OperatorCreationException) {
+                logger.trace("generateKeystore: OperatorCreationException", e)
                 throw CryptoException(e)
             } catch (e: CertificateException) {
+                logger.trace("generateKeystore: CertificateException", e)
                 throw CryptoException(e)
             } catch (e: NoSuchAlgorithmException) {
                 logger.trace("generateKeystore: NoSuchAlgorithmException", e)
