@@ -81,7 +81,7 @@ object ConnectionActor {
                         )
                         return result
                     } catch (e: Exception) {
-                        logger.error("🚨 receivePostAuthMessage failed: ${e.message}")
+                        logger.warn("receivePostAuthMessage failed: ${e.message}")
                         throw e
                     }
                 }
