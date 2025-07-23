@@ -129,7 +129,7 @@ object ConnectionActor {
                                 // Expected IO exceptions - no logging needed
                             }
                             else -> {
-                                logger.warn("receivePostAuthMessage failed: ${e.message}")
+                                logger.error("Uncaught exception in receivePostAuthMessage: ${e.message}")
                             }
                         }
                         // Re-throw to be handled by the outer connection setup catch block
@@ -153,13 +153,13 @@ object ConnectionActor {
                     // Handle connection exceptions gracefully
                     when {
                         e.message?.contains("Connection reset") == true -> {
-                            logger.debug("🔗 Socket connection reset during cluster config exchange")
+                            logger.trace("receivePostAuthMessage: connection reset during cluster config exchange")
                         }
                         e.message?.contains("Broken pipe") == true -> {
                             // Expected during connection termination - no logging needed
                         }
                         e.message?.contains("Connection refused") == true -> {
-                            logger.debug("🔗 Socket connection refused during cluster config exchange")
+                            logger.trace("receivePostAuthMessage: connection refused during cluster config exchange")
                         }
                         e is java.net.SocketException -> {
                             // Expected socket exceptions - no logging needed
@@ -168,7 +168,7 @@ object ConnectionActor {
                             // Expected IO exceptions - no logging needed
                         }
                         else -> {
-                            logger.debug("💥 Exception while receiving post-auth message: ${e.message}")
+                            logger.error("receivePostAuthMessage: Uncaught exception, ${e.message}")
                         }
                     }
                     // Re-throw to be handled by the outer connection setup catch block
