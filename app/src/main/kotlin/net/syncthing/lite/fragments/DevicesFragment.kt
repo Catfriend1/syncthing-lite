@@ -11,16 +11,12 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
-import net.syncthing.java.bep.connectionactor.ConnectionStatus
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.lite.R
-import net.syncthing.lite.activities.IntroActivity
 import net.syncthing.lite.activities.QRScannerActivity
-import net.syncthing.lite.activities.SyncthingActivity
 import net.syncthing.lite.adapters.DeviceAdapterListener
 import net.syncthing.lite.adapters.DevicesAdapter
 import net.syncthing.lite.databinding.FragmentDevicesBinding
@@ -88,18 +84,9 @@ class DevicesFragment : SyncthingFragment() {
 
         launch {
             libraryHandler.subscribeToConnectionStatus().collect { connectionInfo ->
-                // Ensure we have a valid view before updating
-                if (!isAdded || view == null) return@collect
-                
                 val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }
 
-                // Defensive check to ensure data consistency
-                val deviceConnectionPairs = devices.map { device ->
-                    val connection = connectionInfo[device.deviceId] ?: ConnectionInfo.empty
-                    device to connection
-                }
-                
-                adapter.data = deviceConnectionPairs
+                adapter.data = devices.map { device -> device to (connectionInfo[device.deviceId] ?: ConnectionInfo.empty) }
                 binding.isEmpty = devices.isEmpty()
             }
         }
@@ -134,13 +121,7 @@ class DevicesFragment : SyncthingFragment() {
         fun handleAddClick() {
             try {
                 val deviceId = binding.deviceId.text.toString()
-                Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId) {
-                    // Trigger immediate connection attempt after device import
-                    when (val act = activity) {
-                        is SyncthingActivity -> act.triggerImmediateConnectionAttempt()
-                        is IntroActivity -> act.triggerImmediateConnectionAttempt()
-                    }
-                }
+                Util.importDeviceId(libraryHandler.libraryManager, requireContext(), deviceId, { /* TODO: Is updateDeviceList() still required? */ })
                 dialog.dismiss()
             } catch (e: IOException) {
                 binding.deviceId.error = getString(R.string.invalid_device_id)
