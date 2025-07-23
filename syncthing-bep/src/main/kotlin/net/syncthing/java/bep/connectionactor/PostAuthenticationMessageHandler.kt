@@ -148,7 +148,7 @@ object PostAuthenticationMessageHandler {
         // logger.debug("📏 Raw messageLength read: $messageLength")
 
         if (messageLength == 0) {
-            logger.warn("⚠️ Message length is zero — skipping readFully, maybe keepalive?")
+            // logger.trace("⚠️ Message length is zero — skipping readFully, maybe ping?")
             return ByteArray(0)
         }
 
