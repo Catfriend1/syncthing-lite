@@ -37,6 +37,7 @@ import java.security.cert.Certificate
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.security.spec.NamedParameterSpec
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
@@ -161,11 +162,13 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private fun generateKeystore(keystoreAlgorithm: String): Pair<KeyStore, DeviceId> {
             try {
                 // logger.trace("Generating key.")
-                val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO)
-                keyPairGenerator.initialize(KEY_SIZE)
+                val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO, BouncyCastleProvider.PROVIDER_NAME)
+                keyPairGenerator.initialize(NamedParameterSpec(KEY_ALGO))
                 val keyPair = keyPairGenerator.genKeyPair()
 
-                val contentSigner = JcaContentSignerBuilder(SIGNATURE_ALGO).build(keyPair.private)
+                val contentSigner = JcaContentSignerBuilder(SIGNATURE_ALGO)
+                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                    .build(keyPair.private)
 
                 val startDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1))
                 val endDate = Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(10 * 365))
@@ -183,7 +186,9 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val keyStore = KeyStore.getInstance(keystoreAlgorithm)
                 keyStore.load(null, null)
                 val certChain = arrayOfNulls<Certificate>(1)
-                certChain[0] = JcaX509CertificateConverter().getCertificate(certificateHolder)
+                certChain[0] = JcaX509CertificateConverter()
+                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                    .getCertificate(certificateHolder)
                 keyStore.setKeyEntry("key", keyPair.private, KEY_PASSWORD.toCharArray(), certChain)
                 return Pair(keyStore, deviceId)
             } catch (e: OperatorCreationException) {
@@ -233,10 +238,9 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
         private const val JKS_PASSWORD = "password"
         private const val KEY_PASSWORD = "password"
-        private const val KEY_ALGO = "RSA"
-        private const val SIGNATURE_ALGO = "SHA1withRSA"
+        private const val KEY_ALGO = "Ed25519"
+        private const val SIGNATURE_ALGO = "Ed25519"
         private const val CERTIFICATE_CN = "CN=syncthing"
-        private const val KEY_SIZE = 3072
         private const val SOCKET_TIMEOUT = 2000
         private const val TLS_VERSION = "TLSv1.3"
 
@@ -274,7 +278,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
             val derData = certificate.encoded
             val deviceIdFromCertificate = derDataToDeviceId(derData)
-            // logger.trace("Remote PEM Certificate: {}.", derToPem(derData))
+            logger.trace("Remote PEM Certificate: {}.", derToPem(derData))
 
             NetworkUtils.assertProtocol(deviceIdFromCertificate == deviceId) {
                 "Device ID mismatch! Expected = $deviceId, Received = $deviceIdFromCertificate."
