@@ -273,7 +273,7 @@ object ConnectionActorGenerator {
             currentActor.close()
         }
 
-        val reconnectTicker = ticker(delayMillis = 10 * 1000, initialDelayMillis = 0)
+        val reconnectTicker = ticker(delayMillis = 30 * 1000, initialDelayMillis = 0)
 
         deviceAddressSource.consume {
             while (true) {
