@@ -39,64 +39,62 @@ class DownloadFileDialogViewModel : ViewModel() {
 
         libraryHandler.start()
 
-        // Use enhanced connection method to ensure connection is available
-        downloadJob = MainScope().launch {
+        // this keeps the client only active as long as the block is running
+        // but the file downloading is not synchronous.
+        // Due to that, the start and stop calls are used.
+        libraryHandler.syncthingClient {
+            syncthingClient ->
+
             try {
-                libraryHandler.syncthingClientWithConnection { syncthingClient ->
-                    try {
-                        val fileInfo = syncthingClient.indexHandler.getFileInfoByPath(
-                                folder = fileSpec.folder,
-                                path = fileSpec.path
-                        )!!
+                val fileInfo = syncthingClient.indexHandler.getFileInfoByPath(
+                        folder = fileSpec.folder,
+                        path = fileSpec.path
+                )!!
 
-                        val task = DownloadFileTask(
-                                fileStorageDirectory = externalCacheDir,
-                                syncthingClient = syncthingClient,
-                                fileInfo = fileInfo,
-                                onProgress = { status ->
-                                    val newProgress = if (status.totalTransferSize == 0L) {
-                                        // For 0-byte files, show 100% progress immediately
-                                        DownloadFileStatusRunning.MAX_PROGRESS
-                                    } else {
-                                        (status.downloadedBytes * DownloadFileStatusRunning.MAX_PROGRESS / status.totalTransferSize).toInt()
-                                    }
-                                    val currentStatus = statusInternal.value
+                val task = DownloadFileTask(
+                        fileStorageDirectory = externalCacheDir,
+                        syncthingClient = syncthingClient,
+                        fileInfo = fileInfo,
+                        onProgress = { status ->
+                            val newProgress = if (status.totalTransferSize == 0L) {
+                                // For 0-byte files, show 100% progress immediately
+                                DownloadFileStatusRunning.MAX_PROGRESS
+                            } else {
+                                (status.downloadedBytes * DownloadFileStatusRunning.MAX_PROGRESS / status.totalTransferSize).toInt()
+                            }
+                            val currentStatus = statusInternal.value
 
-                                    // only update if it changed
-                                    if (!(currentStatus is DownloadFileStatusRunning) || currentStatus.progress != newProgress) {
-                                        statusInternal.value = DownloadFileStatusRunning(newProgress)
-                                    }
-                                },
-                                onComplete = { file ->
-                                    libraryHandler.stop()
+                            // only update if it changed
+                            if (!(currentStatus is DownloadFileStatusRunning) || currentStatus.progress != newProgress) {
+                                statusInternal.value = DownloadFileStatusRunning(newProgress)
+                            }
+                        },
+                        onComplete = { file ->
+                            libraryHandler.stop()
 
-                                    downloadJob = MainScope().launch {
-                                        try {
-                                            if (outputUri != null) {
-                                                contentResolver.openOutputStream(outputUri).use { outputStream ->
-                                                    FileUtils.copyFile(file, outputStream)
-                                                }
-                                            }
-
-                                            statusInternal.postValue(DownloadFileStatusDone(file))
-                                        } catch (ex: Exception) {
-                                            Log.d(TAG, "File download completed but save failed: ${ex.message}", ex)
-                                            statusInternal.postValue(DownloadFileStatusFailed)
+                            downloadJob = MainScope().launch {
+                                try {
+                                    if (outputUri != null) {
+                                        contentResolver.openOutputStream(outputUri).use { outputStream ->
+                                            FileUtils.copyFile(file, outputStream)
                                         }
                                     }
-                                },
-                                onError = {
-                                    statusInternal.value = DownloadFileStatusFailed
-                                    libraryHandler.stop()
+
+                                    statusInternal.postValue(DownloadFileStatusDone(file))
+                                } catch (ex: Exception) {
+                                    Log.w(TAG, "downloading file failed", ex)
+                                    statusInternal.postValue(DownloadFileStatusFailed)
                                 }
-                        )
-                    } catch (ex: Exception) {
-                        Log.d(TAG, "File download setup failed: ${ex.message}", ex)
-                        statusInternal.postValue(DownloadFileStatusFailed)
-                    }
-                }
+                            }
+                        },
+                        onError = {
+                            statusInternal.value = DownloadFileStatusFailed
+
+                            libraryHandler.stop()
+                        }
+                )
             } catch (ex: Exception) {
-                Log.d(TAG, "File download failed due to connection issues: ${ex.message}", ex)
+                Log.w(TAG, "downloading file failed", ex)
                 statusInternal.postValue(DownloadFileStatusFailed)
             }
         }
