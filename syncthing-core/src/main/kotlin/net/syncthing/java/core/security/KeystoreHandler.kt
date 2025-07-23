@@ -194,6 +194,9 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 throw CryptoException(e)
             } catch (e: KeyStoreException) {
                 throw CryptoException(e)
+            } catch (e: Exception) {
+                logger.error("generateKeystore: Uncaught exception", e)
+                throw Exception(e)
             }
 
         }
