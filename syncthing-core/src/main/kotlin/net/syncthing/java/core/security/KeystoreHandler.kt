@@ -208,11 +208,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 )
 
                 certBuilder.addExtension(
-                    Extension.subjectKeyIdentifier, false,
-                    extUtils.createSubjectKeyIdentifier(keyPair.public)
-                )
-
-                certBuilder.addExtension(
                     Extension.extendedKeyUsage, false,
                     ExtendedKeyUsage(arrayOf(KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth))
                 )
