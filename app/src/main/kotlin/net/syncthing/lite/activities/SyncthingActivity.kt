@@ -28,10 +28,6 @@ abstract class SyncthingActivity : CoroutineActivity() {
         private const val TAG = "SyncthingActivity"
     }
 
-    companion object {
-        private const val TAG = "SyncthingActivity"
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         connectionManager = ConnectionManager(libraryHandler, this, TAG)
