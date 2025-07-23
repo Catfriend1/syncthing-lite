@@ -73,7 +73,7 @@ object PostAuthenticationMessageHandler {
 
         // logger.debug("🔹 Raw header bytes: ${headerBytes.toHexString()}")
         val header: BlockExchangeProtos.Header = if (headerBytes.isEmpty()) {
-            logger.warn("📭 Header bytes were empty — using default Header")
+            // logger.trace("📭 Header bytes were empty — using default Header")
             BlockExchangeProtos.Header.getDefaultInstance()
         } else {
             BlockExchangeProtos.Header.parseFrom(headerBytes)
