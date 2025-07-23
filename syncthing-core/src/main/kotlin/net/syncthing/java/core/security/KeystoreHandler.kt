@@ -46,6 +46,7 @@ import java.security.cert.Certificate
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.security.spec.ECGenParameterSpec
 import java.security.spec.NamedParameterSpec
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -172,7 +173,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             try {
                 // logger.trace("Generating key.")
                 val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO, BouncyCastleProvider.PROVIDER_NAME)
-                keyPairGenerator.initialize(NamedParameterSpec(KEY_ALGO))
+                val ecSpec = ECGenParameterSpec("secp384r1")
+                keyPairGenerator.initialize(ecSpec)
                 val keyPair = keyPairGenerator.genKeyPair()
 
                 val contentSigner = JcaContentSignerBuilder(SIGNATURE_ALGO)
