@@ -112,7 +112,7 @@ class MainActivity : SyncthingActivity() {
     }
 
     private fun cleanCacheAndIndex() {
-        Log.d(TAG, "MainActivity cleanCacheAndIndex() called")
+        Log.v(TAG, "cleanCacheAndIndex() called")
         launch {
             libraryHandler.libraryManager.withLibrary {
                 it.syncthingClient.clearCacheAndIndex()
