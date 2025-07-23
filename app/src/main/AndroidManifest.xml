@@ -36,7 +36,12 @@
             android:name=".library.CacheFileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:grantUriPermissions="true"
-            android:exported="false" />
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths">
+            </meta-data>
+        </provider>
         <provider
             android:name=".library.SyncthingProvider"
             android:authorities="${applicationId}.documents"
