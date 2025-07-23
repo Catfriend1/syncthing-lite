@@ -160,7 +160,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         @Throws(CryptoException::class, IOException::class)
         private fun generateKeystore(keystoreAlgorithm: String): Pair<KeyStore, DeviceId> {
             try {
-                logger.trace("Generating key.")
+                // logger.trace("Generating key.")
                 val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO)
                 keyPairGenerator.initialize(KEY_SIZE)
                 val keyPair = keyPairGenerator.genKeyPair()
