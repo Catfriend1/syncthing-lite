@@ -57,7 +57,7 @@ object ConnectionActor {
                     // Expected socket exceptions during disconnection - no logging needed
                 }
                 else -> {
-                    logger.debug("Connection actor exception: ${throwable.message}")
+                    logger.error("Uncaught exception in connection actor: ${throwable.message}")
                 }
             }
         }).launch {
