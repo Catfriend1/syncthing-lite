@@ -162,7 +162,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private fun generateKeystore(keystoreAlgorithm: String): Pair<KeyStore, DeviceId> {
             try {
                 // logger.trace("Generating key.")
-                val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO, BouncyCastleProvider())
+                val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO, BouncyCastleProvider.PROVIDER_NAME)
                 keyPairGenerator.initialize(NamedParameterSpec(KEY_ALGO))
                 val keyPair = keyPairGenerator.genKeyPair()
 
