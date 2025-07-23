@@ -222,6 +222,9 @@ object ConnectionActor {
                                 // type does not match to the other branches
                                 null
                             }
+                            is PingAction -> {
+                                sendPostAuthMessage(action.ping)
+                            }
                             is SendIndexUpdateAction -> {
                                 async {
                                     try {
