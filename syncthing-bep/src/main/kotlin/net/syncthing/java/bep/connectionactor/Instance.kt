@@ -47,8 +47,8 @@ object ConnectionActor {
 
         CoroutineScope(Dispatchers.IO).launch {
             Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-                println("💣 Uncaught exception in thread ${thread.name}: ${throwable.message}")
-                throwable.printStackTrace()
+                logger.warn("Uncaught exception in thread ${thread.name}: ${throwable.message}")
+                // throwable.printStackTrace()
             }
 
             OpenConnection.openSocketConnection(address, configuration).use { socket ->
