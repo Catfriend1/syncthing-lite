@@ -72,8 +72,14 @@ class DiscoveryHandler(
     }
 
     private fun initLocalDiscoveryIfNotYetDone() {
+        if (!localDiscoveryEnabled) {
+            logger.trace("initLocalDiscoveryIfNotYetDone() skipped")
+            return
+        }
+        
         if (shouldStartLocalDiscovery) {
             shouldStartLocalDiscovery = false
+            // logger.trace("Starting local discovery listener and sending announcement")
             localDiscoveryHandler.startListener()
             localDiscoveryHandler.sendAnnounceMessage()
         }
