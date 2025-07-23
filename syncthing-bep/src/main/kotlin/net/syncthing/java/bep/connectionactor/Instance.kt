@@ -351,13 +351,13 @@ object ConnectionActor {
                 // Handle connection setup failures gracefully to allow retry mechanism to work
                 when {
                     e.message?.contains("Connection reset") == true -> {
-                        logger.debug("🔗 Connection setup failed: Socket connection reset")
+                        logger.trace("openSocketConnection: Socket connection reset")
                     }
                     e.message?.contains("Broken pipe") == true -> {
                         // Expected during connection termination - no logging needed
                     }
                     e.message?.contains("Connection refused") == true -> {
-                        logger.debug("🔗 Connection setup failed: Socket connection refused")
+                        logger.trace("openSocketConnection: Socket connection refused")
                     }
                     e is java.net.SocketException -> {
                         // Expected socket exceptions - no logging needed
@@ -366,7 +366,7 @@ object ConnectionActor {
                         // Expected IO exceptions - no logging needed
                     }
                     else -> {
-                        logger.debug("🔄 Connection setup failed, allowing retry: ${e.message}")
+                        logger.error("openSocketConnection: Uncaught exception, allowing retry: ${e.message}")
                     }
                 }
                 // Exit gracefully so the retry mechanism can work
