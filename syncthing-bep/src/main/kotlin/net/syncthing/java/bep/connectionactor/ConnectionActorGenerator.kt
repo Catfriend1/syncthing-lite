@@ -369,11 +369,11 @@ object ConnectionActorGenerator {
                     
                     // After the timeout, force a retry attempt even if no new addresses arrived
                     // This ensures retry attempts happen even when device already has addresses
-					/*
+                    /*
                     if (newDeviceAddressList == null && currentStatus.addresses.isNotEmpty()) {
                         logger.trace("Forcing retry attempt with existing addresses after timeout")
                     }
-					*/
+                    */
                 }
             }
         }
