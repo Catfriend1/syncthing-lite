@@ -101,7 +101,7 @@ class DownloadFileTask(private val fileStorageDirectory: File,
     private fun callProgress(status: BlockPullerStatus) {
         handler.post {
             if (!doneListenerCalled) {
-                Log.i("pullFile", "download progress = $status")
+                Log.v("pullFile", "download progress = $status")
 
                 onProgress(status)
             }
