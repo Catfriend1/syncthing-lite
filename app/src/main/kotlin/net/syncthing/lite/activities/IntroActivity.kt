@@ -347,7 +347,7 @@ class IntroActivity : SyncthingActivity() {
             val binding = FragmentIntroThreeBinding.inflate(inflater, container, false)
 
             launch {
-                val ownDeviceId = libraryHandler.libraryManager.withLibrary { it.configuration.localDeviceId }
+                val ownDeviceId = libraryHandler.libraryManager.withLibrary { it.configuration.localDeviceId.deviceId }
 
                 libraryHandler.subscribeToConnectionStatus().collect {
                     if (it.values.find { it.addresses.isNotEmpty() } != null) {
