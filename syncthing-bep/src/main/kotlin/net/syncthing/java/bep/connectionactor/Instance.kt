@@ -75,7 +75,7 @@ object ConnectionActor {
                         // Expected socket exceptions during disconnection - no logging needed
                     }
                     else -> {
-                        logger.warn("Uncaught exception in thread ${thread.name}: ${throwable.message}")
+                        logger.error("Uncaught exception in thread ${thread.name}: ${throwable.message}")
                     }
                 }
             }
