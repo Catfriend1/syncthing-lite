@@ -102,6 +102,58 @@ class DiscoveryHandler(
         ).putAddress(deviceAddress)
     }
 
+    /**
+     * Enable discovery to start running. This must be called before discovery will actually start.
+     */
+    fun enableDiscovery() {
+        logger.info("enableDiscovery() called - discovery is now enabled")
+        discoveryEnabled = true
+    }
+
+    /**
+     * Disable discovery to prevent it from running
+     */
+    fun disableDiscovery() {
+        logger.info("disableDiscovery() called - discovery is now disabled")
+        discoveryEnabled = false
+    }
+
+    /**
+     * Enable local discovery specifically
+     */
+    fun enableLocalDiscovery() {
+        logger.info("enableLocalDiscovery() called - local discovery is now enabled")
+        localDiscoveryEnabled = true
+        // Actually start local discovery if it's not already running
+        initLocalDiscoveryIfNotYetDone()
+    }
+
+    /**
+     * Disable local discovery specifically
+     */
+    fun disableLocalDiscovery() {
+        logger.info("disableLocalDiscovery() called - local discovery is now disabled")
+        localDiscoveryEnabled = false
+    }
+
+    /**
+     * Enable global discovery specifically
+     */
+    fun enableGlobalDiscovery() {
+        logger.info("enableGlobalDiscovery() called - global discovery is now enabled")
+        globalDiscoveryEnabled = true
+        // Actually start global discovery if it's not already running
+        doGlobalDiscoveryIfNotYetDone()
+    }
+
+    /**
+     * Disable global discovery specifically
+     */
+    fun disableGlobalDiscovery() {
+        logger.info("disableGlobalDiscovery() called - global discovery is now disabled")
+        globalDiscoveryEnabled = false
+    }
+
     fun newDeviceAddressSupplier(): DeviceAddressSupplier {
         if (isClosed) {
             throw IllegalStateException()
