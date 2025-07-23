@@ -346,16 +346,8 @@ object ConnectionActorGenerator {
                     // this does not reset if it has not counted down the whole time yet
                     reconnectTicker.tryReceive().getOrNull()
 
-                    // Use shorter retry interval for immediate reconnection after connection reset
-                    val retryTimeout = 3L * 1000 // 3 seconds for immediate response to connection issues
-
-                    // logger.trace("Waiting for retry (timeout: ${retryTimeout}ms)")
-
-                    // Always use the standard retry timeout for consistent behavior
-                    val actualRetryTimeout = retryTimeout
-
-                    // Wait for either new device addresses or timeout
-                    val newDeviceAddressList = withTimeoutOrNull(actualRetryTimeout) {
+                    // wait for new device address list but not more than 15 seconds before the next iteration
+                    val newDeviceAddressList = withTimeoutOrNull(15 * 1000) {
                         deviceAddressSource.receive()
                     }
 
@@ -363,17 +355,7 @@ object ConnectionActorGenerator {
                         logger.trace("Received new device address list with ${newDeviceAddressList.size} addresses")
                         currentStatus = currentStatus.copy(addresses = newDeviceAddressList)
                         dispatchStatus()
-                    } /* else {
-                        logger.trace("Retry timeout reached, will try again in next iteration")
-                    } */
-                    
-                    // After the timeout, force a retry attempt even if no new addresses arrived
-                    // This ensures retry attempts happen even when device already has addresses
-                    /*
-                    if (newDeviceAddressList == null && currentStatus.addresses.isNotEmpty()) {
-                        logger.trace("Forcing retry attempt with existing addresses after timeout")
                     }
-                    */
                 }
             }
         }
