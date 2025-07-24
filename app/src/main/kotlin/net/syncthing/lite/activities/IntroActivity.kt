@@ -44,7 +44,7 @@ class IntroActivity : SyncthingActivity() {
 
     companion object {
         private const val ENABLE_TEST_DATA: Boolean = true
-        private const val TEST_DEVICE_ID: String = "WOKAFZR-NH7WBI3-ZAEK3SZ-OIUNQB2-BEZ7ZS4-MGJVJLD-JC6I6DK-64ZCHQL"
+        private const val TEST_DEVICE_ID: String = "ELQBG5X-NNNR7JC-NB7P7HF-AAZRSWD-ODAETQG-6OBQZRJ-7V2E7J6-KNMXNQL"
         private const val TAG = "IntroActivity"
     }
 
