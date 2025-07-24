@@ -4,7 +4,9 @@ import android.app.Application
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import java.security.Security
 import net.syncthing.lite.error.ErrorStorage
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 class Application: Application() {
     companion object {
@@ -14,6 +16,12 @@ class Application: Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        val provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)
+        if (provider == null || provider.javaClass != BouncyCastleProvider::class.java) {
+            Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
+            Security.insertProviderAt(BouncyCastleProvider(), 1)
+        }
 
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         val mainThread = Thread.currentThread()
