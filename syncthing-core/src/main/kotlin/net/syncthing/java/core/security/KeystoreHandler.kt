@@ -65,7 +65,18 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
         keyManagerFactory.init(keyStore, KEY_PASSWORD.toCharArray())
 
-        sslContext.init(keyManagerFactory.keyManagers, arrayOf(object : X509TrustManager {
+        // Workaround for Syncthing v2.x TLS handshake requirements:
+        // Use ForcedKeyManager to ensure our client certificate is always selected
+        // by alias "key", instead of relying on Android/JVM internal selection logic
+        val keyManagers = keyManagerFactory.keyManagers.map { keyManager ->
+            if (keyManager is X509ExtendedKeyManager) {
+                ForcedKeyManager(keyManager, "key")
+            } else {
+                keyManager
+            }
+        }.toTypedArray()
+
+        sslContext.init(keyManagers, arrayOf(object : X509TrustManager {
             @Throws(CertificateException::class)
             override fun checkClientTrusted(xcs: Array<X509Certificate>, string: String) {}
             @Throws(CertificateException::class)
