@@ -39,6 +39,7 @@ class DeviceAddress private constructor(val deviceId: DeviceId, private val inst
         when {
             address.isEmpty() -> AddressType.NULL
             address.startsWith("tcp://") -> AddressType.TCP
+            address.startsWith("tcp4://") -> AddressType.TCP
             address.startsWith("relay://") -> AddressType.RELAY
             else -> AddressType.OTHER
         }
