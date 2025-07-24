@@ -287,7 +287,7 @@ object ConnectionActor {
 
                     channel.consumeEach { action ->
                         when (action) {
-                            CloseConnectionAction -> throw InterruptedException()
+                            is CloseConnectionAction -> throw InterruptedException()
                             is SendRequestConnectionAction -> {
                                 val requestId = nextRequestId++
 
