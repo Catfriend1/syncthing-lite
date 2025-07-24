@@ -234,10 +234,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                         .getCertificate(certHolderFinal)
                 )
                 keyStore.setKeyEntry("key", keyPair.private, KEY_PASSWORD.toCharArray(), certChain)
-                
-                // ⬇️ Füge direkt danach ein:
-val cert = keyStore.getCertificate("key") as X509Certificate
-println("Signaturalgorithmus: ${cert.sigAlgName}")
 
                 return Pair(keyStore, deviceId)
             } catch (e: OperatorCreationException) {
