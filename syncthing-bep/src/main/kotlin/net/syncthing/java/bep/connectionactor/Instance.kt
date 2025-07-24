@@ -134,19 +134,11 @@ object ConnectionActor {
                 }
 
                 logger.debug("📤 sendPostAuthMessage() sending CLUSTER_CONFIG")
-                val clusterConfigPair = try {
-                    coroutineScope {
-                        launch {
-                            sendPostAuthMessage(
-                                ClusterConfigHandler.buildClusterConfig(configuration, indexHandler, address.deviceId)
-                            )
-                        }
-                        async {
-                            receivePostAuthMessage()
-                        }.await()
-                    }
+                val clusterConfigMessage = ClusterConfigHandler.buildClusterConfig(configuration, indexHandler, address.deviceId)
+
+                try {
+                    sendPostAuthMessage(clusterConfigMessage)
                 } catch (e: Exception) {
-                    // Handle connection exceptions gracefully
                     when {
                         e.message?.contains("Connection reset") == true -> {
                             logger.trace("receivePostAuthMessage: connection reset during cluster config exchange")
@@ -167,7 +159,32 @@ object ConnectionActor {
                             logger.error("receivePostAuthMessage: Uncaught exception, ${e.message}")
                         }
                     }
-                    // Re-throw to be handled by the outer connection setup catch block
+                    throw e
+                }
+
+                val clusterConfigPair = try {
+                    receivePostAuthMessage()
+                } catch (e: Exception) {
+                    when {
+                        e.message?.contains("Connection reset") == true -> {
+                            logger.trace("receivePostAuthMessage: connection reset during cluster config reception")
+                        }
+                        e.message?.contains("Broken pipe") == true -> {
+                            // Expected during connection termination - no logging needed
+                        }
+                        e.message?.contains("Connection refused") == true -> {
+                            logger.trace("receivePostAuthMessage: connection refused during cluster config reception")
+                        }
+                        e is java.net.SocketException -> {
+                            // Expected socket exceptions - no logging needed
+                        }
+                        e is java.io.IOException -> {
+                            // Expected IO exceptions - no logging needed
+                        }
+                        else -> {
+                            logger.error("receivePostAuthMessage: Uncaught exception, ${e.message}")
+                        }
+                    }
                     throw e
                 }
                 logger.debug("📬 Received post-auth message type: ${clusterConfigPair.first}, class: ${clusterConfigPair.second.javaClass.name}")
