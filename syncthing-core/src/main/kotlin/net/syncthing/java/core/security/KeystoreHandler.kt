@@ -173,7 +173,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             try {
                 // logger.trace("Generating key.")
                 val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO, BouncyCastleProvider.PROVIDER_NAME)
-                val ecSpec = ECGenParameterSpec("secp384r1")
+                val ecSpec = ECGenParameterSpec("secp256r1")
                 keyPairGenerator.initialize(ecSpec)
                 val keyPair = keyPairGenerator.genKeyPair()
 
