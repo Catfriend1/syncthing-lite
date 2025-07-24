@@ -58,6 +58,7 @@ object ConnectionActor {
                 }
                 else -> {
                     logger.error("Uncaught exception in connection actor: ${throwable.message}")
+                    throwable.printStackTrace()
                 }
             }
         }).launch {
@@ -254,7 +255,11 @@ object ConnectionActor {
                                 }
                                 is BlockExchangeProtos.ClusterConfig -> throw IOException("received cluster config twice")
                                 is BlockExchangeProtos.Close -> socket.close()
-                                else -> throw IOException("unsupported message type ${message.javaClass}")
+                                else -> {
+                                    logger.error("🚨 Unknown message type in actor: ${message::class.qualifiedName}", Throwable("Sender trace"))
+                                    logger.error("🚨 Unknown message type in actor: ${message::class.qualifiedName}")
+                                    continue
+                                }
                             }
                         }
                     }
