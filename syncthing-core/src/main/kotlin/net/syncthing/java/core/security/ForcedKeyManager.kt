@@ -41,22 +41,46 @@ class ForcedKeyManager(
     }
 
     override fun chooseClientAlias(keyType: Array<String>?, issuers: Array<Principal>?, socket: Socket?): String? {
-        logger.debug("ForcedKeyManager: Forcing client alias selection to '{}'", forcedAlias)
+        logger.error("🔑 ForcedKeyManager.chooseClientAlias CALLED - keyType: ${keyType?.joinToString()}, forcedAlias: $forcedAlias")
+        // Verify the certificate and private key are accessible
+        val cert = delegate.getCertificateChain(forcedAlias)
+        val key = delegate.getPrivateKey(forcedAlias)
+        logger.error("🔑 Certificate available: ${cert != null}, PrivateKey available: ${key != null}")
+        if (cert != null) {
+            cert.forEach { x509 ->
+                if (x509 is X509Certificate) {
+                    logger.error("🔑 Certificate Subject: ${x509.subjectDN}")
+                    logger.error("🔑 Certificate SigAlg: ${x509.sigAlgName}")
+                }
+            }
+        }
         return forcedAlias
     }
 
     override fun chooseServerAlias(keyType: String?, issuers: Array<Principal>?, socket: Socket?): String? {
-        logger.debug("ForcedKeyManager: Forcing server alias selection to '{}'", forcedAlias)
+        logger.error("🔑 ForcedKeyManager.chooseServerAlias CALLED - keyType: $keyType, forcedAlias: $forcedAlias")
         return forcedAlias
     }
 
     override fun chooseEngineClientAlias(keyType: Array<String>?, issuers: Array<Principal>?, engine: SSLEngine?): String? {
-        logger.debug("ForcedKeyManager: Forcing engine client alias selection to '{}'", forcedAlias)
+        logger.error("🔑 ForcedKeyManager.chooseEngineClientAlias CALLED - keyType: ${keyType?.joinToString()}, forcedAlias: $forcedAlias")
+        // Verify the certificate and private key are accessible
+        val cert = delegate.getCertificateChain(forcedAlias)
+        val key = delegate.getPrivateKey(forcedAlias)
+        logger.error("🔑 Certificate available: ${cert != null}, PrivateKey available: ${key != null}")
+        if (cert != null) {
+            cert.forEach { x509 ->
+                if (x509 is X509Certificate) {
+                    logger.error("🔑 Certificate Subject: ${x509.subjectDN}")
+                    logger.error("🔑 Certificate SigAlg: ${x509.sigAlgName}")
+                }
+            }
+        }
         return forcedAlias
     }
 
     override fun chooseEngineServerAlias(keyType: String?, issuers: Array<Principal>?, engine: SSLEngine?): String? {
-        logger.debug("ForcedKeyManager: Forcing engine server alias selection to '{}'", forcedAlias)
+        logger.error("🔑 ForcedKeyManager.chooseEngineServerAlias CALLED - keyType: $keyType, forcedAlias: $forcedAlias")
         return forcedAlias
     }
 

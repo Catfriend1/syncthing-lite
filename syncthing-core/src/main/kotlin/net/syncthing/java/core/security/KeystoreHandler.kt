@@ -65,16 +65,46 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
         keyManagerFactory.init(keyStore, KEY_PASSWORD.toCharArray())
 
+        // Debug: List all aliases in the keystore
+        logger.error("🔧 Keystore aliases:")
+        keyStore.aliases().asSequence().forEach { alias ->
+            logger.error("🔧 Alias: '$alias'")
+            val cert = keyStore.getCertificate(alias)
+            if (cert is X509Certificate) {
+                logger.error("🔧   Subject: ${cert.subjectDN}")
+                logger.error("🔧   SigAlg: ${cert.sigAlgName}")
+                logger.error("🔧   PublicKey: ${cert.publicKey.algorithm}")
+            }
+        }
+
         // Workaround for Syncthing v2.x TLS handshake requirements:
         // Use ForcedKeyManager to ensure our client certificate is always selected
         // by alias "key", instead of relying on Android/JVM internal selection logic
+        logger.error("🔧 Setting up ForcedKeyManager with {} KeyManagers", keyManagerFactory.keyManagers.size)
+        keyManagerFactory.keyManagers.forEachIndexed { index, km ->
+            logger.error("🔧 KeyManager[$index]: ${km.javaClass.name}")
+        }
+        
         val keyManagers = keyManagerFactory.keyManagers.map { keyManager ->
             if (keyManager is X509ExtendedKeyManager) {
+                logger.error("🔧 Wrapping X509ExtendedKeyManager with ForcedKeyManager")
                 ForcedKeyManager(keyManager, "key")
             } else {
+                logger.error("🔧 Keeping KeyManager as-is: ${keyManager.javaClass.name}")
                 keyManager
             }
         }.toTypedArray()
+
+        logger.error("🔧 Final KeyManagers count: ${keyManagers.size}")
+        keyManagers.forEachIndexed { index, km ->
+            logger.error("🔧 Final KeyManager[$index]: ${km.javaClass.name}")
+            if (km is ForcedKeyManager) {
+                // Test the certificate access immediately
+                val cert = km.getCertificateChain("key")
+                val key = km.getPrivateKey("key")
+                logger.error("🔧 ForcedKeyManager test - Certificate: ${cert != null}, PrivateKey: ${key != null}")
+            }
+        }
 
         sslContext.init(keyManagers, arrayOf(object : X509TrustManager {
             @Throws(CertificateException::class)
@@ -128,11 +158,28 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             val socket = socketFactory.createSocket() as SSLSocket
             socket.connect(relaySocketAddress, SOCKET_TIMEOUT)
 
+            logger.error("🌐 Connected to ${relaySocketAddress}, starting TLS setup...")
+
             logger.debug("Enabled TLS Protocols:")
             socket.enabledProtocols.forEach { logger.debug("⮕ $it") }
 
             logger.debug("Enabled Cipher Suites:")
             socket.enabledCipherSuites.forEach { logger.debug("⮕ $it") }
+
+            // Force specific protocols and cipher suites that work with Syncthing v2.x
+            socket.enabledProtocols = arrayOf("TLSv1.2", "TLSv1.3")
+            
+            // Focus on ECDSA cipher suites that should work with our certificate
+            val preferredCipherSuites = arrayOf(
+                "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+                "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+                "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
+            ).filter { it in socket.supportedCipherSuites }
+            
+            if (preferredCipherSuites.isNotEmpty()) {
+                logger.error("🔐 Setting preferred ECDSA cipher suites: ${preferredCipherSuites.joinToString()}")
+                socket.enabledCipherSuites = preferredCipherSuites.toTypedArray()
+            }
 
             socket.addHandshakeCompletedListener { event ->
                 logger.debug("🔐 TLS Handshake abgeschlossen mit:")
@@ -147,13 +194,24 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                         logger.debug("⮕ Signature Algorithm: ${x509.sigAlgName}")
                     }
                 }
+                
+                // Also log the local certificate being used
+                event.localCertificates?.forEachIndexed { index, cert ->
+                    val x509 = cert as? X509Certificate
+                    x509?.let {
+                        logger.error("🔐 LOCAL Certificate[$index]: ${x509.subjectDN}")
+                        logger.error("🔐 LOCAL Signature Algorithm: ${x509.sigAlgName}")
+                    }
+                }
             }
 
             try {
+                logger.error("🤝 Attempting TLS handshake...")
                 socket.startHandshake()
                 logger.info("✅ TLS Handshake erfolgreich.")
             } catch (e: Exception) {
                 logger.error("❌ TLS Handshake fehlgeschlagen: ${e.message}", e)
+                throw e
             }
 
             return socket
@@ -327,7 +385,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private const val SIGNATURE_ALGO = "SHA256withECDSA"
         private const val CERTIFICATE_SUBJECT = "CN=syncthing, OU=Automatically Generated, O=Syncthing"
         private const val SOCKET_TIMEOUT = 2000
-        private const val TLS_VERSION = "TLSv1.3"
+        private const val TLS_VERSION = "TLS"
 
         init {
             Security.addProvider(BouncyCastleProvider())
