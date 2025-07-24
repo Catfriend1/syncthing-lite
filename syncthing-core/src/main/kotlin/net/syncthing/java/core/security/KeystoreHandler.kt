@@ -60,8 +60,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     private val socketFactory: SSLSocketFactory
 
     init {
-        // Create TLSv1.3-specific context for Syncthing v2.x compatibility
-        val sslContext = SSLContext.getInstance("TLSv1.3")
+        // Create base SSL context with TLS support
+        val sslContext = SSLContext.getInstance("TLS")
         logger.trace(KeyManagerFactory.getDefaultAlgorithm())
         val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
         keyManagerFactory.init(keyStore, KEY_PASSWORD.toCharArray())
@@ -114,7 +114,11 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             override fun checkServerTrusted(xcs: Array<X509Certificate>, string: String) {}
             override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
         }), null)
-        socketFactory = sslContext.socketFactory
+        
+        // Wrap the default socket factory with TLSv1.3-only configuration
+        // This ensures all sockets created from this factory only advertise TLSv1.3 in ClientHello
+        socketFactory = TLSv13SocketFactory(sslContext.socketFactory)
+        logger.error("🔧 Created TLSv1.3-only SocketFactory")
     }
 
     @Throws(CryptoException::class, IOException::class)
@@ -156,43 +160,17 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         try {
             System.setProperty("javax.net.debug", "ssl,handshake")
 
+            // TLSv1.3 configuration is now handled by TLSv13SocketFactory
             val socket = socketFactory.createSocket() as SSLSocket
             socket.connect(relaySocketAddress, SOCKET_TIMEOUT)
 
-            logger.error("🌐 Connected to ${relaySocketAddress}, starting TLS 1.3 setup...")
+            logger.error("🌐 Connected to ${relaySocketAddress}, TLS 1.3 configured by SocketFactory")
 
             logger.debug("Enabled TLS Protocols:")
             socket.enabledProtocols.forEach { logger.debug("⮕ $it") }
 
             logger.debug("Enabled Cipher Suites:")
             socket.enabledCipherSuites.forEach { logger.debug("⮕ $it") }
-
-            // Force TLSv1.3 only for Syncthing v2.x compatibility
-            socket.enabledProtocols = arrayOf("TLSv1.3")
-            
-            // Use only TLSv1.3 cipher suites observed in working syncthing connections
-            val tlsv13CipherSuites = arrayOf(
-                "TLS_AES_128_GCM_SHA256",
-                "TLS_AES_256_GCM_SHA384", 
-                "TLS_CHACHA20_POLY1305_SHA256"
-            ).filter { it in socket.supportedCipherSuites }
-            
-            if (tlsv13CipherSuites.isNotEmpty()) {
-                logger.error("🔐 Setting TLSv1.3 cipher suites: ${tlsv13CipherSuites.joinToString()}")
-                socket.enabledCipherSuites = tlsv13CipherSuites.toTypedArray()
-            } else {
-                logger.error("❌ No TLSv1.3 cipher suites available!")
-            }
-
-            // Set ALPN protocols for BEP
-            try {
-                val sslParams = socket.sslParameters
-                sslParams.applicationProtocols = arrayOf(BEP)
-                socket.sslParameters = sslParams
-                logger.error("🔗 Set ALPN protocol: $BEP")
-            } catch (e: Exception) {
-                logger.error("⚠️ Failed to set ALPN protocol: ${e.message}")
-            }
 
             socket.addHandshakeCompletedListener { event ->
                 logger.debug("🔐 TLS Handshake abgeschlossen mit:")
