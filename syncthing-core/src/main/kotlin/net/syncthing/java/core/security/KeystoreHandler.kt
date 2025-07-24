@@ -53,6 +53,8 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
 import javax.security.auth.x500.X500Principal
 
+import org.conscrypt.Conscrypt
+
 class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
     class CryptoException internal constructor(t: Throwable) : GeneralSecurityException(t)
@@ -60,65 +62,21 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     private val socketFactory: SSLSocketFactory
 
     init {
-        // Create base SSL context with TLS support
-        val sslContext = SSLContext.getInstance("TLS")
-        logger.trace(KeyManagerFactory.getDefaultAlgorithm())
+        val sslContext = SSLContext.getInstance("TLSv1.3", Conscrypt.newProvider())
         val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
         keyManagerFactory.init(keyStore, KEY_PASSWORD.toCharArray())
 
-        // Debug: List all aliases in the keystore
-        logger.error("🔧 Keystore aliases:")
-        keyStore.aliases().asSequence().forEach { alias ->
-            logger.error("🔧 Alias: '$alias'")
-            val cert = keyStore.getCertificate(alias)
-            if (cert is X509Certificate) {
-                logger.error("🔧   Subject: ${cert.subjectDN}")
-                logger.error("🔧   SigAlg: ${cert.sigAlgName}")
-                logger.error("🔧   PublicKey: ${cert.publicKey.algorithm}")
-            }
-        }
-
-        // Workaround for Syncthing v2.x TLS handshake requirements:
-        // Use ForcedKeyManager to ensure our client certificate is always selected
-        // by alias "key", instead of relying on Android/JVM internal selection logic
-        logger.error("🔧 Setting up ForcedKeyManager with {} KeyManagers", keyManagerFactory.keyManagers.size)
-        keyManagerFactory.keyManagers.forEachIndexed { index, km ->
-            logger.error("🔧 KeyManager[$index]: ${km.javaClass.name}")
-        }
-        
-        val keyManagers = keyManagerFactory.keyManagers.map { keyManager ->
-            if (keyManager is X509ExtendedKeyManager) {
-                logger.error("🔧 Wrapping X509ExtendedKeyManager with ForcedKeyManager")
-                ForcedKeyManager(keyManager, "key")
-            } else {
-                logger.error("🔧 Keeping KeyManager as-is: ${keyManager.javaClass.name}")
-                keyManager
-            }
+        val keyManagers = keyManagerFactory.keyManagers.map {
+            if (it is X509ExtendedKeyManager) ForcedKeyManager(it, "key") else it
         }.toTypedArray()
 
-        logger.error("🔧 Final KeyManagers count: ${keyManagers.size}")
-        keyManagers.forEachIndexed { index, km ->
-            logger.error("🔧 Final KeyManager[$index]: ${km.javaClass.name}")
-            if (km is ForcedKeyManager) {
-                // Test the certificate access immediately
-                val cert = km.getCertificateChain("key")
-                val key = km.getPrivateKey("key")
-                logger.error("🔧 ForcedKeyManager test - Certificate: ${cert != null}, PrivateKey: ${key != null}")
-            }
-        }
-
         sslContext.init(keyManagers, arrayOf(object : X509TrustManager {
-            @Throws(CertificateException::class)
-            override fun checkClientTrusted(xcs: Array<X509Certificate>, string: String) {}
-            @Throws(CertificateException::class)
-            override fun checkServerTrusted(xcs: Array<X509Certificate>, string: String) {}
-            override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
+            override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
+            override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
+            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
         }), null)
-        
-        // Wrap the default socket factory with TLSv1.3-only configuration
-        // This ensures all sockets created from this factory only advertise TLSv1.3 in ClientHello
-        socketFactory = TLSv13SocketFactory(sslContext.socketFactory)
-        logger.error("🔧 Created TLSv1.3-only SocketFactory")
+
+        socketFactory = sslContext.socketFactory
     }
 
     @Throws(CryptoException::class, IOException::class)
@@ -158,77 +116,36 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     @Throws(CryptoException::class, IOException::class)
     fun createSocket(relaySocketAddress: InetSocketAddress): SSLSocket {
         try {
-            System.setProperty("javax.net.debug", "ssl,handshake")
+            val rawSocket = Socket()
+            rawSocket.connect(relaySocketAddress, SOCKET_TIMEOUT)
 
-            // TLSv1.3 configuration is now handled by TLSv13SocketFactory
-            val socket = socketFactory.createSocket() as SSLSocket
-            socket.connect(relaySocketAddress, SOCKET_TIMEOUT)
+            val sslSocket = socketFactory.createSocket(
+                rawSocket,
+                relaySocketAddress.hostName,
+                relaySocketAddress.port,
+                true
+            ) as SSLSocket
 
-            logger.error("🌐 Connected to ${relaySocketAddress}, TLS 1.3 configured by SocketFactory")
+            sslSocket.enabledProtocols = arrayOf("TLSv1.3")
+            sslSocket.enabledCipherSuites = arrayOf(
+                "TLS_AES_128_GCM_SHA256",
+                "TLS_AES_256_GCM_SHA384",
+                "TLS_CHACHA20_POLY1305_SHA256"
+            )
 
-            logger.debug("Enabled TLS Protocols:")
-            socket.enabledProtocols.forEach { logger.debug("⮕ $it") }
-
-            logger.debug("Enabled Cipher Suites:")
-            socket.enabledCipherSuites.forEach { logger.debug("⮕ $it") }
-
-            socket.addHandshakeCompletedListener { event ->
-                logger.debug("🔐 TLS Handshake abgeschlossen mit:")
-                logger.debug("⮕ Peer Host: ${event.session.peerHost}")
-                logger.debug("⮕ Protokoll: ${event.session.protocol}")
+            sslSocket.addHandshakeCompletedListener { event ->
+                logger.debug("🔐 TLS Handshake complete")
+                logger.debug("⮕ Protocol: ${event.session.protocol}")
                 logger.debug("⮕ Cipher Suite: ${event.session.cipherSuite}")
-
-                // Log ALPN negotiation result
-                try {
-                    val session = event.session
-                    if (session is javax.net.ssl.ExtendedSSLSession) {
-                        val requestedProtocols = session.requestedServerNames
-                        logger.error("🔗 ALPN Requested: ${requestedProtocols}")
-                    }
-                    
-                    // Try to get the negotiated application protocol
-                    val sslSocket = event.socket as? SSLSocket
-                    sslSocket?.let { socket ->
-                        try {
-                            val applicationProtocol = socket.applicationProtocol
-                            logger.error("🔗 ALPN Negotiated: $applicationProtocol")
-                        } catch (e: Exception) {
-                            logger.error("🔗 ALPN negotiation info not available: ${e.message}")
-                        }
-                    }
-                } catch (e: Exception) {
-                    logger.error("🔗 Error getting ALPN info: ${e.message}")
-                }
-
-                event.peerCertificates?.forEachIndexed { index, cert ->
-                    val x509 = cert as? X509Certificate
-                    x509?.let {
-                        logger.debug("⮕ Certificate[$index]: ${x509.subjectDN}")
-                        logger.debug("⮕ Signature Algorithm: ${x509.sigAlgName}")
-                    }
-                }
-                
-                // Also log the local certificate being used
-                event.localCertificates?.forEachIndexed { index, cert ->
-                    val x509 = cert as? X509Certificate
-                    x509?.let {
-                        logger.error("🔐 LOCAL Certificate[$index]: ${x509.subjectDN}")
-                        logger.error("🔐 LOCAL Signature Algorithm: ${x509.sigAlgName}")
-                    }
-                }
             }
 
-            try {
-                logger.error("🤝 Attempting TLS handshake...")
-                socket.startHandshake()
-                logger.info("✅ TLS Handshake erfolgreich.")
-            } catch (e: Exception) {
-                logger.error("❌ TLS Handshake fehlgeschlagen: ${e.message}", e)
-                throw e
-            }
+            logger.error("🤝 Attempting TLSv1.3 handshake...")
+            sslSocket.startHandshake()
+            logger.info("✅ TLSv1.3 Handshake successful")
 
-            return socket
+            return sslSocket
         } catch (e: Exception) {
+            logger.error("❌ TLSv1.3 Handshake failed", e)
             throw CryptoException(e)
         }
     }
