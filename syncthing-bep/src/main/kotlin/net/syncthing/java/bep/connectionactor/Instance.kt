@@ -96,8 +96,12 @@ object ConnectionActor {
                 // helpers for messages
                 val sendPostAuthMessageLock = Mutex()
 
-                suspend fun sendPostAuthMessage(message: MessageLite) = sendPostAuthMessageLock.withLock {
-                    PostAuthenticationMessageHandler.sendMessage(outputStream, message, markActivityOnSocket = {})
+                fun sendPostAuthMessage(message: MessageLite) {
+                    runBlocking {
+                        sendPostAuthMessageLock.withLock {
+                            PostAuthenticationMessageHandler.sendMessage(outputStream, message, markActivityOnSocket = {})
+                        }
+                    }
                 }
 
                 suspend fun receivePostAuthMessage(): Pair<BlockExchangeProtos.MessageType, MessageLite> {
@@ -326,7 +330,8 @@ object ConnectionActor {
                                     }
                                 }
                             }
-                        }.let { /* prevents compiling if one action is not handled */ }
+                            else -> error("Unhandled ConnectionAction: ${action::class.qualifiedName}")
+                        }
                     }
                 } finally {
                     // send close message
