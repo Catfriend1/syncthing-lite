@@ -78,8 +78,7 @@ object ConnectionActor {
                 }
             }
 
-            try {
-                OpenConnection.openSocketConnection(address, configuration).use { socket ->
+            OpenConnection.openSocketConnection(address, configuration).use { socket ->
                 val inputStream = DataInputStream(socket.inputStream)
                 val outputStream = DataOutputStream(socket.outputStream)
 
@@ -340,30 +339,6 @@ object ConnectionActor {
                     // cancel all pending listeners
                     messageListeners.values.forEach { it.cancel() }
                 }
-            }
-            } catch (e: Exception) {
-                when {
-                    e.message?.contains("Connection reset") == true -> {
-                        logger.trace("openSocketConnection: Socket connection reset")
-                    }
-                    e.message?.contains("Broken pipe") == true -> {
-                        // Expected during connection termination - no logging needed
-                    }
-                    e.message?.contains("Connection refused") == true -> {
-                        logger.trace("openSocketConnection: Socket connection refused")
-                    }
-                    e is java.net.SocketException -> {
-                        // Expected socket exceptions - no logging needed
-                    }
-                    e is java.io.IOException -> {
-                        // Expected IO exceptions - no logging needed
-                    }
-                    else -> {
-                        logger.error("openSocketConnection: Uncaught exception, allowing retry: ${e.message}")
-                    }
-                }
-                // Exit gracefully so the retry mechanism can work
-                return@launch
             }
         }.invokeOnCompletion { ex ->
             if (ex != null) {
