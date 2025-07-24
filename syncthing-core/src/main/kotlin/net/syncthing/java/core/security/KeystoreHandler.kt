@@ -61,6 +61,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
     init {
         val sslContext = SSLContext.getInstance(TLS_VERSION)
+        logger.trace(KeyManagerFactory.getDefaultAlgorithm())
         val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
         keyManagerFactory.init(keyStore, KEY_PASSWORD.toCharArray())
 
@@ -111,16 +112,41 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     @Throws(CryptoException::class, IOException::class)
     fun createSocket(relaySocketAddress: InetSocketAddress): SSLSocket {
         try {
+            System.setProperty("javax.net.debug", "ssl,handshake")
+
             val socket = socketFactory.createSocket() as SSLSocket
             socket.connect(relaySocketAddress, SOCKET_TIMEOUT)
+
+            logger.debug("Enabled TLS Protocols:")
+            socket.enabledProtocols.forEach { logger.debug("⮕ $it") }
+
+            logger.debug("Enabled Cipher Suites:")
+            socket.enabledCipherSuites.forEach { logger.debug("⮕ $it") }
+
+            socket.addHandshakeCompletedListener { event ->
+                logger.debug("🔐 TLS Handshake abgeschlossen mit:")
+                logger.debug("⮕ Peer Host: ${event.session.peerHost}")
+                logger.debug("⮕ Protokoll: ${event.session.protocol}")
+                logger.debug("⮕ Cipher Suite: ${event.session.cipherSuite}")
+
+                event.peerCertificates?.forEachIndexed { index, cert ->
+                    val x509 = cert as? X509Certificate
+                    x509?.let {
+                        logger.debug("⮕ Certificate[$index]: ${x509.subjectDN}")
+                        logger.debug("⮕ Signature Algorithm: ${x509.sigAlgName}")
+                    }
+                }
+            }
+
+            try {
+                socket.startHandshake()
+                logger.info("✅ TLS Handshake erfolgreich.")
+            } catch (e: Exception) {
+                logger.error("❌ TLS Handshake fehlgeschlagen: ${e.message}", e)
+            }
+
             return socket
-        } catch (e: KeyManagementException) {
-            throw CryptoException(e)
-        } catch (e: NoSuchAlgorithmException) {
-            throw CryptoException(e)
-        } catch (e: KeyStoreException) {
-            throw CryptoException(e)
-        } catch (e: UnrecoverableKeyException) {
+        } catch (e: Exception) {
             throw CryptoException(e)
         }
     }
