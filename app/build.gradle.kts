@@ -100,7 +100,7 @@ dependencies {
     implementation(project(":syncthing-client"))
     implementation(project(":syncthing-repository-android"))
     
-    implementation("org.conscrypt:conscrypt-android:2.5.2")
+    // implementation("org.conscrypt:conscrypt-android:2.5.2")
 
 }
 
