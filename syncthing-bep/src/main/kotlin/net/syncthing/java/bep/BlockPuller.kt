@@ -68,7 +68,7 @@ object BlockPuller {
         )
 
         suspend fun pullBlock(fileBlocks: FileBlocks, block: BlockInfo, timeoutInMillis: Long, connectionActorWrapper: ConnectionActorWrapper): ByteArray {
-            logger.debug("Request sent for the block {}.", block.hash)
+            // logger.trace("Request sent for the block {}.", block.hash)
 
             val response =
                     withTimeout(timeoutInMillis) {
@@ -129,7 +129,7 @@ object BlockPuller {
                 repeat(4 /* 4 blocks per time */) { workerNumber ->
                     async {
                         for (block in pipe) {
-                            logger.debug("Message block with hash ({}) from worker: {}.", block.hash, workerNumber)
+                            // logger.trace("Message block with hash ({}) from worker: {}.", block.hash, workerNumber)
 
                             lateinit var blockContent: ByteArray
 
