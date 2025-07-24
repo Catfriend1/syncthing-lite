@@ -60,7 +60,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     private val socketFactory: SSLSocketFactory
 
     init {
-        val sslContext = SSLContext.getInstance(TLS_VERSION)
+        // Create TLSv1.3-specific context for Syncthing v2.x compatibility
+        val sslContext = SSLContext.getInstance("TLSv1.3")
         logger.trace(KeyManagerFactory.getDefaultAlgorithm())
         val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
         keyManagerFactory.init(keyStore, KEY_PASSWORD.toCharArray())
@@ -158,7 +159,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             val socket = socketFactory.createSocket() as SSLSocket
             socket.connect(relaySocketAddress, SOCKET_TIMEOUT)
 
-            logger.error("🌐 Connected to ${relaySocketAddress}, starting TLS setup...")
+            logger.error("🌐 Connected to ${relaySocketAddress}, starting TLS 1.3 setup...")
 
             logger.debug("Enabled TLS Protocols:")
             socket.enabledProtocols.forEach { logger.debug("⮕ $it") }
@@ -166,19 +167,31 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             logger.debug("Enabled Cipher Suites:")
             socket.enabledCipherSuites.forEach { logger.debug("⮕ $it") }
 
-            // Force specific protocols and cipher suites that work with Syncthing v2.x
-            socket.enabledProtocols = arrayOf("TLSv1.2", "TLSv1.3")
+            // Force TLSv1.3 only for Syncthing v2.x compatibility
+            socket.enabledProtocols = arrayOf("TLSv1.3")
             
-            // Focus on ECDSA cipher suites that should work with our certificate
-            val preferredCipherSuites = arrayOf(
-                "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-                "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-                "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
+            // Use only TLSv1.3 cipher suites observed in working syncthing connections
+            val tlsv13CipherSuites = arrayOf(
+                "TLS_AES_128_GCM_SHA256",
+                "TLS_AES_256_GCM_SHA384", 
+                "TLS_CHACHA20_POLY1305_SHA256"
             ).filter { it in socket.supportedCipherSuites }
             
-            if (preferredCipherSuites.isNotEmpty()) {
-                logger.error("🔐 Setting preferred ECDSA cipher suites: ${preferredCipherSuites.joinToString()}")
-                socket.enabledCipherSuites = preferredCipherSuites.toTypedArray()
+            if (tlsv13CipherSuites.isNotEmpty()) {
+                logger.error("🔐 Setting TLSv1.3 cipher suites: ${tlsv13CipherSuites.joinToString()}")
+                socket.enabledCipherSuites = tlsv13CipherSuites.toTypedArray()
+            } else {
+                logger.error("❌ No TLSv1.3 cipher suites available!")
+            }
+
+            // Set ALPN protocols for BEP
+            try {
+                val sslParams = socket.sslParameters
+                sslParams.applicationProtocols = arrayOf(BEP)
+                socket.sslParameters = sslParams
+                logger.error("🔗 Set ALPN protocol: $BEP")
+            } catch (e: Exception) {
+                logger.error("⚠️ Failed to set ALPN protocol: ${e.message}")
             }
 
             socket.addHandshakeCompletedListener { event ->
@@ -186,6 +199,28 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 logger.debug("⮕ Peer Host: ${event.session.peerHost}")
                 logger.debug("⮕ Protokoll: ${event.session.protocol}")
                 logger.debug("⮕ Cipher Suite: ${event.session.cipherSuite}")
+
+                // Log ALPN negotiation result
+                try {
+                    val session = event.session
+                    if (session is javax.net.ssl.ExtendedSSLSession) {
+                        val requestedProtocols = session.requestedServerNames
+                        logger.error("🔗 ALPN Requested: ${requestedProtocols}")
+                    }
+                    
+                    // Try to get the negotiated application protocol
+                    val sslSocket = event.socket as? SSLSocket
+                    sslSocket?.let { socket ->
+                        try {
+                            val applicationProtocol = socket.applicationProtocol
+                            logger.error("🔗 ALPN Negotiated: $applicationProtocol")
+                        } catch (e: Exception) {
+                            logger.error("🔗 ALPN negotiation info not available: ${e.message}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    logger.error("🔗 Error getting ALPN info: ${e.message}")
+                }
 
                 event.peerCertificates?.forEachIndexed { index, cert ->
                     val x509 = cert as? X509Certificate
@@ -385,7 +420,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private const val SIGNATURE_ALGO = "SHA256withECDSA"
         private const val CERTIFICATE_SUBJECT = "CN=syncthing, OU=Automatically Generated, O=Syncthing"
         private const val SOCKET_TIMEOUT = 2000
-        private const val TLS_VERSION = "TLS"
 
         init {
             Security.addProvider(BouncyCastleProvider())
