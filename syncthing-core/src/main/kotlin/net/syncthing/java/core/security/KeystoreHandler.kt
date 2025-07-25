@@ -63,7 +63,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
     init {
         Security.insertProviderAt(Conscrypt.newProvider(), 1)
-    
+        logger.error("🧪 SSL provider in use: ${SSLContext.getDefault().provider.name}")
+        
         val sslContext = SSLContext.getInstance("TLSv1.3", Conscrypt.newProvider())
         val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
         keyManagerFactory.init(keyStore, KEY_PASSWORD.toCharArray())
@@ -79,6 +80,9 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         }), null)
 
         socketFactory = sslContext.socketFactory
+        Conscrypt.setUseEngineSocket(socketFactory, true)
+        logger.error("🔍 SSLContext provider: ${sslContext.provider.name}")
+
     }
 
     @Throws(CryptoException::class, IOException::class)
@@ -99,6 +103,18 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         try {
             logger.debug("Wrapping plain socket, server mode: {}.", isServerSocket)
             val sslSocket = socketFactory.createSocket(socket, null, socket.port, true) as SSLSocket
+            
+            logger.error("🔍 Socket class: ${sslSocket.javaClass.name}")
+logger.error("🔍 Protocols enabled: ${sslSocket.enabledProtocols.joinToString()}")
+logger.error("🔍 Supported protocols: ${sslSocket.supportedProtocols.joinToString()}")
+logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinToString()}")
+            
+            
+            if (Conscrypt.isConscrypt(sslSocket)) {
+    logger.debug("✅ ConscryptEngineSocket is active.")
+} else {
+    logger.warn("⚠️ Not using Conscrypt socket. TLSv1.3 may not be active.")
+}
             if (isServerSocket) {
                 sslSocket.useClientMode = false
             }
@@ -127,7 +143,17 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 relaySocketAddress.port,
                 true
             ) as SSLSocket
-
+            
+            logger.error("🔍 Socket class: ${sslSocket.javaClass.name}")
+logger.error("🔍 Protocols enabled: ${sslSocket.enabledProtocols.joinToString()}")
+logger.error("🔍 Supported protocols: ${sslSocket.supportedProtocols.joinToString()}")
+logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinToString()}")
+            
+if (Conscrypt.isConscrypt(sslSocket)) {
+    logger.debug("✅ ConscryptEngineSocket is active.")
+} else {
+    logger.warn("⚠️ Not using Conscrypt socket. TLSv1.3 may not be active.")
+}
             sslSocket.enabledProtocols = arrayOf("TLSv1.3")
             sslSocket.enabledCipherSuites = arrayOf(
                 "TLS_AES_128_GCM_SHA256",
