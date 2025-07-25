@@ -62,6 +62,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     private val socketFactory: SSLSocketFactory
 
     init {
+        Security.insertProviderAt(Conscrypt.newProvider(), 1)
+    
         val sslContext = SSLContext.getInstance("TLSv1.3", Conscrypt.newProvider())
         val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
         keyManagerFactory.init(keyStore, KEY_PASSWORD.toCharArray())
