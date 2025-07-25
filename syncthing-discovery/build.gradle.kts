@@ -1,16 +1,22 @@
 plugins {
-    application
-    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.protobuf)
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-}
+android {
+    compileSdk = libs.versions.compile.sdk.get().toInt()
+    namespace = "net.syncthing.java.discovery"
 
-application {
-    mainClass.set("net.syncthing.java.discovery.Main")
+    defaultConfig {
+        minSdk = libs.versions.min.sdk.get().toInt()
+        targetSdk = libs.versions.target.sdk.get().toInt()
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
 }
 
 dependencies {
@@ -21,21 +27,21 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
 }
 
-tasks.named<JavaExec>("run") {
-    if (project.hasProperty("args")) {
-        args(project.property("args").toString().split("\\s+".toRegex()))
-    }
-}
-
 protobuf {
     protoc {
-        artifact = libs.protobuf.protoc.get().toString()
+        artifact = "com.google.protobuf:protoc:3.25.1"
+    }
+
+    plugins {
+        create("kotlin") {
+            artifact = "com.google.protobuf:protoc-gen-kotlin:3.21.12"
+        }
     }
 
     generateProtoTasks {
         all().forEach { task ->
             task.builtins {
-                named("java") {
+                create("java") {
                     option("lite")
                 }
             }
