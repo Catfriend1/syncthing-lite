@@ -103,18 +103,19 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         try {
             logger.debug("Wrapping plain socket, server mode: {}.", isServerSocket)
             val sslSocket = socketFactory.createSocket(socket, null, socket.port, true) as SSLSocket
-            
+            sslSocket.enabledProtocols = arrayOf("TLSv1.3")
+
+            if (Conscrypt.isConscrypt(sslSocket)) {
+    logger.debug("✅ ConscryptEngineSocket is active.")
+} else {
+    logger.warn("⚠️ Not using Conscrypt socket. TLSv1.3 may not be active.")
+}            
             logger.error("🔍 Socket class: ${sslSocket.javaClass.name}")
 logger.error("🔍 Protocols enabled: ${sslSocket.enabledProtocols.joinToString()}")
 logger.error("🔍 Supported protocols: ${sslSocket.supportedProtocols.joinToString()}")
 logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinToString()}")
             
             
-            if (Conscrypt.isConscrypt(sslSocket)) {
-    logger.debug("✅ ConscryptEngineSocket is active.")
-} else {
-    logger.warn("⚠️ Not using Conscrypt socket. TLSv1.3 may not be active.")
-}
             if (isServerSocket) {
                 sslSocket.useClientMode = false
             }
@@ -144,10 +145,7 @@ logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinTo
                 true
             ) as SSLSocket
             
-            logger.error("🔍 Socket class: ${sslSocket.javaClass.name}")
-logger.error("🔍 Protocols enabled: ${sslSocket.enabledProtocols.joinToString()}")
-logger.error("🔍 Supported protocols: ${sslSocket.supportedProtocols.joinToString()}")
-logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinToString()}")
+
             
 if (Conscrypt.isConscrypt(sslSocket)) {
     logger.debug("✅ ConscryptEngineSocket is active.")
@@ -166,7 +164,10 @@ if (Conscrypt.isConscrypt(sslSocket)) {
                 logger.debug("⮕ Protocol: ${event.session.protocol}")
                 logger.debug("⮕ Cipher Suite: ${event.session.cipherSuite}")
             }
-
+            logger.error("🔍 Socket class: ${sslSocket.javaClass.name}")
+logger.error("🔍 Protocols enabled: ${sslSocket.enabledProtocols.joinToString()}")
+logger.error("🔍 Supported protocols: ${sslSocket.supportedProtocols.joinToString()}")
+logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinToString()}")
             logger.error("🤝 Attempting TLSv1.3 handshake...")
             sslSocket.startHandshake()
             logger.info("✅ TLSv1.3 Handshake successful")
