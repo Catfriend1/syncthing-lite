@@ -132,26 +132,12 @@ logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinTo
 
     }
 
-    @Throws(CryptoException::class, IOException::class)
-    fun createSocket(relaySocketAddress: InetSocketAddress): SSLSocket {
+    fun createSocket(address: InetSocketAddress): SSLSocket {
         try {
             val rawSocket = Socket()
-            rawSocket.connect(relaySocketAddress, SOCKET_TIMEOUT)
+            rawSocket.connect(address, SOCKET_TIMEOUT)
 
-            val sslSocket = socketFactory.createSocket(
-                rawSocket,
-                relaySocketAddress.hostName,
-                relaySocketAddress.port,
-                true
-            ) as SSLSocket
-            
-
-            
-if (Conscrypt.isConscrypt(sslSocket)) {
-    logger.debug("✅ ConscryptEngineSocket is active.")
-} else {
-    logger.warn("⚠️ Not using Conscrypt socket. TLSv1.3 may not be active.")
-}
+            val sslSocket = socketFactory.createSocket(rawSocket, null, address.port, true) as SSLSocket
             sslSocket.enabledProtocols = arrayOf("TLSv1.3")
             sslSocket.enabledCipherSuites = arrayOf(
                 "TLS_AES_128_GCM_SHA256",
@@ -159,22 +145,14 @@ if (Conscrypt.isConscrypt(sslSocket)) {
                 "TLS_CHACHA20_POLY1305_SHA256"
             )
 
-            sslSocket.addHandshakeCompletedListener { event ->
-                logger.debug("🔐 TLS Handshake complete")
-                logger.debug("⮕ Protocol: ${event.session.protocol}")
-                logger.debug("⮕ Cipher Suite: ${event.session.cipherSuite}")
+            sslSocket.sslParameters = sslSocket.sslParameters.apply {
+                serverNames = emptyList() // Deaktiviert SNI
+                applicationProtocols = arrayOf("bep/1.0") // Optional: ALPN
             }
-            logger.error("🔍 Socket class: ${sslSocket.javaClass.name}")
-logger.error("🔍 Protocols enabled: ${sslSocket.enabledProtocols.joinToString()}")
-logger.error("🔍 Supported protocols: ${sslSocket.supportedProtocols.joinToString()}")
-logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinToString()}")
-            logger.error("🤝 Attempting TLSv1.3 handshake...")
-            sslSocket.startHandshake()
-            logger.info("✅ TLSv1.3 Handshake successful")
 
+            sslSocket.startHandshake()
             return sslSocket
         } catch (e: Exception) {
-            logger.error("❌ TLSv1.3 Handshake failed", e)
             throw CryptoException(e)
         }
     }
