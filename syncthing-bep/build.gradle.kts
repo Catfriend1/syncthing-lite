@@ -1,12 +1,22 @@
 plugins {
-    id("java-library")
-    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.protobuf)
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+android {
+    namespace = "net.syncthing.java.bep"
+    compileSdk = libs.versions.compile.sdk.get().toInt()
+
+    defaultConfig {
+        minSdk = libs.versions.min.sdk.get().toInt()
+        targetSdk = libs.versions.target.sdk.get().toInt()
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
 }
 
 dependencies {
@@ -27,7 +37,7 @@ protobuf {
     generateProtoTasks {
         all().forEach { task ->
             task.builtins {
-                named("java") {
+                create("java") {
                     option("lite")
                 }
             }
