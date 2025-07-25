@@ -8,7 +8,7 @@ android {
     namespace = "net.syncthing.java.core"
 
     defaultConfig {
-        minSdk = 29
+        minSdk = libs.versions.min.sdk.get().toInt()
         targetSdk = libs.versions.target.sdk.get().toInt()
     }
 
