@@ -73,11 +73,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             if (it is X509ExtendedKeyManager) ForcedKeyManager(it, "key") else it
         }.toTypedArray()
 
-        sslContext.init(keyManagers, arrayOf(object : X509TrustManager {
-            override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
-            override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
-            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-        }), null)
+        sslContext.init(keyManagers, null, null)
 
         socketFactory = sslContext.socketFactory
         Conscrypt.setUseEngineSocket(socketFactory, true)
