@@ -17,6 +17,8 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.interfaces.RelayConnection
 import net.syncthing.java.core.utils.NetworkUtils
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import org.apache.commons.codec.binary.Base32
 import org.bouncycastle.asn1.x509.Extension
 import org.bouncycastle.asn1.x509.BasicConstraints
@@ -33,8 +35,6 @@ import org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
 import org.bouncycastle.operator.OperatorCreationException
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.util.encoders.Base64
-import net.syncthing.java.core.utils.Logger
-import net.syncthing.java.core.utils.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -56,7 +56,12 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.*
+import javax.net.ssl.KeyManagerFactory
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLPeerUnverifiedException
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.SSLSocket
+import javax.net.ssl.X509TrustManager
 import javax.security.auth.x500.X500Principal
 
 class KeystoreHandler private constructor(private val keyStore: KeyStore) {
