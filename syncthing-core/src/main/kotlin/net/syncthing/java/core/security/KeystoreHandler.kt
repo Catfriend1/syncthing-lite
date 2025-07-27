@@ -69,43 +69,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     init {
         Security.addProvider(BouncyCastleProvider())      // Für Ed25519 KeyFactory
         Security.addProvider(BouncyCastleJsseProvider())  // Für JSSE TLS
-
-        val keyPem = """
-            -----BEGIN PRIVATE KEY-----
-            MC4CAQAwBQYDK2VwBCIEICdAo6rtzyRpfzZaAX+00N2UX4zBesxVLz2moOn/oRg1
-            -----END PRIVATE KEY-----
-        """.trimIndent()
-
-        val certPem = """
-            -----BEGIN CERTIFICATE-----
-            MIIBoDCCAVKgAwIBAgIJAKZCgw2oNUMqMAUGAytlcDBKMRIwEAYDVQQKEwlTeW5j
-            dGhpbmcxIDAeBgNVBAsTF0F1dG9tYXRpY2FsbHkgR2VuZXJhdGVkMRIwEAYDVQQD
-            EwlzeW5jdGhpbmcwHhcNMjUwNzI2MDAwMDAwWhcNNDUwNzIxMDAwMDAwWjBKMRIw
-            EAYDVQQKEwlTeW5jdGhpbmcxIDAeBgNVBAsTF0F1dG9tYXRpY2FsbHkgR2VuZXJh
-            dGVkMRIwEAYDVQQDEwlzeW5jdGhpbmcwKjAFBgMrZXADIQCkbWXe5GjuSQ5luW0S
-            ZHS989nQjyOFBNsKJbU3ErD1Z6NVMFMwDgYDVR0PAQH/BAQDAgWgMB0GA1UdJQQW
-            MBQGCCsGAQUFBwMBBggrBgEFBQcDAjAMBgNVHRMBAf8EAjAAMBQGA1UdEQQNMAuC
-            CXN5bmN0aGluZzAFBgMrZXADQQAjlvoLnuuXZf+hubiL4agkNfNCL7ucE+LR3nxf
-            L/m9NvyQ44nitNo6cyNqx1+d2f3doLc5efuX0JgTFxlC6iQO
-            -----END CERTIFICATE-----
-        """.trimIndent()
-
-        val certFactory = CertificateFactory.getInstance("X.509", "BC")
-        val certStream = certPem.byteInputStream()
-        val certificate = certFactory.generateCertificate(certStream) as X509Certificate
-
-        val privateKeyInfo = PEMParser(StringReader(keyPem)).use { it.readObject() as PrivateKeyInfo }
-        val keySpec = PKCS8EncodedKeySpec(privateKeyInfo.encoded)
-        val keyFactory = KeyFactory.getInstance("Ed25519", "BC")
-        val privateKey = keyFactory.generatePrivate(keySpec)
-
-        val keyStore = KeyStore.getInstance("PKCS12", "BC")
-        keyStore.load(null, null)
-        keyStore.setKeyEntry("client", privateKey, "".toCharArray(), arrayOf(certificate))
-
-        val keyManagerFactory = KeyManagerFactory.getInstance("PKIX", "BCJSSE")
-        keyManagerFactory.init(keyStore, "".toCharArray())
-
         val sslContext = SSLContext.getInstance(TLS_VERSION, "BCJSSE")
         sslContext.init(keyManagerFactory.keyManagers, arrayOf(object : X509TrustManager {
             @Throws(CertificateException::class)
