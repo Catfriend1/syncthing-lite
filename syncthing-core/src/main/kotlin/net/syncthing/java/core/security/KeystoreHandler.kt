@@ -54,7 +54,7 @@ import java.security.cert.Certificate
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import java.util.*
+import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
 import javax.security.auth.x500.X500Principal
