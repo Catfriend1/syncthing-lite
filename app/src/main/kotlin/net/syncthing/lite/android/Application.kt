@@ -16,6 +16,7 @@ class Application: Application() {
 
     override fun onCreate() {
         super.onCreate()
+
         val provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)
         if (provider == null || provider.javaClass != BouncyCastleProvider::class.java) {
             Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
