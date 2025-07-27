@@ -108,7 +108,9 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
         val sslContext = SSLContext.getInstance(TLS_VERSION, "BCJSSE")
         sslContext.init(keyManagerFactory.keyManagers, arrayOf(object : X509TrustManager {
+            @Throws(CertificateException::class)
             override fun checkClientTrusted(xcs: Array<X509Certificate>, string: String) {}
+            @Throws(CertificateException::class)
             override fun checkServerTrusted(xcs: Array<X509Certificate>, string: String) {}
             override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
         }), null)
