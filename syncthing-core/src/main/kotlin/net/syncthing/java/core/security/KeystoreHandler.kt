@@ -30,6 +30,7 @@ import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils
 import org.bouncycastle.cert.jcajce.JcaX509v1CertificateBuilder
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
 import org.bouncycastle.operator.OperatorCreationException
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.util.encoders.Base64
@@ -52,13 +53,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
 import javax.security.auth.x500.X500Principal
-
-import org.bouncycastle.openssl.PEMParser
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
-import java.io.StringReader
-import java.security.spec.PKCS8EncodedKeySpec
-import org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
-
 
 class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
@@ -306,10 +300,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private const val CERTIFICATE_SUBJECT = "CN=syncthing, OU=Automatically Generated, O=Syncthing"
         private const val SOCKET_TIMEOUT = 2000
         private const val TLS_VERSION = "TLSv1.3"
-
-        init {
-            Security.addProvider(BouncyCastleProvider())
-        }
 
         private fun derToPem(der: ByteArray): String {
             return "-----BEGIN CERTIFICATE-----\n" + Base64.toBase64String(der).chunked(76).joinToString("\n") + "\n-----END CERTIFICATE-----"
