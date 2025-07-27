@@ -31,6 +31,8 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jsse.BCSSLSocket
+import org.bouncycastle.jsse.BCSSLParameters
 import org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
 import org.bouncycastle.operator.OperatorCreationException
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
@@ -127,7 +129,9 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     fun createSocket(relaySocketAddress: InetSocketAddress): SSLSocket {
         try {
             val socket = socketFactory.createSocket() as SSLSocket
-            socket.setApplicationProtocols(arrayOf(BEP))
+            val params = socket.sslParameters as BCSSLParameters
+            params.applicationProtocols = arrayOf(BEP)
+            socket.sslParameters = params
             socket.connect(relaySocketAddress, SOCKET_TIMEOUT)
             return socket
         } catch (e: KeyManagementException) {
