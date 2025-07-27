@@ -190,12 +190,10 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private fun generateKeystore(keystoreAlgorithm: String): Pair<KeyStore, DeviceId> {
             try {
                 // logger.trace("Generating key.")
-                val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO, BouncyCastleProvider.PROVIDER_NAME)
+                val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO)
                 val keyPair = keyPairGenerator.generateKeyPair()
 
-                val contentSigner = JcaContentSignerBuilder(SIGNATURE_ALGO)
-                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                    .build(keyPair.private)
+                val contentSigner = JcaContentSignerBuilder(SIGNATURE_ALGO).build(keyPair.private)
 
                 val startDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1))
                 val endDate = Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(10 * 365))
@@ -239,7 +237,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                         .getCertificate(certHolderFinal)
                 )
                 keyStore.setKeyEntry("key", keyPair.private, KEY_PASSWORD.toCharArray(), certChain)
-
                 return Pair(keyStore, deviceId)
             } catch (e: OperatorCreationException) {
                 logger.trace("generateKeystore: OperatorCreationException", e)
