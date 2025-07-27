@@ -71,7 +71,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     private val socketFactory: SSLSocketFactory
 
     init {
-        Security.addProvider(BouncyCastleProvider())
         Security.addProvider(BouncyCastleJsseProvider())
         val sslContext = SSLContext.getInstance(TLS_VERSION, "BCJSSE")
         val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
@@ -84,7 +83,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             override fun checkServerTrusted(xcs: Array<X509Certificate>, string: String) {}
             override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
         }), null)
-
         socketFactory = sslContext.socketFactory
     }
 
@@ -200,7 +198,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                     .build(keyPair.private)
 
                 val startDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1))
-                val endDate = Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(365 * 10))
+                val endDate = Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(10 * 365))
 
                 val subject = X500Principal(CERTIFICATE_SUBJECT)
                 val certBuilder = JcaX509v3CertificateBuilder(subject, BigInteger.ONE, startDate, endDate, subject, keyPair.public)
