@@ -67,8 +67,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     private val socketFactory: SSLSocketFactory
 
     init {
-        Security.addProvider(BouncyCastleProvider())      // Für Ed25519 KeyFactory
-        Security.addProvider(BouncyCastleJsseProvider())  // Für JSSE TLS
+        Security.addProvider(BouncyCastleProvider())
+        Security.addProvider(BouncyCastleJsseProvider())
         val sslContext = SSLContext.getInstance(TLS_VERSION, "BCJSSE")
         val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
         keyManagerFactory.init(keyStore, KEY_PASSWORD.toCharArray())
@@ -236,7 +236,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val certHolderFinal = certBuilder.build(contentSigner)
 
                 val certificateDerData = certHolderFinal.encoded
-                logger.trace("Generated certificate: {}.", derToPem(certificateDerData))
+                // logger.trace("Generated certificate: {}.", derToPem(certificateDerData))
                 val deviceId = derDataToDeviceId(certificateDerData)
                 // logger.trace("Device ID from certificate: {}.", deviceId)
 
