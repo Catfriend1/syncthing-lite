@@ -70,6 +70,9 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         Security.addProvider(BouncyCastleProvider())      // Für Ed25519 KeyFactory
         Security.addProvider(BouncyCastleJsseProvider())  // Für JSSE TLS
         val sslContext = SSLContext.getInstance(TLS_VERSION, "BCJSSE")
+        val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
+        keyManagerFactory.init(keyStore, KEY_PASSWORD.toCharArray())
+
         sslContext.init(keyManagerFactory.keyManagers, arrayOf(object : X509TrustManager {
             @Throws(CertificateException::class)
             override fun checkClientTrusted(xcs: Array<X509Certificate>, string: String) {}
