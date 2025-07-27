@@ -22,9 +22,8 @@ dependencies {
     api(libs.commons.codec)
     api(libs.commons.io)
     api(libs.gson)
-    api(libs.bouncy.castle)
+    api(libs.bouncy.castle.bcmail)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.core)
-
-    implementation("org.conscrypt:conscrypt-android:2.5.2")
+    implementation(libs.bouncy.castle.bctls)
 }

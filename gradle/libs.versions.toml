@@ -75,7 +75,8 @@ lz4 = { module = "net.jpountz.lz4:lz4", version.ref = "lz4" }
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
-bouncy-castle = { module = "org.bouncycastle:bcmail-jdk15to18", version.ref = "bouncy-castle" }
+bouncy-castle-bcmail = { module = "org.bouncycastle:bcmail-jdk15to18", version.ref = "bouncy-castle" }
+bouncy-castle-bctls = { module = "org.bouncycastle:bctls-jdk15to18", version.ref = "bouncy-castle" }
 commons-cli = { module = "commons-cli:commons-cli", version.ref = "commons-cli" }
 
 [plugins]

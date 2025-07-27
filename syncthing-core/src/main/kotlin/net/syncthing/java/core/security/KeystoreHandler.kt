@@ -17,6 +17,8 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.interfaces.RelayConnection
 import net.syncthing.java.core.utils.NetworkUtils
+import net.syncthing.java.core.utils.Logger
+import net.syncthing.java.core.utils.LoggerFactory
 import org.apache.commons.codec.binary.Base32
 import org.bouncycastle.asn1.x509.Extension
 import org.bouncycastle.asn1.x509.BasicConstraints
@@ -27,33 +29,40 @@ import org.bouncycastle.asn1.x509.GeneralName
 import org.bouncycastle.asn1.x509.GeneralNames
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils
-import org.bouncycastle.cert.jcajce.JcaX509v1CertificateBuilder
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
 import org.bouncycastle.operator.OperatorCreationException
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.util.encoders.Base64
-import net.syncthing.java.core.utils.Logger
-import net.syncthing.java.core.utils.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.math.BigInteger
 import java.net.InetSocketAddress
 import java.net.Socket
-import java.security.*
+import java.security.GeneralSecurityException
+import java.security.KeyPairGenerator
+import java.security.KeyStore
+import java.security.KeyStoreException
+import java.security.KeyManagementException
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
+import java.security.Security
+import java.security.UnrecoverableKeyException
 import java.security.cert.Certificate
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import java.security.spec.ECGenParameterSpec
-import java.security.spec.NamedParameterSpec
-import java.util.*
+import java.util.Date
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.*
+import javax.net.ssl.KeyManagerFactory
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLPeerUnverifiedException
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.SSLSocket
+import javax.net.ssl.X509TrustManager
 import javax.security.auth.x500.X500Principal
-
-import org.conscrypt.Conscrypt
 
 class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
@@ -62,23 +71,19 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     private val socketFactory: SSLSocketFactory
 
     init {
-        Security.insertProviderAt(Conscrypt.newProvider(), 1)
-        logger.error("🧪 SSL provider in use: ${SSLContext.getDefault().provider.name}")
-        
-        val sslContext = SSLContext.getInstance("TLSv1.3", Conscrypt.newProvider())
+        Security.addProvider(BouncyCastleJsseProvider())
+        val sslContext = SSLContext.getInstance(TLS_VERSION, "BCJSSE")
         val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
         keyManagerFactory.init(keyStore, KEY_PASSWORD.toCharArray())
 
-        val keyManagers = keyManagerFactory.keyManagers.map {
-            if (it is X509ExtendedKeyManager) ForcedKeyManager(it, "key") else it
-        }.toTypedArray()
-
-        sslContext.init(keyManagers, null, null)
-
+        sslContext.init(keyManagerFactory.keyManagers, arrayOf(object : X509TrustManager {
+            @Throws(CertificateException::class)
+            override fun checkClientTrusted(xcs: Array<X509Certificate>, string: String) {}
+            @Throws(CertificateException::class)
+            override fun checkServerTrusted(xcs: Array<X509Certificate>, string: String) {}
+            override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
+        }), null)
         socketFactory = sslContext.socketFactory
-        Conscrypt.setUseEngineSocket(socketFactory, true)
-        logger.error("🔍 SSLContext provider: ${sslContext.provider.name}")
-
     }
 
     @Throws(CryptoException::class, IOException::class)
@@ -99,19 +104,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         try {
             logger.debug("Wrapping plain socket, server mode: {}.", isServerSocket)
             val sslSocket = socketFactory.createSocket(socket, null, socket.port, true) as SSLSocket
-            sslSocket.enabledProtocols = arrayOf("TLSv1.3")
-
-            if (Conscrypt.isConscrypt(sslSocket)) {
-    logger.debug("✅ ConscryptEngineSocket is active.")
-} else {
-    logger.warn("⚠️ Not using Conscrypt socket. TLSv1.3 may not be active.")
-}            
-            logger.error("🔍 Socket class: ${sslSocket.javaClass.name}")
-logger.error("🔍 Protocols enabled: ${sslSocket.enabledProtocols.joinToString()}")
-logger.error("🔍 Supported protocols: ${sslSocket.supportedProtocols.joinToString()}")
-logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinToString()}")
-            
-            
             if (isServerSocket) {
                 sslSocket.useClientMode = false
             }
@@ -124,32 +116,30 @@ logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinTo
             throw CryptoException(e)
         } catch (e: UnrecoverableKeyException) {
             throw CryptoException(e)
+        } catch (e: Exception) {
+            logger.error("wrapSocket: Uncaught exception", e)
+            throw Exception(e)
         }
 
     }
 
-    fun createSocket(address: InetSocketAddress): SSLSocket {
+    @Throws(CryptoException::class, IOException::class)
+    fun createSocket(relaySocketAddress: InetSocketAddress): SSLSocket {
         try {
-            val rawSocket = Socket()
-            rawSocket.connect(address, SOCKET_TIMEOUT)
-
-            val sslSocket = socketFactory.createSocket(rawSocket, null, address.port, true) as SSLSocket
-            sslSocket.enabledProtocols = arrayOf("TLSv1.3")
-            sslSocket.enabledCipherSuites = arrayOf(
-                "TLS_AES_128_GCM_SHA256",
-                "TLS_AES_256_GCM_SHA384",
-                "TLS_CHACHA20_POLY1305_SHA256"
-            )
-
-            sslSocket.sslParameters = sslSocket.sslParameters.apply {
-                serverNames = emptyList() // Deaktiviert SNI
-                applicationProtocols = arrayOf("bep/1.0") // Optional: ALPN
-            }
-
-            sslSocket.startHandshake()
-            return sslSocket
-        } catch (e: Exception) {
+            val socket = socketFactory.createSocket() as SSLSocket
+            socket.connect(relaySocketAddress, SOCKET_TIMEOUT)
+            return socket
+        } catch (e: KeyManagementException) {
             throw CryptoException(e)
+        } catch (e: NoSuchAlgorithmException) {
+            throw CryptoException(e)
+        } catch (e: KeyStoreException) {
+            throw CryptoException(e)
+        } catch (e: UnrecoverableKeyException) {
+            throw CryptoException(e)
+        } catch (e: Exception) {
+            logger.error("createSocket: Uncaught exception", e)
+            throw Exception(e)
         }
     }
 
@@ -200,31 +190,15 @@ logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinTo
         private fun generateKeystore(keystoreAlgorithm: String): Pair<KeyStore, DeviceId> {
             try {
                 // logger.trace("Generating key.")
-                val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO, BouncyCastleProvider.PROVIDER_NAME)
-                //val ecSpec = ECGenParameterSpec("secp256r1")
-                //keyPairGenerator.initialize(ecSpec)
-                keyPairGenerator.initialize(2048)
-                val keyPair = keyPairGenerator.genKeyPair()
+                val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO)
+                val keyPair = keyPairGenerator.generateKeyPair()
 
-                val contentSigner = JcaContentSignerBuilder(SIGNATURE_ALGO)
-                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                    .build(keyPair.private)
+                val contentSigner = JcaContentSignerBuilder(SIGNATURE_ALGO).build(keyPair.private)
 
                 val startDate = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1))
-                val endDate = Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(365 * 10))
+                val endDate = Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(10 * 365))
 
                 val subject = X500Principal(CERTIFICATE_SUBJECT)
-                val certificateBuilder = JcaX509v1CertificateBuilder(
-                    subject,
-                    BigInteger.ZERO,
-                    startDate,
-                    endDate,
-                    subject,
-                    keyPair.public
-                )
-
-                val certHolder = certificateBuilder.build(contentSigner)
-
                 val certBuilder = JcaX509v3CertificateBuilder(subject, BigInteger.ONE, startDate, endDate, subject, keyPair.public)
                 val extUtils = JcaX509ExtensionUtils()
 
@@ -245,7 +219,7 @@ logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinTo
 
                 certBuilder.addExtension(
                     Extension.subjectAlternativeName, false,
-                    GeneralNames(GeneralName(GeneralName.dNSName, "syncthing"))
+                    GeneralNames(GeneralName(GeneralName.dNSName, CERTIFICATE_DNS))
                 )
 
                 val certHolderFinal = certBuilder.build(contentSigner)
@@ -258,12 +232,9 @@ logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinTo
                 val keyStore = KeyStore.getInstance(keystoreAlgorithm)
                 keyStore.load(null, null)
                 val certChain = arrayOf(
-                    JcaX509CertificateConverter()
-                        .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                        .getCertificate(certHolderFinal)
+                    JcaX509CertificateConverter().getCertificate(certHolderFinal)
                 )
                 keyStore.setKeyEntry("key", keyPair.private, KEY_PASSWORD.toCharArray(), certChain)
-
                 return Pair(keyStore, deviceId)
             } catch (e: OperatorCreationException) {
                 logger.trace("generateKeystore: OperatorCreationException", e)
@@ -281,6 +252,7 @@ logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinTo
                 logger.error("generateKeystore: Uncaught exception", e)
                 throw Exception(e)
             }
+
         }
 
         @Throws(CryptoException::class, IOException::class)
@@ -315,14 +287,12 @@ logger.error("🔍 Cipher suites enabled: ${sslSocket.enabledCipherSuites.joinTo
 
         private const val JKS_PASSWORD = "password"
         private const val KEY_PASSWORD = "password"
-        private const val KEY_ALGO = "RSA"
-        private const val SIGNATURE_ALGO = "SHA256withRSA"
+        private const val KEY_ALGO = "Ed25519"
+        private const val SIGNATURE_ALGO = "Ed25519"
         private const val CERTIFICATE_SUBJECT = "CN=syncthing, OU=Automatically Generated, O=Syncthing"
+        private const val CERTIFICATE_DNS = "syncthing"
         private const val SOCKET_TIMEOUT = 2000
-
-        init {
-            Security.addProvider(BouncyCastleProvider())
-        }
+        private const val TLS_VERSION = "TLSv1.3"
 
         private fun derToPem(der: ByteArray): String {
             return "-----BEGIN CERTIFICATE-----\n" + Base64.toBase64String(der).chunked(76).joinToString("\n") + "\n-----END CERTIFICATE-----"

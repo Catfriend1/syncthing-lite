@@ -7,8 +7,6 @@ import android.util.Log
 import java.security.Security
 import net.syncthing.lite.error.ErrorStorage
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-// import org.conscrypt.Conscrypt
-
 
 class Application: Application() {
     companion object {
@@ -18,10 +16,7 @@ class Application: Application() {
 
     override fun onCreate() {
         super.onCreate()
-        
-        System.setProperty("javax.net.debug", "ssl,handshake")
 
-        // Security.insertProviderAt(Conscrypt.newProvider(), 1)
         val provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)
         if (provider == null || provider.javaClass != BouncyCastleProvider::class.java) {
             Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
