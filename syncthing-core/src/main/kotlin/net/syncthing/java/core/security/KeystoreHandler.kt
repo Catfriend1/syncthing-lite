@@ -46,8 +46,6 @@ import java.security.cert.Certificate
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import java.security.spec.ECGenParameterSpec
-import java.security.spec.NamedParameterSpec
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
