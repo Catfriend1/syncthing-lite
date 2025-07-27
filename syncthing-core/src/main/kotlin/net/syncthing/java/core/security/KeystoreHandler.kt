@@ -127,6 +127,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     fun createSocket(relaySocketAddress: InetSocketAddress): SSLSocket {
         try {
             val socket = socketFactory.createSocket() as SSLSocket
+            socket.setApplicationProtocols(arrayOf(BEP))
             socket.connect(relaySocketAddress, SOCKET_TIMEOUT)
             return socket
         } catch (e: KeyManagementException) {
