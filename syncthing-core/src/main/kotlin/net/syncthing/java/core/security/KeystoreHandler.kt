@@ -104,6 +104,9 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             throw CryptoException(e)
         } catch (e: UnrecoverableKeyException) {
             throw CryptoException(e)
+        } catch (e: Exception) {
+            logger.error("wrapSocket: Uncaught exception", e)
+            throw Exception(e)
         }
 
     }
@@ -122,6 +125,9 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             throw CryptoException(e)
         } catch (e: UnrecoverableKeyException) {
             throw CryptoException(e)
+        } catch (e: Exception) {
+            logger.error("createSocket: Uncaught exception", e)
+            throw Exception(e)
         }
     }
 
