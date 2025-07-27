@@ -129,9 +129,14 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     fun createSocket(relaySocketAddress: InetSocketAddress): SSLSocket {
         try {
             val socket = socketFactory.createSocket() as SSLSocket
-            val params = socket.sslParameters as BCSSLParameters
-            params.applicationProtocols = arrayOf(BEP)
-            socket.sslParameters = params
+            if (socket is BCSSLSocket) {
+                val params = socket.sslParameters
+                if (params is BCSSLParameters) {
+                    params.applicationProtocols = arrayOf(BEP)
+                } else {
+                    logger.warn("ALPN could not be set: sslParameters is not BCSSLParameters")
+                }
+            }
             socket.connect(relaySocketAddress, SOCKET_TIMEOUT)
             return socket
         } catch (e: KeyManagementException) {
