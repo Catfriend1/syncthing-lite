@@ -232,9 +232,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val keyStore = KeyStore.getInstance(keystoreAlgorithm)
                 keyStore.load(null, null)
                 val certChain = arrayOf(
-                    JcaX509CertificateConverter()
-                        .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                        .getCertificate(certHolderFinal)
+                    JcaX509CertificateConverter().getCertificate(certHolderFinal)
                 )
                 keyStore.setKeyEntry("key", keyPair.private, KEY_PASSWORD.toCharArray(), certChain)
                 return Pair(keyStore, deviceId)
