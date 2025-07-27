@@ -189,9 +189,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             try {
                 // logger.trace("Generating key.")
                 val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO, BouncyCastleProvider.PROVIDER_NAME)
-                val ecSpec = ECGenParameterSpec("secp256r1")
-                keyPairGenerator.initialize(ecSpec)
-                val keyPair = keyPairGenerator.genKeyPair()
+                val keyPair = keyPairGenerator.generateKeyPair()
 
                 val contentSigner = JcaContentSignerBuilder(SIGNATURE_ALGO)
                     .setProvider(BouncyCastleProvider.PROVIDER_NAME)
@@ -238,7 +236,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val certHolderFinal = certBuilder.build(contentSigner)
 
                 val certificateDerData = certHolderFinal.encoded
-                // logger.trace("Generated certificate: {}.", derToPem(certificateDerData))
+                logger.trace("Generated certificate: {}.", derToPem(certificateDerData))
                 val deviceId = derDataToDeviceId(certificateDerData)
                 // logger.trace("Device ID from certificate: {}.", deviceId)
 
@@ -303,8 +301,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
         private const val JKS_PASSWORD = "password"
         private const val KEY_PASSWORD = "password"
-        private const val KEY_ALGO = "EC"
-        private const val SIGNATURE_ALGO = "SHA256withECDSA"
+        private const val KEY_ALGO = "Ed25519"
+        private const val SIGNATURE_ALGO = "Ed25519"
         private const val CERTIFICATE_SUBJECT = "CN=syncthing, OU=Automatically Generated, O=Syncthing"
         private const val SOCKET_TIMEOUT = 2000
         private const val TLS_VERSION = "TLSv1.3"
