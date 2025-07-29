@@ -101,6 +101,13 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         try {
             logger.debug("Wrapping plain socket, server mode: {}.", isServerSocket)
             val socket = socketFactory.createSocket(socket, null, socket.port, true) as SSLSocket
+            if (socket is BCSSLSocket) {
+                val bcSocket = socket as BCSSLSocket
+                val params = BCSSLParameters().apply {
+                    applicationProtocols = arrayOf(BEP)
+                }
+                bcSocket.parameters = params
+            }
             if (isServerSocket) {
                 socket.useClientMode = false
             }
