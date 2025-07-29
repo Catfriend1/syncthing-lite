@@ -204,17 +204,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         }
 
         fun loadKeystore(configuration: Configuration): KeystoreHandler {
-            val hash = MessageDigest.getInstance("SHA-256").digest(configuration.keystoreData)
-            val keystoreHandlerFromCache = keystoreHandlersCacheByHash[Base32().encodeAsString(hash)]
-            if (keystoreHandlerFromCache != null) {
-                return keystoreHandlerFromCache
-            }
-            val keystoreAlgo = getKeystoreAlgorithm(configuration.keystoreAlgorithm)
-            val keystore = importKeystore(configuration.keystoreData, keystoreAlgo)
-            val keystoreHandler = KeystoreHandler(keystore.first)
-            keystoreHandlersCacheByHash[Base32().encodeAsString(hash)] = keystoreHandler
-            logger.trace("Keystore is ready for device ID: {}.", keystore.second)
-            return keystoreHandler
+            return loadKeystoreFromPem()
         }
 
         @Throws(CryptoException::class, IOException::class)
