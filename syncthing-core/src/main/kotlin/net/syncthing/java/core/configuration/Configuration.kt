@@ -53,7 +53,7 @@ class Configuration(
             if (localDeviceName.isEmpty() || localDeviceName == "localhost") {
                 localDeviceName = "syncthing-lite"
             }
-            val keystoreData = KeystoreHandler.Loader().generateKeystore()
+            val keystoreData = KeystoreHandler.Loader().generateKeystore(configFolder)
             isSaved = false
             configChannel.value = Config(peers = setOf(), folders = setOf(),
                             localDeviceName = localDeviceName,

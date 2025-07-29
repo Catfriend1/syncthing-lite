@@ -37,6 +37,7 @@ import org.bouncycastle.operator.OperatorCreationException
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.IOException
 import java.math.BigInteger
 import java.net.InetSocketAddress
@@ -167,7 +168,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         }
 
         @Throws(CryptoException::class, IOException::class)
-        fun generateKeystore(): Triple<DeviceId, ByteArray, String> {
+        fun generateKeystore(configFolder: File): Triple<DeviceId, ByteArray, String> {
             val keystoreAlgorithm = getKeystoreAlgorithm(null)
             val keystore = generateKeystore(keystoreAlgorithm)
             val keystoreHandler = KeystoreHandler(keystore.first)
@@ -300,6 +301,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private const val SOCKET_TIMEOUT = 2000
         private const val TLS_VERSION = "TLSv1.3"
         private const val ALPN_BEP = "bep/1.0"
+        private const val FILENAME_CERT_PEM = "cert.pem"
+        private const val FILENAME_KEY_PEM = "key.pem"
 
         private val logger = LoggerFactory.getLogger(KeystoreHandler::class.java)
     }
