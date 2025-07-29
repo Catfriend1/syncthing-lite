@@ -80,7 +80,7 @@ class RelayClient(configuration: Configuration) {
     @Throws(IOException::class, KeystoreHandler.CryptoException::class)
     fun getSessionInvitation(relaySocketAddress: InetSocketAddress, deviceId: DeviceId): SessionInvitation {
         logger.debug("Connecting to relay (temporary protocol mode) at address: {}.", relaySocketAddress)
-        keystoreHandler.createSocket(relaySocketAddress).use { socket ->
+        keystoreHandler.createSocket(relaySocketAddress, ALPN_BEP_RELAY).use { socket ->
             RelayDataInputStream(socket.getInputStream()).use { `in` ->
                 RelayDataOutputStream(socket.getOutputStream()).use { out ->
                     run {
@@ -204,5 +204,6 @@ class RelayClient(configuration: Configuration) {
         private const val ResponseSuccess = 0
         private const val ResponseNotFound = 1
         private const val ResponseAlreadyConnected = 2
+        private const val ALPN_BEP_RELAY = "bep-relay"
     }
 }
