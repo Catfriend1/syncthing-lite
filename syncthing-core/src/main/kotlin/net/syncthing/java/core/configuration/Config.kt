@@ -13,9 +13,7 @@ data class Config(
         val localDeviceName: String,
         val localDeviceId: String,
         val customDiscoveryServers: Set<DiscoveryServer>,
-        val useDefaultDiscoveryServers: Boolean,
-        val keystoreAlgorithm: String,
-        val keystoreData: String
+        val useDefaultDiscoveryServers: Boolean
 ) {
     companion object {
         private const val PEERS = "peers"
@@ -24,8 +22,6 @@ data class Config(
         private const val LOCAL_DEVICE_ID = "localDeviceId"
         private const val USE_DEFAULT_DISCOVERY_SERVERS = "useDefaultDiscoveryServers"
         private const val CUSTOM_DISCOVERY_SERVERS = "customDiscoveryServers"
-        private const val KEYSTORE_ALGORITHM = "keystoreAlgorithm"
-        private const val KEYSTORE_DATA = "keystoreData"
 
         fun parse(reader: JsonReader): Config {
             var peers: Set<DeviceInfo>? = null
@@ -74,8 +70,6 @@ data class Config(
                         }
                     }
                     USE_DEFAULT_DISCOVERY_SERVERS -> useDefaultDiscoveryServers = reader.nextBoolean()
-                    KEYSTORE_ALGORITHM -> keystoreAlgorithm = reader.nextString()
-                    KEYSTORE_DATA -> keystoreData = reader.nextString()
                     else -> reader.skipValue()
                 }
             }
@@ -87,9 +81,7 @@ data class Config(
                     localDeviceName = localDeviceName!!,
                     localDeviceId = localDeviceId!!,
                     customDiscoveryServers = customDiscoveryServers,
-                    useDefaultDiscoveryServers = useDefaultDiscoveryServers,
-                    keystoreAlgorithm = keystoreAlgorithm!!,
-                    keystoreData = keystoreData!!
+                    useDefaultDiscoveryServers = useDefaultDiscoveryServers
             )
         }
     }
@@ -114,14 +106,11 @@ data class Config(
 
         writer.name(USE_DEFAULT_DISCOVERY_SERVERS).value(useDefaultDiscoveryServers)
 
-        writer.name(KEYSTORE_ALGORITHM).value(keystoreAlgorithm)
-        writer.name(KEYSTORE_DATA).value(keystoreData)
-
         writer.endObject()
     }
 
     // Exclude keystoreData from toString()
     override fun toString() = "Config(peers=$peers, folders=$folders, localDeviceName=$localDeviceName, " +
             "localDeviceId=$localDeviceId, customDiscoveryServers=$customDiscoveryServers, " +
-            "useDefaultDiscoveryServers=$useDefaultDiscoveryServers, keystoreAlgorithm=$keystoreAlgorithm)"
+            "useDefaultDiscoveryServers=$useDefaultDiscoveryServers"
 }

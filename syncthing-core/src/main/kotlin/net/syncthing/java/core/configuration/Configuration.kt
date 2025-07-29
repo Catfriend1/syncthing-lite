@@ -58,8 +58,6 @@ class Configuration(
             configChannel.value = Config(peers = setOf(), folders = setOf(),
                             localDeviceName = localDeviceName,
                             localDeviceId = keystoreData.first.deviceId,
-                            keystoreData = Base64.toBase64String(keystoreData.second),
-                            keystoreAlgorithm = keystoreData.third,
                             customDiscoveryServers = emptySet(),
                             useDefaultDiscoveryServers = true
                     )
@@ -85,12 +83,6 @@ class Configuration(
         get() = configChannel.value!!.let { config ->
             config.customDiscoveryServers + (if (config.useDefaultDiscoveryServers) DiscoveryServer.defaultDiscoveryServers else emptySet())
         }
-
-    val keystoreData: ByteArray
-        get() = Base64.decode(configChannel.value!!.keystoreData)
-
-    val keystoreAlgorithm: String
-        get() = configChannel.value!!.keystoreAlgorithm
 
     val peerIds: Set<DeviceId>
         get() = configChannel.value!!.peers.map { it.deviceId }.toSet()
