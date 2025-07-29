@@ -17,7 +17,6 @@ import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.security.DeviceCertificateVerifier
 import net.syncthing.java.core.utils.CertUtils
-import net.syncthing.java.core.utils.NetworkUtils
 import net.syncthing.java.core.utils.Logger
 import net.syncthing.java.core.utils.LoggerFactory
 import org.apache.commons.codec.binary.Base32
@@ -246,28 +245,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             } catch (e: Exception) {
                 logger.error("generateKeystore: Uncaught exception", e)
                 throw Exception(e)
-            }
-
-        }
-
-        @Throws(CryptoException::class, IOException::class)
-        private fun importKeystore(keystoreData: ByteArray, keystoreAlgorithm: String): Pair<KeyStore, DeviceId> {
-            try {
-                val keyStore = KeyStore.getInstance(keystoreAlgorithm)
-                keyStore.load(ByteArrayInputStream(keystoreData), JKS_PASSWORD.toCharArray())
-                val alias = keyStore.aliases().nextElement()
-                val certificate = keyStore.getCertificate(alias)
-                NetworkUtils.assertProtocol(certificate is X509Certificate)
-                val derData = certificate.encoded
-                val deviceId = DeviceCertificateVerifier.derDataToDeviceId(derData)
-                logger.debug("Loaded device ID from certificate: {}.", deviceId)
-                return Pair(keyStore, deviceId)
-            } catch (e: NoSuchAlgorithmException) {
-                throw CryptoException(e)
-            } catch (e: KeyStoreException) {
-                throw CryptoException(e)
-            } catch (e: CertificateException) {
-                throw CryptoException(e)
             }
 
         }
