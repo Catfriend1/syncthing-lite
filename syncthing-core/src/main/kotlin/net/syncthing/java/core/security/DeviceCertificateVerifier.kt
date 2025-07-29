@@ -34,15 +34,17 @@ object DeviceCertificateVerifier {
         val certificateFactory = CertificateFactory.getInstance("X.509")
         val certPath = certificateFactory.generateCertPath(certs)
         val certificate = certPath.certificates[0]
+
         assertSocketCertificateValid(certificate, deviceId)
     }
 
-    @Throws(CertificateException::class)
+    @Throws(SSLPeerUnverifiedException::class, CertificateException::class)
     fun assertSocketCertificateValid(certificate: Certificate, deviceId: DeviceId) {
         NetworkUtils.assertProtocol(certificate is X509Certificate)
 
         val derData = certificate.encoded
         val deviceIdFromCertificate = derDataToDeviceId(derData)
+        // logger.trace("Remote PEM Certificate: {}.", derToPem(derData))
 
         NetworkUtils.assertProtocol(deviceIdFromCertificate == deviceId) {
             "Device ID mismatch! Expected = $deviceId, Received = $deviceIdFromCertificate."
