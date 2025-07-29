@@ -1,7 +1,12 @@
 package net.syncthing.java.core.utils
 
-import org.bouncycastle.util.encoders.Base64
+import java.io.ByteArrayInputStream
+import java.security.KeyFactory
 import java.security.PrivateKey
+import java.security.spec.PKCS8EncodedKeySpec
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import org.bouncycastle.util.encoders.Base64
 
 object CertUtils {
 
@@ -17,4 +22,23 @@ object CertUtils {
             Base64.toBase64String(der).chunked(76).joinToString("\n") +
             "\n-----END CERTIFICATE-----"
     }
+
+    fun parseCertificateFromPem(pem: String): X509Certificate {
+        val certFactory = CertificateFactory.getInstance("X.509")
+        val input = ByteArrayInputStream(
+            pem.lines().filterNot { it.startsWith("-----") }.joinToString("").decodeBase64()
+        )
+        return certFactory.generateCertificate(input) as X509Certificate
+    }
+
+    fun parsePrivateKeyFromPem(pem: String, keyAlgo: String): PrivateKey {
+        val keySpec = PKCS8EncodedKeySpec(
+            pem.lines().filterNot { it.startsWith("-----") }.joinToString("").decodeBase64()
+        )
+        val kf = KeyFactory.getInstance(keyAlgo)
+        return kf.generatePrivate(keySpec)
+    }
+
+    private fun String.decodeBase64() = Base64.decode(this)
+
 }
