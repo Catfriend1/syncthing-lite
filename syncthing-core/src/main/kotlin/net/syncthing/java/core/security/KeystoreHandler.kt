@@ -303,6 +303,11 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private const val CERTIFICATE_DNS = "syncthing"
         private const val SOCKET_TIMEOUT = 2000
         private const val TLS_VERSION = "TLSv1.3"
+        private const val BEP = "bep/1.0"
+
+        // private const val RELAY = "bep-relay"
+
+        private val logger = LoggerFactory.getLogger(KeystoreHandler::class.java)
 
         private fun derToPem(der: ByteArray): String {
             return "-----BEGIN CERTIFICATE-----\n" + Base64.toBase64String(der).chunked(76).joinToString("\n") + "\n-----END CERTIFICATE-----"
@@ -311,11 +316,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         fun derDataToDeviceId(certificateDerData: ByteArray): DeviceId {
             return DeviceId.fromHashData(MessageDigest.getInstance("SHA-256").digest(certificateDerData))
         }
-
-        const val BEP = "bep/1.0"
-        const val RELAY = "bep-relay"
-
-        private val logger = LoggerFactory.getLogger(KeystoreHandler::class.java)
 
         @Throws(SSLPeerUnverifiedException::class, CertificateException::class)
         fun assertSocketCertificateValid(socket: SSLSocket, deviceId: DeviceId) {
