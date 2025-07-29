@@ -47,9 +47,9 @@ object DeviceCertificateVerifier {
         // logger.trace("Remote PEM Certificate: {}.", derToPem(derData))
 
         NetworkUtils.assertProtocol(deviceIdFromCertificate == deviceId) {
-            "Device ID mismatch! Expected = $deviceId, Received = $deviceIdFromCertificate."
+            "Device ID mismatch! Expected = ${deviceId.deviceId}, Received = $deviceIdFromCertificate."
         }
 
-        logger.trace("Remote SSL certificate matches expected device ID: $deviceId")
+        logger.trace("Remote SSL certificate matches expected device ID: ${deviceId.deviceId}")
     }
 }

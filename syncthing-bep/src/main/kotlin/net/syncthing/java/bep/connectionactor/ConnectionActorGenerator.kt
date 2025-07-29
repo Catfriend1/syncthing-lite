@@ -218,7 +218,7 @@ object ConnectionActorGenerator {
                 }
             }
 
-            logger.trace("Connected to device {}.", deviceAddress)
+            logger.trace("Connected to device {}.", deviceAddress.deviceId.deviceId)
 
             currentStatus = currentStatus.copy(
                     status = ConnectionStatus.Connected,
