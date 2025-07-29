@@ -256,11 +256,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 File(configFolder, FILENAME_CERT_PEM).writeText(certPem)
                 File(configFolder, FILENAME_KEY_PEM).writeText(keyPem)
 
-                val keyStore = KeyStore.getInstance(keystoreAlgorithm)
-                keyStore.load(null, null)
-                val certChain = arrayOf(x509Certificate)
-                keyStore.setKeyEntry("key", keyPair.private, KEY_PASSWORD.toCharArray(), certChain)
-                return Pair(keyStore, deviceId)
+                return localDeviceId
             } catch (e: OperatorCreationException) {
                 logger.trace("generateKeystore: OperatorCreationException", e)
                 throw CryptoException(e)
