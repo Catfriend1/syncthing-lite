@@ -18,7 +18,7 @@ import com.google.gson.stream.JsonReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.syncthing.java.core.beans.DeviceId
-import net.syncthing.java.core.security.KeystoreHandler
+import net.syncthing.java.core.security.DeviceCertificateVerifier
 import java.io.BufferedInputStream
 import java.io.IOException
 import java.io.InputStreamReader
@@ -52,7 +52,7 @@ object GlobalDiscoveryUtil {
                                 throw IOException("no certificate found")
                             }
 
-                            KeystoreHandler.assertSocketCertificateValid(session.peerCertificates.first(), serverDeviceId)
+                            DeviceCertificateVerifier.assertSocketCertificateValid(session.peerCertificates.first(), serverDeviceId)
                         }
 
                         true

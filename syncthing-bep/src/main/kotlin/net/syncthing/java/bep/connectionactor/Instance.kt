@@ -25,7 +25,7 @@ import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.bep.index.IndexHandler
 import net.syncthing.java.core.beans.DeviceAddress
 import net.syncthing.java.core.configuration.Configuration
-import net.syncthing.java.core.security.KeystoreHandler
+import net.syncthing.java.core.security.DeviceCertificateVerifier
 import net.syncthing.java.core.utils.Logger
 import net.syncthing.java.core.utils.LoggerFactory
 import java.io.DataInputStream
@@ -88,7 +88,7 @@ object ConnectionActor {
                 }
 
                 // the hello message exchange should happen before the certificate validation
-                KeystoreHandler.assertSocketCertificateValid(socket, address.deviceId)
+                DeviceCertificateVerifier.assertSocketCertificateValid(socket, address.deviceId)
 
                 // now (after the validation) use the content of the hello message
                 processHelloMessage(helloMessage, configuration, address.deviceId)

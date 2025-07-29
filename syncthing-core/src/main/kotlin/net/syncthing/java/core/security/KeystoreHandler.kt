@@ -16,6 +16,7 @@ package net.syncthing.java.core.security
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.interfaces.RelayConnection
+import net.syncthing.java.core.security.DeviceCertificateVerifier
 import net.syncthing.java.core.utils.NetworkUtils
 import net.syncthing.java.core.utils.Logger
 import net.syncthing.java.core.utils.LoggerFactory
@@ -234,8 +235,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val certHolderFinal = certBuilder.build(contentSigner)
 
                 val certificateDerData = certHolderFinal.encoded
-                // logger.trace("Generated certificate: {}.", derToPem(certificateDerData))
-                val deviceId = derDataToDeviceId(certificateDerData)
+                // logger.trace("Generated certificate: {}.", DeviceCertificateVerifier.derToPem(certificateDerData))
+                val deviceId = DeviceCertificateVerifier.derDataToDeviceId(certificateDerData)
                 // logger.trace("Device ID from certificate: {}.", deviceId)
 
                 val keyStore = KeyStore.getInstance(keystoreAlgorithm)
@@ -273,7 +274,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val certificate = keyStore.getCertificate(alias)
                 NetworkUtils.assertProtocol(certificate is X509Certificate)
                 val derData = certificate.encoded
-                val deviceId = derDataToDeviceId(derData)
+                val deviceId = DeviceCertificateVerifier.derDataToDeviceId(derData)
                 logger.debug("Loaded device ID from certificate: {}.", deviceId)
                 return Pair(keyStore, deviceId)
             } catch (e: NoSuchAlgorithmException) {
@@ -307,38 +308,5 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         // private const val RELAY = "bep-relay"
 
         private val logger = LoggerFactory.getLogger(KeystoreHandler::class.java)
-
-        private fun derToPem(der: ByteArray): String {
-            return "-----BEGIN CERTIFICATE-----\n" + Base64.toBase64String(der).chunked(76).joinToString("\n") + "\n-----END CERTIFICATE-----"
-        }
-
-        fun derDataToDeviceId(certificateDerData: ByteArray): DeviceId {
-            return DeviceId.fromHashData(MessageDigest.getInstance("SHA-256").digest(certificateDerData))
-        }
-
-        @Throws(SSLPeerUnverifiedException::class, CertificateException::class)
-        fun assertSocketCertificateValid(socket: SSLSocket, deviceId: DeviceId) {
-            val session = socket.session
-            val certs = session.peerCertificates.toList()
-            val certificateFactory = CertificateFactory.getInstance("X.509")
-            val certPath = certificateFactory.generateCertPath(certs)
-            val certificate = certPath.certificates[0]
-
-            assertSocketCertificateValid(certificate, deviceId)
-        }
-
-        @Throws(SSLPeerUnverifiedException::class, CertificateException::class)
-        fun assertSocketCertificateValid(certificate: Certificate, deviceId: DeviceId) {
-            NetworkUtils.assertProtocol(certificate is X509Certificate)
-
-            val derData = certificate.encoded
-            val deviceIdFromCertificate = derDataToDeviceId(derData)
-            // logger.trace("Remote PEM Certificate: {}.", derToPem(derData))
-
-            NetworkUtils.assertProtocol(deviceIdFromCertificate == deviceId) {
-                "Device ID mismatch! Expected = $deviceId, Received = $deviceIdFromCertificate."
-            }
-            logger.debug("Remote SSL certificate match deviceId: {}.", deviceId)
-        }
     }
 }
