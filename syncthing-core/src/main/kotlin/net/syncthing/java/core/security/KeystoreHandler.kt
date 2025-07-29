@@ -159,7 +159,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
             val derData = certificate.encoded
             val deviceId = DeviceCertificateVerifier.derDataToDeviceId(derData)
-            logger.debug("Loaded DeviceId: {}", deviceId.deviceId)
+            logger.debug("My ID: {}", deviceId.deviceId)
 
             return KeystoreHandler(keyStore).also {
                 val hash = MessageDigest.getInstance("SHA-256").digest(certPem.toByteArray() + keyPem.toByteArray())
