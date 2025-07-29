@@ -104,7 +104,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             if (socket is BCSSLSocket) {
                 val bcSocket = socket as BCSSLSocket
                 val params = BCSSLParameters().apply {
-                    applicationProtocols = arrayOf(BEP)
+                    applicationProtocols = arrayOf(ALPN_BEP)
                 }
                 bcSocket.parameters = params
             }
@@ -299,7 +299,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private const val CERTIFICATE_DNS = "syncthing"
         private const val SOCKET_TIMEOUT = 2000
         private const val TLS_VERSION = "TLSv1.3"
-        private const val BEP = "bep/1.0"
+        private const val ALPN_BEP = "bep/1.0"
 
         private val logger = LoggerFactory.getLogger(KeystoreHandler::class.java)
     }
