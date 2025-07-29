@@ -53,15 +53,12 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.security.Security
 import java.security.UnrecoverableKeyException
-import java.security.cert.Certificate
 import java.security.cert.CertificateException
-import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
-import javax.net.ssl.SSLPeerUnverifiedException
 import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.SSLSocket
 import javax.net.ssl.X509TrustManager
