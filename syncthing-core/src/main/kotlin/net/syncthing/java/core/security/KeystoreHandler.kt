@@ -100,11 +100,11 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     fun wrapSocket(socket: Socket, isServerSocket: Boolean): SSLSocket {
         try {
             logger.debug("Wrapping plain socket, server mode: {}.", isServerSocket)
-            val sslSocket = socketFactory.createSocket(socket, null, socket.port, true) as SSLSocket
+            val socket = socketFactory.createSocket(socket, null, socket.port, true) as SSLSocket
             if (isServerSocket) {
-                sslSocket.useClientMode = false
+                socket.useClientMode = false
             }
-            return sslSocket
+            return socket
         } catch (e: KeyManagementException) {
             throw CryptoException(e)
         } catch (e: NoSuchAlgorithmException) {
