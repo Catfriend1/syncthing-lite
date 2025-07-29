@@ -15,7 +15,6 @@ package net.syncthing.java.core.security
 
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
-import net.syncthing.java.core.interfaces.RelayConnection
 import net.syncthing.java.core.security.DeviceCertificateVerifier
 import net.syncthing.java.core.utils.NetworkUtils
 import net.syncthing.java.core.utils.Logger
@@ -98,7 +97,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     }
 
     @Throws(CryptoException::class, IOException::class)
-    private fun wrapSocket(socket: Socket, isServerSocket: Boolean): SSLSocket {
+    fun wrapSocket(socket: Socket, isServerSocket: Boolean): SSLSocket {
         try {
             logger.debug("Wrapping plain socket, server mode: {}.", isServerSocket)
             val sslSocket = socketFactory.createSocket(socket, null, socket.port, true) as SSLSocket
@@ -146,11 +145,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             logger.error("createSocket: Uncaught exception", e)
             throw Exception(e)
         }
-    }
-
-    @Throws(CryptoException::class, IOException::class)
-    fun wrapSocket(relayConnection: RelayConnection): SSLSocket {
-        return wrapSocket(relayConnection.getSocket(), relayConnection.isServerSocket())
     }
 
     class Loader {

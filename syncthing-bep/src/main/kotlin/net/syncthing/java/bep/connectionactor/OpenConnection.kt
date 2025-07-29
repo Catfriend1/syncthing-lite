@@ -38,7 +38,8 @@ object OpenConnection {
             }
             DeviceAddress.AddressType.RELAY -> {
                 logger.debug("Opening relay connection at relay {}.", address)
-                keystoreHandler.wrapSocket(RelayClient(configuration).openRelayConnection(address))
+                val relayConnection = RelayClient(configuration).openRelayConnection(address)
+                keystoreHandler.wrapSocket(relayConnection.getSocket(), relayConnection.isServerSocket())
             }
             else -> {
                 val message = "Unsupported address type: ${address.type}."
