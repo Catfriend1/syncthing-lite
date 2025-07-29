@@ -234,9 +234,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val certHolderFinal = certBuilder.build(contentSigner)
 
                 val certificateDerData = certHolderFinal.encoded
-                // logger.trace("Generated certificate: {}.", DeviceCertificateVerifier.derToPem(certificateDerData))
-                val deviceId = DeviceCertificateVerifier.derDataToDeviceId(certificateDerData)
-                // logger.trace("Device ID from certificate: {}.", deviceId)
+                val localDeviceId = DeviceCertificateVerifier.derDataToDeviceId(certificateDerData)
+                logger.trace("Generated local DeviceID: {}.", localDeviceId.deviceId)
 
                 val x509Certificate = JcaX509CertificateConverter().getCertificate(certHolderFinal)
                 val certPem = CertUtils.convertCertificateToPem(certificateDerData)
