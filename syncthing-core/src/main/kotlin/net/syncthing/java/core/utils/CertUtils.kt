@@ -6,6 +6,7 @@ import java.security.PrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import net.syncthing.java.core.utils.NetworkUtils
 import org.bouncycastle.util.encoders.Base64
 
 object CertUtils {
@@ -28,7 +29,9 @@ object CertUtils {
         val input = ByteArrayInputStream(
             pem.lines().filterNot { it.startsWith("-----") }.joinToString("").decodeBase64()
         )
-        return certFactory.generateCertificate(input) as X509Certificate
+        val certificate = certFactory.generateCertificate(input)
+        NetworkUtils.assertProtocol(certificate is X509Certificate)
+        return certificate as X509Certificate
     }
 
     fun parsePrivateKeyFromPem(pem: String, keyAlgo: String): PrivateKey {
