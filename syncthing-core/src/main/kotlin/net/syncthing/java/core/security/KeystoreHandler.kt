@@ -14,10 +14,8 @@
 package net.syncthing.java.core.security
 
 import net.syncthing.java.core.beans.DeviceId
-import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.security.DeviceCertificateVerifier
 import net.syncthing.java.core.utils.CertUtils
-import net.syncthing.java.core.utils.Logger
 import net.syncthing.java.core.utils.LoggerFactory
 import org.apache.commons.codec.binary.Base32
 import org.bouncycastle.asn1.x509.Extension
@@ -35,8 +33,6 @@ import org.bouncycastle.jsse.BCSSLParameters
 import org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
 import org.bouncycastle.operator.OperatorCreationException
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
@@ -110,7 +106,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             throw CryptoException(e)
         } catch (e: Exception) {
             logger.error("wrapSocket: Uncaught exception", e)
-            throw Exception(e)
+            throw CryptoException(e)
         }
 
     }
