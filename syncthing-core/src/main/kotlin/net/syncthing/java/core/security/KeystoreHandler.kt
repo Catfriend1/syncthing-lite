@@ -155,7 +155,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
             val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
             keyStore.load(null, null)
-            keyStore.setKeyEntry("key", privateKey, KEY_PASSWORD.toCharArray(), arrayOf(certificate))
+            keyStore.setKeyEntry("key", privateKey, null, arrayOf(certificate))
 
             val derData = certificate.encoded
             val deviceId = DeviceCertificateVerifier.derDataToDeviceId(derData)
@@ -257,8 +257,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
     companion object {
 
-        private const val JKS_PASSWORD = "password"
-        private const val KEY_PASSWORD = "password"
         private const val KEY_ALGO = "Ed25519"
         private const val SIGNATURE_ALGO = "Ed25519"
         private const val CERTIFICATE_SUBJECT = "CN=syncthing, OU=Automatically Generated, O=Syncthing"
