@@ -301,8 +301,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private const val TLS_VERSION = "TLSv1.3"
         private const val BEP = "bep/1.0"
 
-        // private const val RELAY = "bep-relay"
-
         private val logger = LoggerFactory.getLogger(KeystoreHandler::class.java)
     }
 }
