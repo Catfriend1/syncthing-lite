@@ -86,19 +86,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     }
 
     @Throws(CryptoException::class, IOException::class)
-    private fun exportKeystoreToData(): ByteArray {
-        val out = ByteArrayOutputStream()
-        try {
-            keyStore.store(out, JKS_PASSWORD.toCharArray())
-        } catch (ex: NoSuchAlgorithmException) {
-            throw CryptoException(ex)
-        } catch (ex: CertificateException) {
-            throw CryptoException(ex)
-        }
-        return out.toByteArray()
-    }
-
-    @Throws(CryptoException::class, IOException::class)
     fun wrapSocket(socket: Socket, isServerSocket: Boolean): SSLSocket {
         try {
             logger.debug("Wrapping plain socket, server mode: {}.", isServerSocket)
