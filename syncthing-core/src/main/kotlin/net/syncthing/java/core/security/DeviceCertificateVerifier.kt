@@ -16,6 +16,13 @@ object DeviceCertificateVerifier {
 
     private val logger = LoggerFactory.getLogger(DeviceCertificateVerifier::class.java)
 
+    fun convertPrivateKeyToPem(privateKey: java.security.PrivateKey): String {
+        val base64 = Base64.toBase64String(privateKey.encoded)
+        return "-----BEGIN PRIVATE KEY-----\n" +
+            base64.chunked(76).joinToString("\n") +
+            "\n-----END PRIVATE KEY-----"
+    }
+
     fun derToPem(der: ByteArray): String {
         return "-----BEGIN CERTIFICATE-----\n" +
             Base64.toBase64String(der).chunked(76).joinToString("\n") +
