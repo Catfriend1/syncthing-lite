@@ -50,6 +50,6 @@ object DeviceCertificateVerifier {
             "Device ID mismatch! Expected = $deviceId, Received = $deviceIdFromCertificate."
         }
 
-        logger.debug("Remote SSL certificate matches expected device ID: $deviceId")
+        logger.trace("Remote SSL certificate matches expected device ID: $deviceId")
     }
 }
