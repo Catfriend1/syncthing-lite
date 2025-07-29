@@ -96,6 +96,8 @@ class Configuration(
     val peers: Set<DeviceInfo>
         get() = configChannel.value!!.peers
 
+    fun getConfigFolder(): File = configFile.parentFile
+
     suspend fun update(operation: suspend (Config) -> Config): Boolean {
         modifyLock.withLock {
             val oldConfig = configChannel.value!!

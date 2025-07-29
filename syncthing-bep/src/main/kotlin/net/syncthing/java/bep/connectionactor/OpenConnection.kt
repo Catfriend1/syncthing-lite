@@ -31,7 +31,7 @@ object OpenConnection {
             address: DeviceAddress,
             configuration: Configuration
     ): SSLSocket {
-        val keystoreHandler = KeystoreHandler.Loader().loadKeystore(configuration)
+        val keystoreHandler = KeystoreHandler.Loader().loadKeystoreFromPem(configuration.getConfigFolder())
 
         return when (address.type) {
             DeviceAddress.AddressType.TCP -> {

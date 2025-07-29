@@ -32,7 +32,7 @@ import java.net.Socket
 import java.nio.ByteBuffer
 
 class RelayClient(configuration: Configuration) {
-    private val keystoreHandler: KeystoreHandler = KeystoreHandler.Loader().loadKeystore(configuration)
+    private val keystoreHandler: KeystoreHandler = KeystoreHandler.Loader().loadKeystoreFromPem(configuration.getConfigFolder())
 
     @Throws(IOException::class, KeystoreHandler.CryptoException::class)
     fun openRelayConnection(address: DeviceAddress): RelayConnection {

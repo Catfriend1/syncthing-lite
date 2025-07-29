@@ -144,9 +144,18 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
     class Loader {
 
+        private fun getKeystoreAlgorithm(keystoreAlgorithm: String?): String {
+            return keystoreAlgorithm?.let { algo ->
+                if (!algo.isBlank()) algo else null
+            } ?: {
+                val defaultAlgo = KeyStore.getDefaultType()!!
+                logger.debug("Keystore algorithm set to {}.", defaultAlgo)
+                defaultAlgo
+            }()
+        }
+
         @Throws(CryptoException::class, IOException::class)
-        private fun loadKeystoreFromPem(): KeystoreHandler {
-            val configFolder = File("/data/data/com.github.catfriend1.syncthinglite.debug/files")
+        fun loadKeystoreFromPem(configFolder: File): KeystoreHandler {
             val keyPem = File(configFolder, FILENAME_KEY_PEM).readText()
             val certPem = File(configFolder, FILENAME_CERT_PEM).readText()
 
@@ -165,20 +174,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val hash = MessageDigest.getInstance("SHA-256").digest(certPem.toByteArray() + keyPem.toByteArray())
                 keystoreHandlersCacheByHash[Base32().encodeAsString(hash)] = it
             }
-        }
-
-        private fun getKeystoreAlgorithm(keystoreAlgorithm: String?): String {
-            return keystoreAlgorithm?.let { algo ->
-                if (!algo.isBlank()) algo else null
-            } ?: {
-                val defaultAlgo = KeyStore.getDefaultType()!!
-                logger.debug("Keystore algorithm set to {}.", defaultAlgo)
-                defaultAlgo
-            }()
-        }
-
-        fun loadKeystore(configuration: Configuration): KeystoreHandler {
-            return loadKeystoreFromPem()
         }
 
         @Throws(CryptoException::class, IOException::class)
