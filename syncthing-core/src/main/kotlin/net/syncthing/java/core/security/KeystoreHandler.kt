@@ -16,6 +16,7 @@ package net.syncthing.java.core.security
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.security.DeviceCertificateVerifier
+import net.syncthing.java.core.utils.CertUtils
 import net.syncthing.java.core.utils.NetworkUtils
 import net.syncthing.java.core.utils.Logger
 import net.syncthing.java.core.utils.LoggerFactory
@@ -237,8 +238,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 // logger.trace("Device ID from certificate: {}.", deviceId)
 
                 val x509Certificate = JcaX509CertificateConverter().getCertificate(certHolderFinal)
-                val certPem = DeviceCertificateVerifier.derToPem(certificateDerData)
-                val keyPem = DeviceCertificateVerifier.convertPrivateKeyToPem(keyPair.private)
+                val certPem = CertUtils.convertCertificateToPem(certificateDerData)
+                val keyPem = CertUtils.convertPrivateKeyToPem(keyPair.private)
                 File(configFolder, FILENAME_CERT_PEM).writeText(certPem)
                 File(configFolder, FILENAME_KEY_PEM).writeText(keyPem)
 
