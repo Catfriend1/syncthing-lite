@@ -72,7 +72,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         Security.addProvider(BouncyCastleJsseProvider())
         val sslContext = SSLContext.getInstance(TLS_VERSION, "BCJSSE")
         val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
-        keyManagerFactory.init(keyStore, KEY_PASSWORD.toCharArray())
+        keyManagerFactory.init(keyStore, null)
 
         sslContext.init(keyManagerFactory.keyManagers, arrayOf(object : X509TrustManager {
             @Throws(CertificateException::class)
