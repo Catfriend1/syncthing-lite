@@ -37,3 +37,6 @@ project.properties
 # Gradle wrapper
 gradle/wrapper/gradle/
 gradle/wrapper/gradlew*
+
+# Syncthing demo certs
+/scripts/debug/win/*.pem
