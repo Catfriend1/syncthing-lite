@@ -236,11 +236,15 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val deviceId = DeviceCertificateVerifier.derDataToDeviceId(certificateDerData)
                 // logger.trace("Device ID from certificate: {}.", deviceId)
 
+                val x509Certificate = JcaX509CertificateConverter().getCertificate(certHolderFinal)
+                val certPem = DeviceCertificateVerifier.derToPem(certificateDerData)
+                val keyPem = DeviceCertificateVerifier.convertPrivateKeyToPem(keyPair.private)
+                File(configFolder, FILENAME_CERT_PEM).writeText(certPem)
+                File(configFolder, FILENAME_KEY_PEM).writeText(keyPem)
+
                 val keyStore = KeyStore.getInstance(keystoreAlgorithm)
                 keyStore.load(null, null)
-                val certChain = arrayOf(
-                    JcaX509CertificateConverter().getCertificate(certHolderFinal)
-                )
+                val certChain = arrayOf(x509Certificate)
                 keyStore.setKeyEntry("key", keyPair.private, KEY_PASSWORD.toCharArray(), certChain)
                 return Pair(keyStore, deviceId)
             } catch (e: OperatorCreationException) {
