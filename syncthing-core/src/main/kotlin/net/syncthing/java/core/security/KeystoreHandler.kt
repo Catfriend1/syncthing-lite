@@ -130,12 +130,11 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         try {
             val socket = socketFactory.createSocket() as SSLSocket
             if (socket is BCSSLSocket) {
-                val params = socket.sslParameters
-                if (params is BCSSLParameters) {
-                    params.applicationProtocols = arrayOf(BEP)
-                } else {
-                    logger.warn("ALPN could not be set: sslParameters is not BCSSLParameters")
+                val bcSocket = socket as BCSSLSocket
+                val params = BCSSLParameters().apply {
+                    applicationProtocols = arrayOf(BEP)
                 }
+                bcSocket.parameters = params
             }
             socket.connect(relaySocketAddress, SOCKET_TIMEOUT)
             return socket
