@@ -159,13 +159,13 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     class Loader {
 
         @Throws(CryptoException::class, IOException::class)
-        fun loadKeystoreFromPem(): KeystoreHandler {
+        private fun loadKeystoreFromPem(): KeystoreHandler {
             val configFolder = File("/data/data/com.github.catfriend1.syncthinglite.debug/files")
             val keyPem = File(configFolder, FILENAME_KEY_PEM).readText()
             val certPem = File(configFolder, FILENAME_CERT_PEM).readText()
 
-            val privateKey = DeviceCertificateVerifier.parsePrivateKeyFromPem(keyPem)
-            val certificate = DeviceCertificateVerifier.parseCertificateFromPem(certPem)
+            val privateKey = CertUtils.parsePrivateKeyFromPem(keyPem, KEY_ALGO)
+            val certificate = CertUtils.parseCertificateFromPem(certPem)
 
             val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
             keyStore.load(null, null)
@@ -173,7 +173,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
             val derData = certificate.encoded
             val deviceId = DeviceCertificateVerifier.derDataToDeviceId(derData)
-            logger.debug("Loaded PEM-based device ID: {}", deviceId)
+            logger.debug("Loaded DeviceId: {}", deviceId.deviceId)
 
             return KeystoreHandler(keyStore).also {
                 val hash = MessageDigest.getInstance("SHA-256").digest(certPem.toByteArray() + keyPem.toByteArray())
