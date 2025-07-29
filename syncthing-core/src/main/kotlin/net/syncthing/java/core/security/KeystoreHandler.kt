@@ -248,6 +248,8 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
 
     companion object {
 
+        private const val FILENAME_CERT_PEM = "cert.pem"
+        private const val FILENAME_KEY_PEM = "key.pem"
         private const val KEY_ALGO = "Ed25519"
         private const val SIGNATURE_ALGO = "Ed25519"
         private const val CERTIFICATE_SUBJECT = "CN=syncthing, OU=Automatically Generated, O=Syncthing"
@@ -255,8 +257,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private const val SOCKET_TIMEOUT = 2000
         private const val TLS_VERSION = "TLSv1.3"
         private const val ALPN_BEP = "bep/1.0"
-        private const val FILENAME_CERT_PEM = "cert.pem"
-        private const val FILENAME_KEY_PEM = "key.pem"
 
         private val logger = LoggerFactory.getLogger(KeystoreHandler::class.java)
     }
