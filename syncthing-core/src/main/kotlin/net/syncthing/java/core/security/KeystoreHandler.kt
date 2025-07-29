@@ -128,13 +128,13 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     }
 
     @Throws(CryptoException::class, IOException::class)
-    fun createSocket(relaySocketAddress: InetSocketAddress): SSLSocket {
+    fun createSocket(relaySocketAddress: InetSocketAddress, applicationProtocol: String): SSLSocket {
         try {
             val socket = socketFactory.createSocket() as SSLSocket
             if (socket is BCSSLSocket) {
                 val bcSocket = socket as BCSSLSocket
                 val params = BCSSLParameters().apply {
-                    applicationProtocols = arrayOf(BEP)
+                    applicationProtocols = arrayOf(applicationProtocol)
                 }
                 bcSocket.parameters = params
             }
