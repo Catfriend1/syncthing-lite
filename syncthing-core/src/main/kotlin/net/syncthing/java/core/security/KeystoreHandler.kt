@@ -170,7 +170,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         @Throws(CryptoException::class, IOException::class)
         fun generateKeystore(configFolder: File): Triple<DeviceId, ByteArray, String> {
             val keystoreAlgorithm = getKeystoreAlgorithm(null)
-            val keystore = generateKeystore(keystoreAlgorithm)
+            val keystore = generateKeystore(keystoreAlgorithm, configFolder)
             val keystoreHandler = KeystoreHandler(keystore.first)
             val keystoreData = keystoreHandler.exportKeystoreToData()
             val hash = MessageDigest.getInstance("SHA-256").digest(keystoreData)
@@ -194,7 +194,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         }
 
         @Throws(CryptoException::class, IOException::class)
-        private fun generateKeystore(keystoreAlgorithm: String): Pair<KeyStore, DeviceId> {
+        private fun generateKeystore(keystoreAlgorithm: String, configFolder: File): Pair<KeyStore, DeviceId> {
             try {
                 // logger.trace("Generating key.")
                 val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGO)
