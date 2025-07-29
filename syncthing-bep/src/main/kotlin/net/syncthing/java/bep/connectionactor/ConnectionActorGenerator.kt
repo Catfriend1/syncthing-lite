@@ -169,8 +169,6 @@ object ConnectionActorGenerator {
             // Log "Connection reset" at debug level since it's expected when remote device hasn't accepted connection yet
             if (ex.message?.contains("Connection reset") == true) {
                 logger.trace("Connection reset detected - this is expected when remote device hasn't accepted connection yet")
-            } else {
-                logger.trace("Failed to connect to $deviceAddress: ${ex.message}")
             }
 
             when (ex) {
