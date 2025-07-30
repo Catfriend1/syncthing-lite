@@ -1,4 +1,5 @@
 plugins {
+    alias(libs.plugins.aboutLibraries)
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.kapt)
@@ -95,6 +96,8 @@ dependencies {
     implementation(libs.collection.ktx)
     implementation(libs.preference.ktx)
 
+    implementation(libs.aboutlibraries.compose.m2)
+    implementation(libs.aboutlibraries.core)
     implementation(libs.zxing.android.embedded)
 
     implementation(project(":syncthing-client"))
