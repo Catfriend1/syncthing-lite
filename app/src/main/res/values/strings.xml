@@ -87,4 +87,10 @@
     <string name="privacy_title">Privacy Policy</string>
     <string name="privacy_summary">Open Syncthing-Lite\'s privacy policy, which covers usage (if any) of personal data.</string>
     <string name="privacy_policy_url" translatable="false">https://github.com/Catfriend1/syncthing-lite/blob/main/privacy-policy.md</string>
+
+    <!-- Title of the preference showing the Open Source Licenses -->
+    <string name="open_source_licenses_title">Open Source Licenses</string>
+    
+    <!-- Summary of the preference showing the Open Source Licenses -->
+    <string name="open_source_licenses_summary">Show the open source licenses used</string>
 </resources>

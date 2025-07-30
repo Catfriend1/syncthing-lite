@@ -50,6 +50,12 @@
                 android:data="@string/privacy_policy_url" />
         </Preference>
 
+        <Preference
+                android:persistent="false"
+                android:key="open_source_licenses"
+                android:title="@string/open_source_licenses_title"
+                android:summary="@string/open_source_licenses_summary" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
