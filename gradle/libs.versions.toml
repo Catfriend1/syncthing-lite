@@ -29,6 +29,7 @@ collection-ktx = "1.5.0"
 preference-ktx = "1.2.1"
 
 # Third-party libraries
+aboutLibraries = "12.1.2"
 zxing-integration = "3.3.0"
 zxing-core = "3.3.0"
 zxing-android-embedded = "4.3.0"
@@ -68,6 +69,9 @@ collection-ktx = { module = "androidx.collection:collection-ktx", version.ref = 
 preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preference-ktx" }
 
 # Third-party
+aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
+aboutlibraries-compose-core = { module = "com.mikepenz:aboutlibraries-compose-core", version.ref = "aboutLibraries" }
+aboutlibraries-compose-m2 = { module = "com.mikepenz:aboutlibraries-compose", version.ref = "aboutLibraries" }
 zxing-integration = { module = "com.google.zxing:android-integration", version.ref = "zxing-integration" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing-core" }
 zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxing-android-embedded" }
@@ -80,6 +84,7 @@ bouncy-castle-bctls = { module = "org.bouncycastle:bctls-jdk15to18", version.ref
 commons-cli = { module = "commons-cli:commons-cli", version.ref = "commons-cli" }
 
 [plugins]
+aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
 android-library = { id = "com.android.library", version.ref = "android-gradle-plugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
