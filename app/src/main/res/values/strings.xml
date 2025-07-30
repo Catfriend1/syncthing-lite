@@ -82,4 +82,9 @@
     <string name="skip">Skip</string>
     <string name="next">Next</string>
     <string name="done">Done</string>
+
+    <!-- Menu item linking privacy policy -->
+    <string name="privacy_title">Privacy Policy</string>
+    <string name="privacy_summary">Open Syncthing-Lite\'s privacy policy, which covers usage (if any) of personal data.</string>
+    <string name="privacy_policy_url" translatable="false">https://github.com/Catfriend1/syncthing-lite/blob/main/privacy-policy.md</string>
 </resources>
