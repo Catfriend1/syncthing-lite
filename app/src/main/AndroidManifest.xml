@@ -41,6 +41,14 @@
             android:theme="@style/Theme.Syncthing.NoActionBar"/>
         <activity android:name=".activities.FolderBrowserActivity"
             android:parentActivityName=".activities.MainActivity"/>
+        <activity android:name=".activities.LicenseActivity"
+            android:label="@string/open_source_licenses_title"
+            android:exported="false"
+            android:parentActivityName=".activities.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.MainActivity" />
+        </activity>
         <provider
             android:name=".library.CacheFileProvider"
             android:authorities="${applicationId}.fileprovider"
