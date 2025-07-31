@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R
+import net.syncthing.lite.activities.LicenseActivity
 import net.syncthing.lite.dialogs.ErrorReportDialog
 import net.syncthing.lite.error.ErrorStorage
 import net.syncthing.lite.library.DefaultLibraryManager
