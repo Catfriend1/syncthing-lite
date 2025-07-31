@@ -3,7 +3,6 @@ package net.syncthing.lite.activities
 import android.content.res.Configuration;
 import android.os.Bundle
 import android.util.Log
-import com.google.android.material.snackbar.Snackbar
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.WindowCompat
@@ -22,7 +21,6 @@ abstract class SyncthingActivity : CoroutineActivity() {
         )
     }
     private var loadingDialog: AlertDialog? = null
-    private var snackBar: Snackbar? = null
 
     companion object {
         private const val TAG = "SyncthingActivity"
