@@ -61,12 +61,9 @@ protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protob
 # AndroidX and Google
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose-material" }
 compose-material = { module = "androidx.compose.material:material", version.ref = "compose-material" }
-compose-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "compose-material-icons" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "compose-material-icons" }
 compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose-material" }
-compose-ui-tooling-preview  = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose-material" }
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 legacy-preference-v14 = { module = "androidx.legacy:legacy-preference-v14", version.ref = "legacy-preference-v14" }
 legacy-support-v4 = { module = "androidx.legacy:legacy-support-v4", version.ref = "legacy-support-v4" }
