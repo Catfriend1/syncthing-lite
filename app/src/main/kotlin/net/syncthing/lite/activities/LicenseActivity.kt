@@ -2,21 +2,14 @@ package net.syncthing.lite.activities
 
 import android.os.Bundle
 
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -56,19 +49,6 @@ fun LicenseScreen() {
             }
 
             Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = { Text(stringResource(id = R.string.open_source_licenses_title)) },
-                        navigationIcon = {
-                            IconButton(onClick = { backDispatcher?.onBackPressed()  }) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = stringResource(id = R.string.back)
-                                )
-                            }
-                        }
-                    )
-                }
             ) { paddingValues ->
                 LibrariesContainer(
                     modifier = Modifier
