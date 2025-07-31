@@ -84,6 +84,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.aboutlibraries.compose.m2)
+    implementation(libs.aboutlibraries.core)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.material)
@@ -95,9 +97,6 @@ dependencies {
     implementation(libs.core.ktx)
     implementation(libs.collection.ktx)
     implementation(libs.preference.ktx)
-
-    implementation(libs.aboutlibraries.compose.m2)
-    implementation(libs.aboutlibraries.core)
     implementation(libs.zxing.android.embedded)
 
     implementation(project(":syncthing-client"))
