@@ -93,7 +93,6 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.compose.ui)
     implementation(libs.collection.ktx)
-    implementation(libs.constraintlayout)
     implementation(libs.core.ktx)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.android)
