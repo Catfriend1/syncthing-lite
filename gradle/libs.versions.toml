@@ -70,7 +70,6 @@ preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = 
 
 # Third-party
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
-aboutlibraries-compose-core = { module = "com.mikepenz:aboutlibraries-compose-core", version.ref = "aboutLibraries" }
 aboutlibraries-compose-m2 = { module = "com.mikepenz:aboutlibraries-compose", version.ref = "aboutLibraries" }
 zxing-integration = { module = "com.google.zxing:android-integration", version.ref = "zxing-integration" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing-core" }
@@ -84,7 +83,6 @@ bouncy-castle-bctls = { module = "org.bouncycastle:bctls-jdk15to18", version.ref
 commons-cli = { module = "commons-cli:commons-cli", version.ref = "commons-cli" }
 
 [plugins]
-aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
 android-library = { id = "com.android.library", version.ref = "android-gradle-plugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
@@ -92,3 +90,6 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobuf-plugin" }
+
+# Third-party libraries
+aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
