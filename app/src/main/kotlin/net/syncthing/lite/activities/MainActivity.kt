@@ -46,6 +46,19 @@ class MainActivity : SyncthingActivity() {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
+        ViewCompat.setOnApplyWindowInsetsListener(binding.drawerLayout) { _, insets ->
+            val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            binding.navigation.setPadding(
+                binding.navigation.paddingLeft,
+                systemBarsInsets.top,
+                binding.navigation.paddingRight,
+                binding.navigation.paddingBottom
+            )
+
+            insets
+        }
+
         drawerToggle = ActionBarDrawerToggle(
             this, binding.drawerLayout, R.string.app_name, R.string.app_name
         )
