@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.aboutLibraries)
     alias(libs.plugins.android.application)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
 }
@@ -86,9 +87,18 @@ android {
 dependencies {
     implementation(libs.aboutlibraries.compose.m2)
     implementation(libs.aboutlibraries.core)
+    implementation(libs.activity.compose)
     implementation(libs.appcompat)
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.material)
+    implementation(libs.compose.material.icons.core)
+    implementation(libs.compose.material.icons.extended)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.constraintlayout)
     implementation(libs.core.ktx)
     implementation(libs.collection.ktx)
+    implementation(libs.constraintlayout)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.legacy.preference.v14)
