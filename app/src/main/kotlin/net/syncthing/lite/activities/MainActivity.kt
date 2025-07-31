@@ -51,7 +51,7 @@ class MainActivity : SyncthingActivity() {
 
             binding.navigation.setPadding(
                 binding.navigation.paddingLeft,
-                binding.navigation.paddingTop,
+                systemBarsInsets.top,
                 binding.navigation.paddingRight,
                 binding.navigation.paddingBottom
             )
