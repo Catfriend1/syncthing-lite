@@ -9,7 +9,7 @@ ksp = "2.2.0-2.0.2"
 # Android SDK versions
 compile-sdk = "36"
 min-sdk = "21"
-target-sdk = "33"
+target-sdk = "36"
 
 # App version
 version-code = "1300000"
