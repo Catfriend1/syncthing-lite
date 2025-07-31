@@ -86,11 +86,11 @@ android {
 }
 
 dependencies {
-    implementation(libs.aboutlibraries.compose.m2)
+    implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.aboutlibraries.core)
     implementation(libs.activity.compose)
     implementation(libs.appcompat)
-    implementation(libs.compose.material)
+    implementation(libs.compose.material3)
     implementation(libs.compose.material.icons.extended)
     implementation(libs.compose.ui)
     implementation(libs.collection.ktx)
