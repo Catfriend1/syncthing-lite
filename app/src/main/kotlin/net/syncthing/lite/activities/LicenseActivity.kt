@@ -29,7 +29,7 @@ import com.mikepenz.aboutlibraries.ui.compose.LibrariesContainer
 
 import net.syncthing.lite.R
 
-class LicenseActivity : ComponentActivity() {
+class LicenseActivity : SyncthingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
