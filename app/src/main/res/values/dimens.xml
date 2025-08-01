@@ -1,3 +1,4 @@
 <resources>
-    <dimen name="appIntroBottomBarHeight">56dp</dimen>
+    <dimen name="appIntroBottomBarHeight">70dp</dimen>
+    <dimen name="appIntroButtonMinWidth">130dp</dimen>
 </resources>
