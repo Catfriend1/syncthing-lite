@@ -56,7 +56,7 @@ class FolderContentsAdapter: RecyclerView.Adapter<FolderContentsViewHolder>() {
             listener?.onItemLongClicked(fileInfo) ?: false
         }
 
-        binding.executePendingBindings()
+        // Note: executePendingBindings() not needed for ViewBinding
     }
 
     override fun getItemCount() = data.size

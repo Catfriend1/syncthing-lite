@@ -53,7 +53,7 @@ class DevicesAdapter: RecyclerView.Adapter<DeviceViewHolder>() {
 
         binding.root.setOnLongClickListener { listener?.onDeviceLongClicked(deviceInfo) ?: false }
 
-        binding.executePendingBindings()
+        // Note: executePendingBindings() not needed for ViewBinding
     }
 }
 

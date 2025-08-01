@@ -14,7 +14,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.get
 import androidx.core.view.size
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R
@@ -44,7 +43,7 @@ class MainActivity : SyncthingActivity() {
             return
         }
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater).also { setContentView(it.root) }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.drawerLayout) { _, insets ->
             val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())

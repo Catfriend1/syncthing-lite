@@ -2,7 +2,6 @@ package net.syncthing.lite.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
-import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -82,7 +81,7 @@ class FolderBrowserActivity : SyncthingActivity() {
             }
         }
 
-        val binding: ActivityFolderBrowserBinding = DataBindingUtil.setContentView(this, R.layout.activity_folder_browser)
+        val binding: ActivityFolderBrowserBinding = ActivityFolderBrowserBinding.inflate(layoutInflater).also { setContentView(it.root) }
         val adapter = FolderContentsAdapter()
 
         binding.listView.adapter = adapter

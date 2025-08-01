@@ -8,7 +8,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
-import androidx.databinding.DataBindingUtil
 import net.syncthing.lite.R
 import net.syncthing.lite.async.CoroutineActivity
 import net.syncthing.lite.databinding.DialogLoadingBinding
@@ -41,8 +40,7 @@ abstract class SyncthingActivity : CoroutineActivity() {
     override fun onStart() {
         super.onStart()
 
-        val binding = DataBindingUtil.inflate<DialogLoadingBinding>(
-                LayoutInflater.from(this), R.layout.dialog_loading, null, false)
+        val binding = DialogLoadingBinding.inflate(LayoutInflater.from(this))
         binding.loadingText.text = getString(R.string.loading_config_starting_syncthing_client)
 
         loadingDialog = AlertDialog.Builder(this)

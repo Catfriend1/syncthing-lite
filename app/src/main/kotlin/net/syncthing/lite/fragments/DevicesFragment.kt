@@ -3,7 +3,6 @@ package net.syncthing.lite.fragments
 import androidx.appcompat.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -47,7 +46,7 @@ class DevicesFragment : SyncthingFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate(layoutInflater, R.layout.fragment_devices, container, false)
+        binding = FragmentDevicesBinding.inflate(layoutInflater, container, false)
         binding.addDevice.setOnClickListener { showDialog() }
 
         binding.list.adapter = adapter
