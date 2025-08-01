@@ -86,7 +86,9 @@ class DevicesFragment : SyncthingFragment() {
                 val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }
 
                 adapter.data = devices.map { device -> device to (connectionInfo[device.deviceId] ?: ConnectionInfo.empty) }
-                binding.isEmpty = devices.isEmpty()
+                val isEmpty = devices.isEmpty()
+                binding.list.visibility = if (isEmpty) View.GONE else View.VISIBLE
+                binding.empty.visibility = if (isEmpty) View.VISIBLE else View.GONE
             }
         }
 

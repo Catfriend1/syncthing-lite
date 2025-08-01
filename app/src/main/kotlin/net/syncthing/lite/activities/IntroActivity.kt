@@ -186,7 +186,11 @@ class IntroActivity : SyncthingActivity() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val binding = FragmentIntroOneBinding.inflate(inflater, container, false)
 
-            libraryHandler.isListeningPortTaken.observe(viewLifecycleOwner, Observer { binding.listeningPortTaken = it })
+            libraryHandler.isListeningPortTaken.observe(viewLifecycleOwner, Observer { isPortTaken ->
+                val visibility = if (isPortTaken) View.VISIBLE else View.GONE
+                binding.listeningPortTakenTitle.visibility = visibility
+                binding.listeningPortTakenMessage.visibility = visibility
+            })
 
             return binding.root
         }

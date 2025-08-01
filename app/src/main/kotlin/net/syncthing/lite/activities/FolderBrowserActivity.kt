@@ -138,10 +138,12 @@ class FolderBrowserActivity : SyncthingActivity() {
         launch {
             listing.collect { listing ->
                 if (listing == null) {
-                    binding.isLoading = true
+                    binding.progressBar.visibility = View.VISIBLE
+                    binding.listView.visibility = View.GONE
                 } else {
                     supportActionBar?.title = if (PathUtils.isRoot(listing.path)) folder else PathUtils.getFileName(listing.path)
-                    binding.isLoading = false
+                    binding.progressBar.visibility = View.GONE
+                    binding.listView.visibility = View.VISIBLE
                     adapter.data = if (listing is DirectoryContentListing)
                         listing.entries.sortedWith(IndexBrowser.sortAlphabeticallyDirectoriesFirst)
                     else emptyList()
