@@ -335,6 +335,12 @@ class IntroActivity : SyncthingActivity() {
                                         ViewGroup.LayoutParams.WRAP_CONTENT
                                 )
                                 text = deviceId.deviceId
+                                setTextColor(ContextCompat.getColor(context, android.R.color.white))
+                                setBackgroundColor(ContextCompat.getColor(context, R.color.primary_dark))
+                                setPadding(24, 24, 24, 24)
+                                textSize = 16f
+                                typeface = Typeface.MONOSPACE
+                                isAllCaps = false
 
                                 setOnClickListener {
                                     binding.enterDeviceId.deviceId.setText(deviceId.deviceId)
