@@ -2,6 +2,7 @@
 <resources>
     <color name="primary">#f43703</color>
     <color name="primary_dark">#b90000</color>
+    <color name="primary_intro">#ff5252</color>
     <color name="accent">#FFC107</color>
     <color name="divider">#1F000000</color>
 </resources>

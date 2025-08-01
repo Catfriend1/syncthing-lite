@@ -36,7 +36,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.IntroActivity"
-            android:theme="@style/Theme.Syncthing.NoActionBar"/>
+            android:theme="@style/Theme.Syncthing.Intro"/>
         <activity android:name=".activities.QRScannerActivity"
             android:theme="@style/Theme.Syncthing.NoActionBar"/>
         <activity android:name=".activities.FolderBrowserActivity"

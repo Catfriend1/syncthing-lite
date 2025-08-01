@@ -12,7 +12,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:textColor="#eee"
             android:textSize="24sp"
             android:text="@string/intro_page_one_title"/>
 
@@ -25,7 +24,6 @@
             android:layout_marginBottom="@dimen/appIntroBottomBarHeight"
             android:textSize="16sp"
             android:textAlignment="center"
-            android:textColor="#eee"
             android:text="@string/intro_page_one_description"
             android:drawablePadding="24dp"
             android:gravity="center"
@@ -35,7 +33,6 @@
         android:id="@+id/listening_port_taken_title"
         android:visibility="gone"
         android:textAppearance="?android:textAppearanceMedium"
-        android:textColor="#eee"
         android:text="@string/other_syncthing_instance_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
@@ -45,7 +42,6 @@
         android:layout_marginBottom="48dp"
         android:visibility="gone"
         android:textAppearance="?android:textAppearanceSmall"
-        android:textColor="#eee"
         android:text="@string/other_syncthing_instance_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
