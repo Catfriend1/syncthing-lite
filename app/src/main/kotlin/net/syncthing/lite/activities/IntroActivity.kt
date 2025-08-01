@@ -21,6 +21,7 @@ import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.button.MaterialButton
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -324,34 +325,33 @@ class IntroActivity : SyncthingActivity() {
             libraryHandler.unregisterMessageFromUnknownDeviceListener(onDeviceFound)
         }
 
-        private val onDeviceFound: (DeviceId) -> Unit = {
-            deviceId ->
-
-                if (addedDeviceIds.add(deviceId)) {
-                    binding.foundDevices.addView(
-                            Button(context).apply {
-                                layoutParams = ViewGroup.LayoutParams(
-                                        ViewGroup.LayoutParams.MATCH_PARENT,
-                                        ViewGroup.LayoutParams.WRAP_CONTENT
-                                )
-                                text = deviceId.deviceId
-                                setTextColor(ContextCompat.getColor(context, android.R.color.white))
-                                setBackgroundColor(ContextCompat.getColor(context, R.color.primary_dark))
-                                setPadding(24, 24, 24, 24)
-                                textSize = 16f
-                                typeface = Typeface.MONOSPACE
-                                isAllCaps = false
-
-                                setOnClickListener {
-                                    binding.enterDeviceId.deviceId.setText(deviceId.deviceId)
-                                    binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
-                                    (activity as? IntroActivity)?.enableNextButton(true)
-
-                                    binding.scroll.scrollTo(0, 0)
-                                }
-                            }
+        private val onDeviceFound: (DeviceId) -> Unit = { deviceId ->
+            if (addedDeviceIds.add(deviceId)) {
+                val button = MaterialButton(requireContext()).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
                     )
+                    text = deviceId.deviceId
+                    setTextColor(ContextCompat.getColor(context, android.R.color.white))
+                    backgroundTintList = ContextCompat.getColorStateList(context, R.color.primary_dark)
+                    cornerRadius = 16
+                    setPadding(32, 32, 32, 32)
+                    textSize = 16f
+                    typeface = Typeface.MONOSPACE
+                    isAllCaps = false
+                    elevation = 4f
+
+                    setOnClickListener {
+                        binding.enterDeviceId.deviceId.setText(deviceId.deviceId)
+                        binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                        (activity as? IntroActivity)?.enableNextButton(true)
+                        binding.scroll.scrollTo(0, 0)
+                    }
                 }
+
+                binding.foundDevices.addView(button)
+            }
         }
     }
 
