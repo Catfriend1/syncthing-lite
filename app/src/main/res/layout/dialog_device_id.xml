@@ -26,7 +26,6 @@
                 app:drawableEndCompat="@drawable/ic_content_copy_black_24dp"
                 android:focusable="true"
                 android:fontFamily="monospace"
-                android:textAppearance="@style/TextAppearance.AppCompat.Caption"
                 tools:text="ASD1ASD-ASD1ASD-ASD1ASD-ASD1ASD-ASD1ASD-ASD1ASD-ASD1ASD-ASD1ASD"/>
 
             <TextView
