@@ -325,6 +325,10 @@ class IntroActivity : SyncthingActivity() {
             libraryHandler.unregisterMessageFromUnknownDeviceListener(onDeviceFound)
         }
 
+        private fun formatDeviceIdForWrapping(id: String): String {
+            return id.replace("-", "-\u200B")
+        }
+
         private fun Int.dpToPx(context: Context): Int =
             (this * context.resources.displayMetrics.density).toInt()
 
@@ -337,7 +341,7 @@ class IntroActivity : SyncthingActivity() {
                     ).apply {
                         topMargin = 16.dpToPx(context)
                     }
-                    text = deviceId.deviceId
+                    text = formatDeviceIdForWrapping(deviceId.deviceId)
                     setTextColor(ContextCompat.getColor(context, android.R.color.white))
                     backgroundTintList = ContextCompat.getColorStateList(context, R.color.primary_dark)
                     cornerRadius = 16
