@@ -44,10 +44,13 @@ import net.syncthing.lite.utils.Util
 class IntroActivity : SyncthingActivity() {
 
     companion object {
-        private const val ENABLE_TEST_DATA: Boolean = true
         private const val TEST_DEVICE_ID: String = "ELQBG5X-NNNR7JC-NB7P7HF-AAZRSWD-ODAETQG-6OBQZRJ-7V2E7J6-KNMXNQL"
         private const val TEST_DISCOVERED_DEVICE_ID: String = "ZOK75WR-W3XWWUZ-NNLXV7V-DUYKVWA-SSPD7OH-3QYOZBY-SBH3N2Y-IAVJ4QH"
         private const val TAG = "IntroActivity"
+    }
+
+    private val ENABLE_TEST_DATA: Boolean by lazy {
+        isRunningOnEmulator()
     }
 
     private lateinit var binding: ActivityIntroBinding
@@ -207,6 +210,9 @@ class IntroActivity : SyncthingActivity() {
 
         private lateinit var binding: FragmentIntroTwoBinding
         private var qrCodeLauncher: ActivityResultLauncher<Intent>? = null
+
+        private val ENABLE_TEST_DATA: Boolean
+            get() = (activity as? IntroActivity)?.ENABLE_TEST_DATA == true
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
