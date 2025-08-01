@@ -325,13 +325,18 @@ class IntroActivity : SyncthingActivity() {
             libraryHandler.unregisterMessageFromUnknownDeviceListener(onDeviceFound)
         }
 
+        private fun Int.dpToPx(context: Context): Int =
+            (this * context.resources.displayMetrics.density).toInt()
+
         private val onDeviceFound: (DeviceId) -> Unit = { deviceId ->
             if (addedDeviceIds.add(deviceId)) {
                 val button = MaterialButton(requireContext()).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    )
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        topMargin = 16.dpToPx(context)
+                    }
                     text = deviceId.deviceId
                     setTextColor(ContextCompat.getColor(context, android.R.color.white))
                     backgroundTintList = ContextCompat.getColorStateList(context, R.color.primary_dark)
