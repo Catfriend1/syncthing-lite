@@ -15,6 +15,7 @@
 
     <style name="Theme.Syncthing.Intro" parent="@style/Theme.Syncthing.NoActionBar">
         <item name="android:textColor">@android:color/white</item>
+        <item name="android:windowBackground">@color/primary_intro</item>
     </style>
 
 </resources>
