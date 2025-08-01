@@ -62,7 +62,7 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = DialogFileBinding.inflate(inflater, container, false)
 
-        binding.filename = fileSpec.fileName
+        binding.filenameText.text = fileSpec.fileName
 
         binding.saveAsButton.setOnClickListener {
             saveAsLauncher.launch(

@@ -1,61 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="?selectableItemBackground"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:paddingLeft="12dp"
+    android:paddingRight="12dp">
 
-    <data>
-        <variable
-            name="fileName"
-            type="String" />
+    <ImageView
+        android:id="@+id/file_icon"
+        android:layout_width="48dp"
+        android:layout_height="32dp"
+        android:contentDescription="@string/file_icon"
+        tools:src="@drawable/ic_folder_black_24dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true" />
 
-        <variable
-            name="fileSize"
-            type="String" />
+    <TextView
+        android:id="@+id/file_label"
+        tools:text="Test Directory"
+        android:maxLines="1"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_toEndOf="@+id/file_icon"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:textSize="22sp" />
 
-        <import type="android.view.View" />
-        <import type="android.text.TextUtils" />
-    </data>
-
-    <RelativeLayout
-        android:background="?selectableItemBackground"
+    <TextView
+        android:id="@+id/file_size"
+        tools:text="250 MB"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:paddingLeft="12dp"
-        android:paddingRight="12dp">
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:layout_below="@id/file_label"
+        android:layout_toEndOf="@+id/file_icon"/>
 
-        <ImageView
-            android:id="@+id/file_icon"
-            android:layout_width="48dp"
-            android:layout_height="32dp"
-            android:contentDescription="@string/file_icon"
-            tools:src="@drawable/ic_folder_black_24dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true" />
-
-        <TextView
-            tools:text="Test Directory"
-            android:text="@{fileName}"
-            android:id="@+id/file_label"
-            android:maxLines="1"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_toEndOf="@+id/file_icon"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:textSize="22sp" />
-
-        <TextView
-            android:visibility="@{TextUtils.isEmpty(fileSize) ? View.GONE : View.VISIBLE}"
-            tools:text="250 MB"
-            android:text="@{fileSize}"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:layout_below="@id/file_label"
-            android:layout_toEndOf="@+id/file_icon"/>
-
-    </RelativeLayout>
-
-</layout>
+</RelativeLayout>
