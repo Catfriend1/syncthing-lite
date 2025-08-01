@@ -1,66 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:background="?selectableItemBackground"
+    android:padding="8dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-    <data>
-        <variable
-            name="name"
-            type="String" />
+    <ImageView
+        android:layout_gravity="center_vertical"
+        android:id="@+id/device_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:contentDescription="@string/device_icon"
+        tools:src="@drawable/ic_laptop_green_24dp" />
 
-        <variable
-            name="status"
-            type="String" />
-
-        <variable
-            name="isConnected"
-            type="Boolean" />
-    </data>
+    <View
+        android:layout_width="16dp"
+        android:layout_height="0dp" />
 
     <LinearLayout
-        android:orientation="horizontal"
-        android:background="?selectableItemBackground"
-        android:padding="8dp"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <ImageView
-            android:layout_gravity="center_vertical"
-            android:id="@+id/device_icon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:contentDescription="@string/device_icon"
-            tools:src="@drawable/ic_laptop_green_24dp"
-            android:src="@{safeUnbox(isConnected) ? @drawable/ic_laptop_green_24dp : @drawable/ic_laptop_red_24dp}" />
-
-        <View
-            android:layout_width="16dp"
-            android:layout_height="0dp" />
-
-        <LinearLayout
-            android:orientation="vertical"
+        <TextView
+            tools:text="Computer"
+            android:id="@+id/device_name"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAlignment="gravity"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
 
-            <TextView
-                tools:text="Computer"
-                android:text="@{name}"
-                android:id="@+id/device_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textAlignment="gravity"
-                android:textSize="18sp"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:text="@{status}"
-                tools:text="Trying to connect to 127.0.0.1 …"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
+        <TextView
+            android:id="@+id/device_status"
+            tools:text="Trying to connect to 127.0.0.1 …"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
-</layout>
+
+</LinearLayout>

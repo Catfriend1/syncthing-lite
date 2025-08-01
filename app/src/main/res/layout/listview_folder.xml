@@ -1,78 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-    <data>
-        <variable
-            name="folderName"
-            type="String" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:background="?selectableItemBackground"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="12dp"
+    android:paddingLeft="24dp"
+    android:paddingRight="24dp"
+    android:paddingTop="12dp">
 
-        <variable
-            name="lastModification"
-            type="String" />
-
-        <variable
-            name="info"
-            type="String" />
-
-        <variable
-            name="info2"
-            type="String" />
-
-        <import type="android.view.View" />
-        <import type="android.text.TextUtils" />
-    </data>
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:background="?selectableItemBackground"
+    <TextView
+        tools:text="Music"
+        android:id="@+id/folder_name_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="12dp"
-        android:paddingLeft="24dp"
-        android:paddingRight="24dp"
-        android:paddingTop="12dp">
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
 
-        <TextView
-            tools:text="Music"
-            android:text="@{folderName}"
-            android:id="@+id/folder_name_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textSize="20sp"
-            android:textStyle="bold"/>
+    <TextView
+        tools:text="Last modified: two minutes ago"
+        android:id="@+id/folder_lastmod_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="14sp" />
 
-        <TextView
-            tools:text="Last modified: two minutes ago"
-            android:text="@{lastModification}"
-            android:id="@+id/folder_lastmod_info"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textSize="14sp" />
+    <TextView
+        tools:text="Additional information"
+        android:id="@+id/folder_content_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="14sp" />
 
-        <TextView
-            tools:text="Additional information"
-            android:text="@{info}"
-            android:id="@+id/folder_content_info"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textSize="14sp" />
+    <TextView
+        android:id="@+id/folder_info2"
+        android:visibility="gone"
+        tools:text="Index Update Progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="14sp" />
 
-        <TextView
-            android:visibility="@{TextUtils.isEmpty(info2) ? View.GONE : View.VISIBLE}"
-            tools:text="Index Update Progress"
-            android:text="@{info2}"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textSize="14sp" />
-
-    </LinearLayout>
-
-</layout>
+</LinearLayout>
