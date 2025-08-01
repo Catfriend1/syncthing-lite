@@ -20,6 +20,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:padding="16dp"
+        android:background="@color/primary_dark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">

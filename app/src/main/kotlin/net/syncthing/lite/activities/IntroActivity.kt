@@ -90,6 +90,7 @@ class IntroActivity : SyncthingActivity() {
     }
 
     private fun setupPageIndicators() {
+        binding.pageIndicators.background = null
         for (i in 0 until adapter.itemCount) {
             val indicator = ImageView(this)
             val size = 12.dpToPx()
