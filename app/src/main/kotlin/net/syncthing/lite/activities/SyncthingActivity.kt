@@ -1,13 +1,14 @@
 package net.syncthing.lite.activities
 
-import android.content.res.Configuration;
+import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import net.syncthing.lite.R
 import net.syncthing.lite.async.CoroutineActivity
 import net.syncthing.lite.databinding.DialogLoadingBinding
@@ -65,5 +66,18 @@ abstract class SyncthingActivity : CoroutineActivity() {
 
     open fun onLibraryLoaded() {
         // nothing to do
+    }
+
+    fun isRunningOnEmulator(): Boolean {
+        return !Build.MANUFACTURER.isNullOrEmpty() &&
+               !Build.MODEL.isNullOrEmpty() &&
+               (
+                   Build.MANUFACTURER == "Google" ||
+                   Build.MANUFACTURER == "unknown"
+               ) &&
+               (
+                   Build.MODEL == "Android SDK built for x86" ||
+                   Build.MODEL == "sdk_gphone_x86_arm"
+               )
     }
 }
