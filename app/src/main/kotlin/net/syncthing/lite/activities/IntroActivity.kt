@@ -44,6 +44,7 @@ class IntroActivity : SyncthingActivity() {
     companion object {
         private const val ENABLE_TEST_DATA: Boolean = true
         private const val TEST_DEVICE_ID: String = "ELQBG5X-NNNR7JC-NB7P7HF-AAZRSWD-ODAETQG-6OBQZRJ-7V2E7J6-KNMXNQL"
+        private const val TEST_DISCOVERED_DEVICE_ID: String = "ZOK75WR-W3XWWUZ-NNLXV7V-DUYKVWA-SSPD7OH-3QYOZBY-SBH3N2Y-IAVJ4QH"
         private const val TAG = "IntroActivity"
     }
 
@@ -243,6 +244,11 @@ class IntroActivity : SyncthingActivity() {
             if (ENABLE_TEST_DATA) {
                 binding.enterDeviceId.deviceId.setText(TEST_DEVICE_ID)
                 binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                
+                val testDiscoveredDeviceId = DeviceId(deviceId = TEST_DISCOVERED_DEVICE_ID)
+                binding.root.post {
+                    onDeviceFound(testDiscoveredDeviceId)
+                }
             }
 
             return binding.root
