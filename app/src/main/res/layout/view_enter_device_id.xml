@@ -17,11 +17,15 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/device_id"
-            android:background="@android:color/transparent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minLines="3"
             android:inputType="textNoSuggestions|textMultiLine|textCapCharacters"
+            android:background="@android:color/transparent"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="4dp"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="normal"
             tools:text="VPNPKMK-VL2SOQN-SS5I2AB-G4BV7ZK-RO5ODEE-Y2G3CZ4-C4FUW4P-ZEMJOAF"/>
 
     </com.google.android.material.textfield.TextInputLayout>
