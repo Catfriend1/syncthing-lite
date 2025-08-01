@@ -8,4 +8,6 @@ SET "APK_FULLFN=%PROJECT_ROOT%\app\build\outputs\apk\debug\app-debug.apk"
 dir "%APK_FULLFN%"
 adb install -r "%APK_FULLFN%"
 ::
+adb shell pm grant "com.github.catfriend1.syncthinglite.debug" android.permission.CAMERA
+::
 goto :eof
