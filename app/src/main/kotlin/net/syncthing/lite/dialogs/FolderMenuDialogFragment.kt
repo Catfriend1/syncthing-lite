@@ -165,7 +165,6 @@ class FolderMenuDialogFragment: BottomSheetDialogFragment() {
                         folderCount += subFolders
                         fileCount += subFiles
                     }
-                    else -> {} // Skip other types
                 }
             }
         }
