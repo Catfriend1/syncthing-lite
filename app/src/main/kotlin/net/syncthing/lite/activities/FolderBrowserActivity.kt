@@ -25,6 +25,7 @@ import net.syncthing.lite.databinding.ActivityFolderBrowserBinding
 import net.syncthing.lite.dialogs.EnableFolderSyncForNewDeviceDialog
 import net.syncthing.lite.dialogs.FileMenuDialogFragment
 import net.syncthing.lite.dialogs.FileUploadDialog
+import net.syncthing.lite.dialogs.FolderMenuDialogFragment
 import net.syncthing.lite.dialogs.ReconnectIssueDialogFragment
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileDialogFragment
 import androidx.activity.result.ActivityResultLauncher
@@ -105,10 +106,17 @@ class FolderBrowserActivity : SyncthingActivity() {
             }
 
             override fun onItemLongClicked(fileInfo: FileInfo): Boolean {
-                return if (fileInfo.type == FileInfo.FileType.FILE) {
-                    FileMenuDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
-                    true
-                } else false
+                return when (fileInfo.type) {
+                    FileInfo.FileType.FILE -> {
+                        FileMenuDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
+                        true
+                    }
+                    FileInfo.FileType.DIRECTORY -> {
+                        FolderMenuDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
+                        true
+                    }
+                    else -> false
+                }
             }
         }
 
