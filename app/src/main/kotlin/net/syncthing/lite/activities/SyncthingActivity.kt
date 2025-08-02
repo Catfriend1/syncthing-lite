@@ -77,6 +77,7 @@ abstract class SyncthingActivity : CoroutineActivity() {
                ) &&
                (
                    Build.MODEL == "Android SDK built for x86" ||
+                   Build.MODEL == "Android SDK built for x86_64" ||
                    Build.MODEL == "sdk_gphone_x86_arm"
                )
     }
