@@ -59,6 +59,7 @@
     <string name="dialog_file_save_as">Save as</string>
     <string name="dialog_file_delete">Delete</string>
     <string name="dialog_folder_download">Download Folder</string>
+    <string name="dialog_folder_delete">Delete Folder</string>
     <string name="device_status_connecting">Connecting to %s</string>
     <string name="device_status_connected">Connected to %s</string>
     <string name="device_status_no_address">No known address for the device</string>
@@ -110,5 +111,12 @@
     <string name="toast_folder_create_success">Folder created successfully</string>
     <string name="toast_folder_create_failed">Failed to create folder</string>
     <string name="error_empty_folder_name">Folder name cannot be empty</string>
+    
+    <!-- Folder delete related strings -->
+    <string name="dialog_delete_folder_title">Delete Folder</string>
+    <string name="dialog_delete_folder_warning">⚠️ Warning: This will permanently delete the folder and all its contents on the remote device. This action cannot be undone and will be synchronized to all connected Syncthing devices.</string>
+    <string name="dialog_delete_folder_count_format">Folders: %1$s\nFiles: %2$s</string>
+    <string name="toast_folder_delete_success">Folder deleted successfully</string>
+    <string name="toast_folder_delete_failed">Failed to delete folder</string>
     <string name="error_invalid_folder_name">Invalid folder name</string>
 </resources>

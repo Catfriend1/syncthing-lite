@@ -13,6 +13,15 @@ import net.syncthing.lite.databinding.DialogFolderBinding
 import net.syncthing.lite.dialogs.downloadfolder.FolderDownloadDialogFragment
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import android.widget.Toast
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import net.syncthing.java.bep.index.browser.DirectoryContentListing
+import net.syncthing.lite.activities.SyncthingActivity
+import net.syncthing.lite.R
 
 class FolderMenuDialogFragment: BottomSheetDialogFragment() {
     companion object {
@@ -69,6 +78,10 @@ class FolderMenuDialogFragment: BottomSheetDialogFragment() {
             )
         }
 
+        binding.deleteFolderButton.setOnClickListener {
+            showDeleteConfirmationDialog()
+        }
+
         return binding.root
     }
 
@@ -87,5 +100,98 @@ class FolderMenuDialogFragment: BottomSheetDialogFragment() {
 
     fun show(fragmentManager: FragmentManager) {
         super.show(fragmentManager, TAG)
+    }
+
+    private fun showDeleteConfirmationDialog() {
+        MainScope().launch(Dispatchers.IO) {
+            try {
+                val syncthingActivity = requireActivity() as SyncthingActivity
+                var folderCount = 0
+                var fileCount = 0
+                
+                syncthingActivity.libraryHandler.syncthingClient { syncthingClient ->
+                    val counts = countFilesAndFoldersRecursively(
+                        syncthingClient.indexHandler.indexBrowser,
+                        folderId,
+                        folderPath
+                    )
+                    folderCount = counts.first
+                    fileCount = counts.second
+                }
+
+                withContext(Dispatchers.Main) {
+                    val message = getString(R.string.dialog_delete_folder_warning) + "\n\n" +
+                        getString(R.string.dialog_delete_folder_count_format, folderCount.toString(), fileCount.toString())
+
+                    AlertDialog.Builder(requireContext())
+                        .setTitle(R.string.dialog_delete_folder_title)
+                        .setMessage(message)
+                        .setIcon(android.R.drawable.ic_dialog_alert) // Red warning icon
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            performFolderDelete()
+                        }
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show()
+                }
+                
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), R.string.toast_folder_delete_failed, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun countFilesAndFoldersRecursively(
+        indexBrowser: net.syncthing.java.bep.index.browser.IndexBrowser,
+        folder: String,
+        path: String
+    ): Pair<Int, Int> {
+        var folderCount = 0
+        var fileCount = 0
+        
+        val listing = indexBrowser.getDirectoryListing(folder, path)
+        
+        if (listing is DirectoryContentListing) {
+            for (entry in listing.entries) {
+                when (entry.type) {
+                    net.syncthing.java.core.beans.FileInfo.FileType.FILE -> {
+                        fileCount++
+                    }
+                    net.syncthing.java.core.beans.FileInfo.FileType.DIRECTORY -> {
+                        folderCount++
+                        // Recursively count files and folders in subdirectories
+                        val (subFolders, subFiles) = countFilesAndFoldersRecursively(indexBrowser, folder, entry.path)
+                        folderCount += subFolders
+                        fileCount += subFiles
+                    }
+                    else -> {} // Skip other types
+                }
+            }
+        }
+        
+        return Pair(folderCount, fileCount)
+    }
+
+    private fun performFolderDelete() {
+        MainScope().launch(Dispatchers.IO) {
+            try {
+                val syncthingActivity = requireActivity() as SyncthingActivity
+                syncthingActivity.libraryHandler.syncthingClient { syncthingClient ->
+                    val blockPusher = syncthingClient.getBlockPusher(folderId)
+                    blockPusher.pushDelete(folderId, folderPath)
+                }
+                
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), R.string.toast_folder_delete_success, Toast.LENGTH_SHORT).show()
+                    dismiss()
+                }
+                
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), R.string.toast_folder_delete_failed, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 }
