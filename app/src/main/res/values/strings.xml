@@ -70,6 +70,7 @@
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
     <string name="toast_error">Something went wrong in Syncthing-Lite. You can view the details from the settings of Syncthing-Lite.</string>
     <string name="folder_browser_home">Home</string>
+    <string name="folder_browser_create_folder">Create folder</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="upload_file">Upload file</string>
@@ -102,4 +103,12 @@
     <string name="dialog_downloading_folder_progress">Downloading %1$s (%2$d of %3$d files)</string>
     <string name="toast_folder_download_success">Successfully downloaded %1$d files to %2$s</string>
     <string name="toast_folder_download_failed">Folder download failed: %1$s</string>
+    
+    <!-- Create folder strings -->
+    <string name="dialog_create_folder_title">Create folder</string>
+    <string name="dialog_create_folder_hint">Folder name</string>
+    <string name="toast_folder_create_success">Folder created successfully</string>
+    <string name="toast_folder_create_failed">Failed to create folder</string>
+    <string name="error_empty_folder_name">Folder name cannot be empty</string>
+    <string name="error_invalid_folder_name">Invalid folder name</string>
 </resources>
