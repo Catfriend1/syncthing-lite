@@ -18,21 +18,32 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import java.io.Serializable
 
-data class DeviceInfo(val deviceId: DeviceId, val name: String): Serializable {
+data class DeviceInfo(val deviceId: DeviceId, val name: String, val addresses: List<String> = listOf("dynamic")): Serializable {
 
     companion object {
         private const val DEVICE_ID = "deviceId"
         private const val NAME = "name"
+        private const val ADDRESSES = "addresses"
 
         fun parse(reader: JsonReader): DeviceInfo {
             var deviceId: DeviceId? = null
             var name: String? = null
+            var addresses: List<String> = listOf("dynamic")  // default value
 
             reader.beginObject()
             while (reader.hasNext()) {
                 when (reader.nextName()) {
                     DEVICE_ID -> deviceId = DeviceId.parse(reader)
                     NAME -> name = reader.nextString()
+                    ADDRESSES -> {
+                        val addressList = mutableListOf<String>()
+                        reader.beginArray()
+                        while (reader.hasNext()) {
+                            addressList.add(reader.nextString())
+                        }
+                        reader.endArray()
+                        addresses = addressList.ifEmpty { listOf("dynamic") }
+                    }
                     else -> reader.skipValue()
                 }
             }
@@ -40,7 +51,8 @@ data class DeviceInfo(val deviceId: DeviceId, val name: String): Serializable {
 
             return DeviceInfo(
                     deviceId = deviceId!!,
-                    name = name!!
+                    name = name!!,
+                    addresses = addresses
             )
         }
     }
@@ -52,6 +64,10 @@ data class DeviceInfo(val deviceId: DeviceId, val name: String): Serializable {
         deviceId.serialize(writer)
 
         writer.name(NAME).value(name)
+
+        writer.name(ADDRESSES).beginArray()
+        addresses.forEach { writer.value(it) }
+        writer.endArray()
 
         writer.endObject()
     }
