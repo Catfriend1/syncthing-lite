@@ -96,4 +96,10 @@
     
     <!-- Summary of the preference showing the Open Source Licenses -->
     <string name="open_source_licenses_summary">Show the open source licenses used</string>
+    
+    <!-- Folder download strings -->
+    <string name="dialog_downloading_folder">Downloading folder %1$s</string>
+    <string name="dialog_downloading_folder_progress">Downloading %1$s (%2$d of %3$d files)</string>
+    <string name="toast_folder_download_success">Successfully downloaded %1$d files to %2$s</string>
+    <string name="toast_folder_download_failed">Folder download failed: %1$s</string>
 </resources>

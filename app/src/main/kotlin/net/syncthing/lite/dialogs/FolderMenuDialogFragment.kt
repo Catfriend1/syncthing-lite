@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.lite.databinding.DialogFolderBinding
+import net.syncthing.lite.dialogs.downloadfolder.FolderDownloadDialogFragment
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 
@@ -72,19 +73,16 @@ class FolderMenuDialogFragment: BottomSheetDialogFragment() {
     }
 
     private fun startFolderDownload(targetUri: android.net.Uri) {
-        // TODO: Implement recursive folder download logic
-        // This should:
-        // 1. Traverse the remote folder structure using IndexBrowser
-        // 2. Create corresponding folders in the target URI using SAF
-        // 3. Download each file using existing download mechanisms
-        // 4. Show progress indication and handle errors
+        // Create FileInfo object for the folder
+        val fileInfo = net.syncthing.java.core.beans.FileInfo(
+            folder = folderId,
+            type = net.syncthing.java.core.beans.FileInfo.FileType.DIRECTORY,
+            path = folderPath
+        )
         
-        // For now, show a placeholder message
-        android.widget.Toast.makeText(
-            requireContext(), 
-            "Folder download of '$folderName' to ${targetUri} would start here", 
-            android.widget.Toast.LENGTH_LONG
-        ).show()
+        // Show the folder download progress dialog
+        FolderDownloadDialogFragment.newInstance(fileInfo, targetUri)
+            .show(parentFragmentManager)
     }
 
     fun show(fragmentManager: FragmentManager) {
