@@ -205,10 +205,10 @@ class DevicesFragment : SyncthingFragment() {
 
                         library.configuration.persistLater()
                         
-                        // Trigger reconnection to use new addresses immediately
+                        // Force disconnect and reconnect to use new addresses immediately
+                        library.syncthingClient.disconnect(deviceInfo.deviceId)
+                        // The disconnect-reconnect cycle ensures new config addresses are loaded
                         library.syncthingClient.reconnect(deviceInfo.deviceId)
-                        
-                        updateDeviceList()
                     }
                 }
                 
