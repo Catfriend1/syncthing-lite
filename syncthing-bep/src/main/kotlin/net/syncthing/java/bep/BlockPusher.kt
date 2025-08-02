@@ -80,17 +80,26 @@ class BlockPusher(private val localDeviceId: DeviceId,
     }
 
     suspend fun pushRename(folderId: String, oldPath: String, newPath: String) {
-        // Get the original file info from the index
-        val originalFileInfo = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoByPath(folderId, oldPath)
+        // Get the original file blocks from the index
+        val originalFileBlocks = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoAndBlocksByPath(folderId, oldPath)
             ?: throw IllegalStateException("File not found in index: $oldPath")
         
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
+        
+        // Convert core BlockInfo objects to protobuf format
+        val protobufBlocks = originalFileBlocks.blocks.map { blockInfo ->
+            BlockExchangeProtos.BlockInfo.newBuilder()
+                .setOffset(blockInfo.offset)
+                .setSize(blockInfo.size)
+                .setHash(com.google.protobuf.ByteString.copyFrom(org.bouncycastle.util.encoders.Hex.decode(blockInfo.hash)))
+                .build()
+        }
         
         // Step 1: Delete the original file
         pushDelete(folderId, oldPath)
         
         // Step 2: Create the new file with the same content
-        pushFileWithBlocks(folderId, newPath, originalFileInfo.size, originalFileInfo.blocksList)
+        pushFileWithBlocks(folderId, newPath, originalFileBlocks.size, protobufBlocks)
     }
 
     suspend fun pushFile(inputStream: InputStream, folderId: String, targetPath: String): FileUploadObserver {
