@@ -23,6 +23,7 @@ import kotlinx.coroutines.channels.*
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.bep.index.IndexHandler
 import net.syncthing.java.core.beans.DeviceAddress
+import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.utils.Logger
 import net.syncthing.java.core.utils.LoggerFactory
@@ -47,8 +48,39 @@ object ConnectionActorGenerator {
         return channel != closed && !channel.isClosedForSend
     }
 
-    private fun deviceAddressesGenerator(deviceAddress: ReceiveChannel<DeviceAddress>) = scope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
+    private fun deviceAddressesGenerator(
+        deviceAddress: ReceiveChannel<DeviceAddress>,
+        configuration: Configuration,
+        deviceId: DeviceId
+    ) = scope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
         val addresses = mutableMapOf<String, DeviceAddress>()
+
+        // Add addresses from configuration for this specific device
+        val peer = configuration.peers.find { it.deviceId == deviceId }
+        peer?.addresses?.forEach { addressString ->
+            // Skip "dynamic" addresses as they represent discovery mechanisms
+            if (addressString != "dynamic") {
+                val score = when {
+                    addressString.startsWith("tcp4://") -> 1  // Local connections preferred
+                    addressString.startsWith("relay://") -> 1000  // Relay connections
+                    else -> 500  // Default score for other address types
+                }
+                
+                val configAddress = DeviceAddress.Builder()
+                    .setDeviceId(deviceId)
+                    .setAddress(addressString)
+                    .setScore(score)
+                    .setProducer(DeviceAddress.AddressProducer.UNKNOWN) // Configuration addresses
+                    .build()
+                
+                addresses[addressString] = configAddress
+            }
+        }
+
+        // Send initial list if we have configuration addresses
+        if (addresses.isNotEmpty()) {
+            send(addresses.values.sortedBy { it.score })
+        }
 
         deviceAddress.consumeEach { address ->
             val isNew = addresses[address.address] == null
@@ -91,10 +123,11 @@ object ConnectionActorGenerator {
             deviceAddress: ReceiveChannel<DeviceAddress>,
             configuration: Configuration,
             indexHandler: IndexHandler,
-            requestHandler: (BlockExchangeProtos.Request) -> Deferred<BlockExchangeProtos.Response>
+            requestHandler: (BlockExchangeProtos.Request) -> Deferred<BlockExchangeProtos.Response>,
+            deviceId: DeviceId
     ) = generateConnectionActorsFromDeviceAddressList(
             deviceAddressSource = waitForFirstValue(
-                    source = deviceAddressesGenerator(deviceAddress),
+                    source = deviceAddressesGenerator(deviceAddress, configuration, deviceId),
                     time = 1000
             ),
             configuration = configuration,

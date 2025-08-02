@@ -64,7 +64,8 @@ class SyncthingClient(
                                     }
                                 },
                                 indexHandler = indexHandler,
-                                configuration = configuration
+                                configuration = configuration,
+                                deviceId = deviceId
                         ),
                         deviceId = deviceId,
                         exceptionReportHandler = exceptionReportHandler
