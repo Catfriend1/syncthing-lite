@@ -3,19 +3,26 @@ package net.syncthing.lite.dialogs
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.os.Bundle
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import androidx.fragment.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import net.syncthing.java.core.beans.FileInfo
+import net.syncthing.lite.R
 import net.syncthing.lite.databinding.DialogFileBinding
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileDialogFragment
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileSpec
 import net.syncthing.lite.library.LibraryHandler
+import net.syncthing.lite.library.RenameFileTask
 import net.syncthing.lite.utils.MimeType
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import kotlinx.coroutines.*
+import net.syncthing.java.core.utils.PathUtils
 
 class FileMenuDialogFragment: BottomSheetDialogFragment() {
     companion object {
@@ -76,6 +83,10 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
             )
         }
 
+        binding.renameButton.setOnClickListener {
+            showRenameDialog()
+        }
+
         binding.deleteButton.setOnClickListener {
             LibraryHandler(requireContext()).syncthingClient { syncthingClient ->
                 DeleteFileDialog(
@@ -88,6 +99,67 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
         }
 
         return binding.root
+    }
+    
+    private fun showRenameDialog() {
+        val input = EditText(requireContext()).apply {
+            hint = getString(R.string.dialog_rename_file_hint)
+            setText(fileSpec.fileName)
+            selectAll()
+        }
+        
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.dialog_rename_file_title)
+            .setView(input)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val newFileName = input.text.toString().trim()
+                if (newFileName.isEmpty()) {
+                    Toast.makeText(requireContext(), R.string.error_empty_filename, Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                
+                if (!isValidFileName(newFileName)) {
+                    Toast.makeText(requireContext(), R.string.error_invalid_filename, Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                
+                if (newFileName == fileSpec.fileName) {
+                    // No change needed
+                    dismiss()
+                    return@setPositiveButton
+                }
+                
+                renameFile(newFileName)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+    
+    private fun isValidFileName(name: String): Boolean {
+        // Check for invalid characters that might cause issues
+        val invalidChars = charArrayOf('/', '\\', ':', '*', '?', '"', '<', '>', '|')
+        return name.isNotEmpty() && !name.any { it in invalidChars } && name != "." && name != ".."
+    }
+    
+    private fun renameFile(newFileName: String) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                LibraryHandler(requireContext()).syncthingClient { syncthingClient ->
+                    RenameFileTask(
+                        requireContext(),
+                        syncthingClient,
+                        fileSpec.folder,
+                        fileSpec.path,
+                        newFileName
+                    ).execute()
+                    
+                    Toast.makeText(requireContext(), R.string.toast_file_rename_success, Toast.LENGTH_SHORT).show()
+                    dismiss()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), R.string.toast_file_rename_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     fun show(fragmentManager: FragmentManager) {

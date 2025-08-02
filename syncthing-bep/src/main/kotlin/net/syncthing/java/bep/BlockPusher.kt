@@ -70,6 +70,29 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 .setType(BlockExchangeProtos.FileInfoType.DIRECTORY), null)
     }
 
+    suspend fun pushFileWithBlocks(folderId: String, targetPath: String, fileSize: Long, blocks: List<BlockExchangeProtos.BlockInfo>): BlockExchangeProtos.IndexUpdate {
+        NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
+        return sendIndexUpdate(folderId, BlockExchangeProtos.FileInfo.newBuilder()
+                .setName(targetPath)
+                .setType(BlockExchangeProtos.FileInfoType.FILE)
+                .setSize(fileSize)
+                .addAllBlocks(blocks), null)
+    }
+
+    suspend fun pushRename(folderId: String, oldPath: String, newPath: String) {
+        // Get the original file info from the index
+        val originalFileInfo = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoByPath(folderId, oldPath)
+            ?: throw IllegalStateException("File not found in index: $oldPath")
+        
+        NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
+        
+        // Step 1: Delete the original file
+        pushDelete(folderId, oldPath)
+        
+        // Step 2: Create the new file with the same content
+        pushFileWithBlocks(folderId, newPath, originalFileInfo.size, originalFileInfo.blocksList)
+    }
+
     suspend fun pushFile(inputStream: InputStream, folderId: String, targetPath: String): FileUploadObserver {
         val fileInfo = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoByPath(folderId, targetPath)
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
