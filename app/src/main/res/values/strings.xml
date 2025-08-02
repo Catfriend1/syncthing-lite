@@ -50,6 +50,9 @@
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="copied_to_clipboard">Copied to the clipboard</string>
     <string name="device_id_dialog_title">Enter Device ID</string>
+    <string name="edit_device_dialog_title">Edit Device</string>
+    <string name="edit_device_menu_item">Edit</string>
+    <string name="delete_device_menu_item">Delete</string>
     <string name="dialog_warning_reconnect_problem">
         Due to the behaviour of this App and the behaviour of the Syncthing Server,
         you can\'t reconnect for some minutes if the App was killed (due to removing from the recent App list)
