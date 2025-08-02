@@ -205,10 +205,11 @@ class DevicesFragment : SyncthingFragment() {
 
                         library.configuration.persistLater()
                         
-                        // Force disconnect and reconnect to use new addresses immediately
+                        // Force recreation of connection actor with updated configuration
+                        // First disconnect to clean up and remove old connection actor from map
                         library.syncthingClient.disconnect(deviceInfo.deviceId)
-                        // The disconnect-reconnect cycle ensures new config addresses are loaded
-                        library.syncthingClient.reconnect(deviceInfo.deviceId)
+                        // Then trigger creation of new connection actor with updated config
+                        library.syncthingClient.connectToNewlyAddedDevices()
                     }
                 }
                 
