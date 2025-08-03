@@ -27,6 +27,8 @@ Builds:
     gradle:
       - yes
 
+AllowedAPKSigningKeys: d374b8de5057013143c7d1515a015598c2df403be8160cae01a58c227e6e86aa
+
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[a-z0-9.]*-fdroid$
 UpdateCheckData: gradle/libs.versions.toml|version-code\s=\s"(\d+)"|.|version-name\s=\s"(.*)"
