@@ -63,6 +63,8 @@ object ConnectionActorGenerator {
 
         // Add addresses from configuration for this specific device
         val peer = configuration.peers.find { it.deviceId == deviceId }
+        val hasDynamic = peer?.addresses?.contains("dynamic") ?: true
+        
         peer?.addresses?.forEach { addressString ->
             // Skip "dynamic" addresses as they represent discovery mechanisms
             if (addressString != "dynamic") {
@@ -91,15 +93,18 @@ object ConnectionActorGenerator {
             send(addresses.values.sortedBy { it.score })
         }
 
-        deviceAddress.consumeEach { address ->
-            val isNew = addresses[address.address] == null
+        // Only process discovery addresses if "dynamic" is present in configuration
+        if (hasDynamic) {
+            deviceAddress.consumeEach { address ->
+                val isNew = addresses[address.address] == null
 
-            addresses[address.address] = address
+                addresses[address.address] = address
 
-            if (isNew) {
-                send(
-                        addresses.values.sortedBy { it.score }
-                )
+                if (isNew) {
+                    send(
+                            addresses.values.sortedBy { it.score }
+                    )
+                }
             }
         }
     }
