@@ -30,7 +30,7 @@
         android:id="@+id/addresses_holder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Addresses"
+        android:hint="@string/edit_device_addresses_hint"
         app:errorEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -48,7 +48,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Enter addresses separated by commas (e.g. tcp4://192.168.1.10:22000, dynamic)"
+        android:text="@string/edit_device_dialog_summary"
         android:textSize="12sp"
         android:textColor="?android:attr/textColorSecondary"
         android:layout_marginTop="4dp" />

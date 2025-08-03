@@ -50,9 +50,6 @@
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="copied_to_clipboard">Copied to the clipboard</string>
     <string name="device_id_dialog_title">Enter Device ID</string>
-    <string name="edit_device_dialog_title">Edit Device</string>
-    <string name="edit_device_menu_item">Edit</string>
-    <string name="delete_device_menu_item">Delete</string>
     <string name="dialog_warning_reconnect_problem">
         Due to the behaviour of this App and the behaviour of the Syncthing Server,
         you can\'t reconnect for some minutes if the App was killed (due to removing from the recent App list)
@@ -87,6 +84,13 @@
     <string name="skip">Skip</string>
     <string name="next">Next</string>
     <string name="done">Done</string>
+
+    <!-- DevicesFragment -->
+    <string name="delete_device_menu_item">Delete</string>
+    <string name="edit_device_addresses_hint">Addresses</string>
+    <string name="edit_device_menu_item">Edit</string>
+    <string name="edit_device_dialog_title">Edit Device</string>
+    <string name="edit_device_dialog_summary">Enter addresses separated by commas (e.g. tcp4://192.168.1.10:22000, relay://192.168.1.11:22067, dynamic)</string>
 
     <!-- Menu item linking privacy policy -->
     <string name="privacy_title">Privacy Policy</string>
