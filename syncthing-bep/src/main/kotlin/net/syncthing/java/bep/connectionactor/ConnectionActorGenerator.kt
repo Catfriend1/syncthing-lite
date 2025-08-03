@@ -23,6 +23,7 @@ import kotlinx.coroutines.channels.*
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.bep.index.IndexHandler
 import net.syncthing.java.core.beans.DeviceAddress
+import net.syncthing.java.core.beans.DeviceAddress.AddressType
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.utils.Logger
@@ -39,6 +40,11 @@ object ConnectionActorGenerator {
     private val closed = Channel<ConnectionAction>().apply { cancel() }
     private val logger = LoggerFactory.getLogger(ConnectionActorGenerator::class.java)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    private val BASE_SCORE_MAP = mapOf(
+        AddressType.TCP to 0,
+        AddressType.RELAY to 2000
+    )
 
     /**
      * Check if a channel is open for sending.
@@ -60,11 +66,14 @@ object ConnectionActorGenerator {
         peer?.addresses?.forEach { addressString ->
             // Skip "dynamic" addresses as they represent discovery mechanisms
             if (addressString != "dynamic") {
-                val score = when {
-                    addressString.startsWith("tcp4://") -> 1  // Local connections preferred
-                    addressString.startsWith("relay://") -> 1000  // Relay connections
-                    else -> 500  // Default score for other address types
+                val addressType = when {
+                    addressString.startsWith("tcp://") -> AddressType.TCP
+                    addressString.startsWith("tcp4://") -> AddressType.TCP
+                    addressString.startsWith("tcp6://") -> AddressType.TCP
+                    addressString.startsWith("relay://") -> AddressType.RELAY
+                    else -> AddressType.RELAY
                 }
+                val score = BASE_SCORE_MAP[addressType] ?: 0
                 
                 val configAddress = DeviceAddress.Builder()
                     .setDeviceId(deviceId)
