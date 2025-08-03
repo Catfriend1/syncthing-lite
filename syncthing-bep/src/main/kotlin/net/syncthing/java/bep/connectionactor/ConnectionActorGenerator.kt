@@ -137,7 +137,9 @@ object ConnectionActorGenerator {
             } catch (ex: ClosedReceiveChannelException) {
                 // Channel was closed before we could receive the first value
                 logger.trace("Source channel closed before receiving first value - no addresses available")
-                // Don't send anything, just close this channel
+                // Send an empty list to maintain proper channel flow instead of sending nothing
+                @Suppress("UNCHECKED_CAST")
+                send(emptyList<Any>() as T)
             }
         }
     }
