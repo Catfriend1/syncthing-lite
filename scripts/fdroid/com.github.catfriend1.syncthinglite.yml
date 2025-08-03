@@ -17,7 +17,7 @@ Repo: https://github.com/Catfriend1/syncthing-lite.git
 Builds:
   - versionName: 1.30.0.0
     versionCode: 1300000
-    commit: 1.30.0.0
+    commit: 032a905e9b112744b4e7a703d45692cde9d6970d
     subdir: app
     sudo:
       - echo "deb https://deb.debian.org/debian trixie main" > /etc/apt/sources.list.d/trixie.list
