@@ -111,24 +111,33 @@ object ConnectionActorGenerator {
 
     private fun <T> waitForFirstValue(source: ReceiveChannel<T>, time: Long) = scope.produce<T> {
         source.consume {
-            val firstValue = source.receive()
-            var lastValue = firstValue
-
             try {
-                withTimeout(time) {
-                    while (true) {
-                        lastValue = source.receive()
+                val firstValue = source.receive()
+                var lastValue = firstValue
+
+                try {
+                    withTimeout(time) {
+                        while (true) {
+                            lastValue = source.receive()
+                        }
                     }
+                } catch (ex: TimeoutCancellationException) {
+                    // this is expected here
+                } catch (ex: ClosedReceiveChannelException) {
+                    // Channel was closed while waiting for more values - use what we have
+                    logger.trace("Source channel closed while waiting for more values, using last received value")
                 }
-            } catch (ex: TimeoutCancellationException) {
-                // this is expected here
-            }
 
-            send(lastValue)
+                send(lastValue)
 
-            // other values without delay
-            for (value in source) {
-                send(value)
+                // other values without delay
+                for (value in source) {
+                    send(value)
+                }
+            } catch (ex: ClosedReceiveChannelException) {
+                // Channel was closed before we could receive the first value
+                logger.trace("Source channel closed before receiving first value - no addresses available")
+                // Don't send anything, just close this channel
             }
         }
     }
