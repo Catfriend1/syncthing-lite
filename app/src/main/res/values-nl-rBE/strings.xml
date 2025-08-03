@@ -29,12 +29,9 @@
     <string name="other_syncthing_instance_title">Een andere Syncthing-instantie wordt reeds uitgevoerd</string>
     <string name="other_syncthing_instance_message">Lokale ontdekking zal niet werken. Stop de andere Syncthing-instantie om lokale ontdekking in te schakelen.</string>
     <string name="intro_page_one_title">Welkom bij Syncthing-Lite</string>
-    <string name="intro_page_one_description">Syncthing vervangt niet-vrije synchronisatie- en clouddiensten door iets open, betrouwbaar en gedecentraliseerd. Uw gegevens behoren enkel u toe en u bepaalt waar ze worden opgeslagen, of ze worden gedeeld met een derde partij en hoe ze over het internet worden verzonden.</string>
     <string name="intro_page_two_title">Voeg een apparaat toe</string>
     <string name="intro_page_three_title">Deel uw mappen</string>
     <string name="intro_page_two_description">Voer een Syncthing-apparaats-ID in, of scan een apparaats-ID van een QR-code</string>
-    <string name="intro_page_three_description">Aanvaard nu het apparaat met ID %1$s, en deel er een map mee. Het kan enkele minuten duren vooraleer de apparaten verbinding maken.</string>
-    <string name="intro_page_three_searching_device">Proberen het andere apparaat te vinden. Dit kan even duren.</string>
     <string name="settings">Instellingen</string>
     <string name="settings_app_version_title">Appversie</string>
     <string name="settings_local_device_name">Naam van lokaal apparaat</string>

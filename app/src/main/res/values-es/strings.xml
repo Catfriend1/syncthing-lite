@@ -31,12 +31,9 @@
     <string name="other_syncthing_instance_title">Otra instancia de Syncthing está siendo ejecutada</string>
     <string name="other_syncthing_instance_message">El descubrimiento local no funcionará. Detenga la otra instancia de Syncthing para habilitar la detección local.</string>
     <string name="intro_page_one_title">Bienvenido a Syncthing-Lite</string>
-    <string name="intro_page_one_description">Syncthing reemplaza los servicios de sincronización y nube propietarios por algo abierto, fiable y descentralizado. Sus datos son sólo suyos y usted merece elegir dónde se almacenan, si se comparten con terceros y cómo se transmiten a través de Internet.</string>
     <string name="intro_page_two_title">Añadir un dispositivo</string>
     <string name="intro_page_three_title">Compartir tus carpetas</string>
     <string name="intro_page_two_description">Introduce un ID de dispositivo de Syncthing o escanea un ID de dispositivo desde un código QR</string>
-    <string name="intro_page_three_description">Acepta ahora el dispositivo con ID %1$s, y comparte una carpeta con él. Pueden pasar unos minutos hasta que los dispositivos se conecten.</string>
-    <string name="intro_page_three_searching_device">Intentando encontrar el otro dispositivo. Puede llevar un rato</string>
     <string name="settings">Configuración</string>
     <string name="settings_app_version_title">Versión de la aplicación</string>
     <string name="settings_local_device_name">Nombre del dispositivo local</string>

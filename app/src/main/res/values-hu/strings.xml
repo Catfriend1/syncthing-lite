@@ -29,11 +29,9 @@
     <string name="other_syncthing_instance_title">Egy másik Syncthing folyamat fut</string>
     <string name="other_syncthing_instance_message">Helyi felfedezés nem fog működni. Állítsd le a másik Syncthing folyamatot a helyi felfedezés bekapcsolásához.</string>
     <string name="intro_page_one_title">Üdvözöllek a Syncthing-Lite-ban</string>
-    <string name="intro_page_one_description">A Syncthing a zárt forrású szinkronizáló és felhő szolgáltatásokat egy nyílt, megbízható és decentralizált szoftverrel váltja fel. A te adatod csak a tiéd és te szabod meg, hogy hol tárolod, kivel osztod meg, és hogyan továbbítod az interneten.</string>
     <string name="intro_page_two_title">Eszköz hozzáadása</string>
     <string name="intro_page_three_title">Mappáid megosztása</string>
     <string name="intro_page_two_description">Adj meg egy Syncthing eszközazonosítót, vagy olvasd be QR kódból</string>
-    <string name="intro_page_three_description">Fogadd el a(z) %1$s azonosítójú eszközt, és ossz meg vele egy mappát. Beletelhet néhány percbe mire az eszközök csatlakoznak.</string>
     <string name="settings">Beállítások</string>
     <string name="settings_app_version_title">Verzió</string>
     <string name="settings_local_device_name">Helyi eszköz neve</string>
