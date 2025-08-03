@@ -106,6 +106,16 @@ object ConnectionActorGenerator {
                     )
                 }
             }
+        } else {
+            // Keep channel open for retry attempts even without dynamic discovery
+            // This prevents the channel from closing and breaking the retry mechanism
+            while (true) {
+                delay(30000) // Wait 30 seconds between checks
+                // Resend current addresses to enable retry attempts
+                if (addresses.isNotEmpty()) {
+                    send(addresses.values.sortedBy { it.score })
+                }
+            }
         }
     }
 
