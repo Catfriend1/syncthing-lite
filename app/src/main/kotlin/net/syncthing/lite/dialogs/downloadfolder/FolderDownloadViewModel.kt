@@ -127,8 +127,19 @@ class FolderDownloadViewModel : ViewModel() {
                                 val targetFile = createFileInTarget(rootFolder, relativePath, contentResolver)
                                 
                                 if (targetFile != null) {
-                                    contentResolver.openOutputStream(targetFile.uri).use { outputStream ->
-                                        FileUtils.copyFile(downloadedFile, outputStream)
+                                    // Handle 0-byte files specially
+                                    if (fileInfo.size == 0L) {
+                                        // For 0-byte files, just create an empty file
+                                        contentResolver.openOutputStream(targetFile.uri)?.use { outputStream ->
+                                            // Write nothing - creates empty file
+                                            outputStream.flush()
+                                        }
+                                        Log.d(TAG, "Created empty file: ${fileInfo.path}")
+                                    } else {
+                                        // For non-empty files, copy normally
+                                        contentResolver.openOutputStream(targetFile.uri)?.use { outputStream ->
+                                            FileUtils.copyFile(downloadedFile, outputStream)
+                                        }
                                     }
                                     processedFiles++
                                 } else {
