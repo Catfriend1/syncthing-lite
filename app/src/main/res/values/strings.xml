@@ -90,7 +90,7 @@
     <string name="edit_device_addresses_hint">Addresses</string>
     <string name="edit_device_menu_item">Edit</string>
     <string name="edit_device_dialog_title">Edit Device</string>
-    <string name="edit_device_dialog_summary">Enter addresses separated by commas (e.g. tcp4://192.168.1.10:22000, relay://192.168.1.11:22067, dynamic)</string>
+    <string name="edit_device_dialog_summary">Enter addresses separated by commas, e.g.: dynamic, tcp4://192.168.1.10:22000, relay://192.168.1.11:22067</string>
 
     <!-- Menu item linking privacy policy -->
     <string name="privacy_title">Privacy Policy</string>
