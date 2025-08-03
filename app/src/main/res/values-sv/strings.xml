@@ -29,12 +29,9 @@
     <string name="other_syncthing_instance_title">En annan Syncthing-instans körs</string>
     <string name="other_syncthing_instance_message">Lokal upptäckt kommer inte att fungera. Stoppa den andra Syncthing-instansen för att möjliggöra lokal upptäckt.</string>
     <string name="intro_page_one_title">Välkommen till Syncthing-Lite</string>
-    <string name="intro_page_one_description">Syncthing ersätter proprietära synkroniserings- och molntjänster med något öppet, pålitligt och decentraliserat. Din data är endast din data och du förtjänar att välja var den lagras, om den delas med en tredjepart och hur den överförs över Internet.</string>
     <string name="intro_page_two_title">Lägg till en enhet</string>
     <string name="intro_page_three_title">Dela dina mappar</string>
     <string name="intro_page_two_description">Ange ett Syncthing enhets-ID, eller skanna ett enhets-ID-nummer från en QR-kod</string>
-    <string name="intro_page_three_description">Acceptera nu enheten med ID %1$s och dela en mapp med den. Det kan ta några minuter tills enheterna ansluter.</string>
-    <string name="intro_page_three_searching_device">Försöker hitta den andra enheten. Det kan ta ett ögonblick.</string>
     <string name="settings">Inställningar</string>
     <string name="settings_app_version_title">Appversion</string>
     <string name="settings_local_device_name">Lokala enhetens namn</string>

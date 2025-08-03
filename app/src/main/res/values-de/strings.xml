@@ -29,12 +29,9 @@
     <string name="other_syncthing_instance_title">Eine andere Syncthing-Instanz läuft bereits</string>
     <string name="other_syncthing_instance_message">Lokale Auffindung wird nicht funktionieren. Stoppen Sie die andere Syncthing Instanz, um die lokale Auffindung zu ermöglichen.</string>
     <string name="intro_page_one_title">Willkommen zu Syncthing-Lite</string>
-    <string name="intro_page_one_description">Syncthing ersetzt proprietäre Sync- und Cloud-Services durch etwas Offenes, Vertrauenswürdiges und Dezentrales. Ihre Daten sind allein Ihre Daten, und Sie verdienen es zu wählen, wo sie gespeichert werden, ob sie an Dritte weitergegeben werden und wie sie über das Internet übertragen werden.</string>
     <string name="intro_page_two_title">Ein Gerät hinzufügen</string>
     <string name="intro_page_three_title">Ordner teilen</string>
     <string name="intro_page_two_description">Eine Syncthing Geräte ID eingeben oder QR Code einer Geräte ID scannen.</string>
-    <string name="intro_page_three_description">Akzeptieren Sie nun das Gerät mit der ID %1$s und geben Sie einen Ordner mit ihm frei. Es kann einige Minuten dauern, bis sich die Geräte verbinden.</string>
-    <string name="intro_page_three_searching_device">Versuche das andere Gerät zu finden. Dies kann einen Moment dauern.</string>
     <string name="settings">Einstellungen</string>
     <string name="settings_app_version_title">App-Version</string>
     <string name="settings_local_device_name">Lokaler Gerätenamen</string>
