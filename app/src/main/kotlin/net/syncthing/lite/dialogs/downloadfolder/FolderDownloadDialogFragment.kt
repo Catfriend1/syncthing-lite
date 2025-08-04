@@ -106,8 +106,9 @@ class FolderDownloadDialogFragment : DialogFragment() {
                         val overallProgress = (status.processedFiles * 100 / status.totalFiles)
                         progressBar.progress = overallProgress
                         
-                        progressMessage.text = getString(
-                            R.string.dialog_downloading_folder_progress,
+                        progressMessage.text = resources.getQuantityString(
+                            R.plurals.dialog_downloading_folder_progress,
+                            status.totalFiles,
                             status.currentFile,
                             status.processedFiles + 1,
                             status.totalFiles
@@ -121,7 +122,7 @@ class FolderDownloadDialogFragment : DialogFragment() {
                     dismissAllowingStateLoss()
                     Toast.makeText(
                         requireContext(),
-                        getString(R.string.toast_folder_download_success, status.downloadedFiles, status.targetFolder),
+                        resources.getQuantityString(R.plurals.toast_folder_download_success, status.downloadedFiles, status.downloadedFiles, status.targetFolder),
                         Toast.LENGTH_LONG
                     ).show()
                 }

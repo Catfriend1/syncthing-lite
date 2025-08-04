@@ -111,9 +111,18 @@
     
     <!-- Folder download strings -->
     <string name="dialog_downloading_folder">Downloading folder %1$s</string>
-    <string name="dialog_downloading_folder_progress">Downloading %1$s (%2$d of %3$d files)</string>
-    <string name="toast_folder_download_success">Successfully downloaded %1$d files to %2$s</string>
     <string name="toast_folder_download_failed">Folder download failed: %1$s</string>
+    
+    <!-- Plurals for folder download -->
+    <plurals name="dialog_downloading_folder_progress">
+        <item quantity="one">Downloading %1$s (%2$d of %3$d file)</item>
+        <item quantity="other">Downloading %1$s (%2$d of %3$d files)</item>
+    </plurals>
+    
+    <plurals name="toast_folder_download_success">
+        <item quantity="one">Successfully downloaded %1$d file to %2$s</item>
+        <item quantity="other">Successfully downloaded %1$d files to %2$s</item>
+    </plurals>
     
     <!-- Create folder strings -->
     <string name="dialog_create_folder_title">Create folder</string>
