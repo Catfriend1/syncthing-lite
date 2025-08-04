@@ -119,7 +119,6 @@ class FolderBrowserActivity : SyncthingActivity() {
                         FolderMenuDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
                         true
                     }
-                    else -> false
                 }
             }
         }
