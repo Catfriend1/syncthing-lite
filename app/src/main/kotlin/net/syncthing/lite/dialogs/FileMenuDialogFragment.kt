@@ -142,7 +142,7 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
     }
     
     private fun renameFile(newFileName: String) {
-        CoroutineScope(Dispatchers.Main).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
                 LibraryHandler(requireContext()).syncthingClient { syncthingClient ->
                     RenameFileTask(
@@ -152,12 +152,16 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
                         fileSpec.path,
                         newFileName
                     ).execute()
-                    
+                }
+                
+                withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), R.string.toast_file_rename_success, Toast.LENGTH_SHORT).show()
                     dismiss()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), R.string.toast_file_rename_failed, Toast.LENGTH_SHORT).show()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), R.string.toast_file_rename_failed, Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
