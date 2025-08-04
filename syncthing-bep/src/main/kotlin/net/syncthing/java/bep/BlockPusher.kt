@@ -86,20 +86,24 @@ class BlockPusher(private val localDeviceId: DeviceId,
         
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
         
-        // Convert core BlockInfo objects to protobuf format
-        val protobufBlocks = originalFileBlocks.blocks.map { blockInfo ->
-            BlockExchangeProtos.BlockInfo.newBuilder()
-                .setOffset(blockInfo.offset)
-                .setSize(blockInfo.size)
-                .setHash(com.google.protobuf.ByteString.copyFrom(org.bouncycastle.util.encoders.Hex.decode(blockInfo.hash)))
-                .build()
-        }
-        
         // Step 1: Delete the original file
         pushDelete(folderId, oldPath)
         
         // Step 2: Create the new file with the same content
-        pushFileWithBlocks(folderId, newPath, originalFileBlocks.size, protobufBlocks)
+        if (originalFileBlocks.size == 0L || originalFileBlocks.blocks.isEmpty()) {
+            // For 0-byte files, use pushFileWithBlocks with empty blocks list
+            pushFileWithBlocks(folderId, newPath, 0L, emptyList())
+        } else {
+            // Convert core BlockInfo objects to protobuf format for non-empty files
+            val protobufBlocks = originalFileBlocks.blocks.map { blockInfo ->
+                BlockExchangeProtos.BlockInfo.newBuilder()
+                    .setOffset(blockInfo.offset)
+                    .setSize(blockInfo.size)
+                    .setHash(com.google.protobuf.ByteString.copyFrom(org.bouncycastle.util.encoders.Hex.decode(blockInfo.hash)))
+                    .build()
+            }
+            pushFileWithBlocks(folderId, newPath, originalFileBlocks.size, protobufBlocks)
+        }
     }
 
     suspend fun pushFile(inputStream: InputStream, folderId: String, targetPath: String): FileUploadObserver {
