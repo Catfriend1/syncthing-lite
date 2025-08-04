@@ -127,21 +127,13 @@ class FolderDownloadViewModel : ViewModel() {
                                 val targetFile = createFileInTarget(rootFolder, relativePath, contentResolver)
                                 
                                 if (targetFile != null) {
-                                    // Handle 0-byte files specially
-                                    if (fileInfo.size == 0L) {
-                                        // For 0-byte files, just create an empty file
-                                        contentResolver.openOutputStream(targetFile.uri)?.use { outputStream ->
-                                            // Write nothing - creates empty file
-                                            outputStream.flush()
-                                        }
-                                        Log.d(TAG, "Created empty file: ${fileInfo.path}")
-                                    } else {
-                                        // For non-empty files, copy normally
-                                        contentResolver.openOutputStream(targetFile.uri)?.use { outputStream ->
-                                            FileUtils.copyFile(downloadedFile, outputStream)
-                                        }
+                                    // Copy the downloaded file to the target location
+                                    // DownloadFileTask handles 0-byte files correctly, so we don't need special handling
+                                    contentResolver.openOutputStream(targetFile.uri)?.use { outputStream ->
+                                        FileUtils.copyFile(downloadedFile, outputStream)
                                     }
                                     processedFiles++
+                                    Log.d(TAG, "Successfully downloaded file: ${fileInfo.path} (${fileInfo.size} bytes)")
                                 } else {
                                     Log.w(TAG, "Failed to create target file for ${fileInfo.path}")
                                 }
