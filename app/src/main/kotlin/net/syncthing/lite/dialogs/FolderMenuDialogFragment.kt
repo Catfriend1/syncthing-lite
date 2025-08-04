@@ -106,24 +106,9 @@ class FolderMenuDialogFragment: BottomSheetDialogFragment() {
         MainScope().launch(Dispatchers.IO) {
             try {
                 val syncthingActivity = requireActivity() as SyncthingActivity
-                var folderCount = 0
-                var fileCount = 0
-                
-                syncthingActivity.libraryHandler.syncthingClient { syncthingClient ->
-                    try {
-                        val counts = countFilesAndFoldersRecursively(
-                            syncthingClient.indexHandler.indexBrowser,
-                            folderId,
-                            folderPath
-                        )
-                        folderCount = counts.first
-                        fileCount = counts.second
-                    } catch (e: Exception) {
-                        // If we can't get counts, default to 0
-                        folderCount = 0
-                        fileCount = 0
-                    }
-                }
+                val counts = getFilesAndFoldersCount(syncthingActivity)
+                val folderCount = counts.first
+                val fileCount = counts.second
 
                 withContext(Dispatchers.Main) {
                     val message = getString(R.string.dialog_delete_folder_warning) + "\n\n" +
@@ -144,6 +129,33 @@ class FolderMenuDialogFragment: BottomSheetDialogFragment() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), R.string.toast_folder_delete_failed, Toast.LENGTH_SHORT).show()
                 }
+            }
+        }
+    }
+
+    private suspend fun getFilesAndFoldersCount(syncthingActivity: SyncthingActivity): Pair<Int, Int> {
+        return withContext(Dispatchers.IO) {
+            try {
+                var result: Pair<Int, Int> = Pair(0, 0)
+                val deferred = kotlinx.coroutines.CompletableDeferred<Pair<Int, Int>>()
+                
+                syncthingActivity.libraryHandler.syncthingClient { syncthingClient ->
+                    try {
+                        val counts = countFilesAndFoldersRecursively(
+                            syncthingClient.indexHandler.indexBrowser,
+                            folderId,
+                            folderPath
+                        )
+                        deferred.complete(counts)
+                    } catch (e: Exception) {
+                        // If we can't get counts, default to 0
+                        deferred.complete(Pair(0, 0))
+                    }
+                }
+                
+                deferred.await()
+            } catch (e: Exception) {
+                Pair(0, 0)
             }
         }
     }

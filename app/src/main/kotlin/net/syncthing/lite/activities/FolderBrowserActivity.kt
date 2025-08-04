@@ -44,6 +44,7 @@ class FolderBrowserActivity : SyncthingActivity() {
     }
 
     private lateinit var folder: String
+    private lateinit var folderLabel: String
     private lateinit var uploadFileLauncher: ActivityResultLauncher<Intent>
     private var currentUploadDialog: FileUploadDialog? = null
 
@@ -128,6 +129,13 @@ class FolderBrowserActivity : SyncthingActivity() {
         folder = intent.getStringExtra(EXTRA_FOLDER_NAME) ?: throw IllegalArgumentException("Missing folder name")
         path.value = if (savedInstanceState == null) IndexBrowser.ROOT_PATH else savedInstanceState.getString(STATUS_PATH) ?: IndexBrowser.ROOT_PATH
 
+        // Get the folder label for display
+        launch {
+            folderLabel = libraryHandler.libraryManager.withLibrary {
+                it.configuration.folders.find { it.folderId == folder }?.label ?: folder
+            }
+        }
+
         launch {
             var job = Job()
 
@@ -153,7 +161,7 @@ class FolderBrowserActivity : SyncthingActivity() {
                     binding.progressBar.visibility = View.VISIBLE
                     binding.listView.visibility = View.GONE
                 } else {
-                    supportActionBar?.title = if (PathUtils.isRoot(listing.path)) folder else PathUtils.getFileName(listing.path)
+                    supportActionBar?.title = if (PathUtils.isRoot(listing.path)) folderLabel else PathUtils.getFileName(listing.path)
                     binding.progressBar.visibility = View.GONE
                     binding.listView.visibility = View.VISIBLE
                     adapter.data = if (listing is DirectoryContentListing)
