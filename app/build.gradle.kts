@@ -81,6 +81,12 @@ android {
             enableSplit = true
         }
     }
+
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
 }
 
 dependencies {
