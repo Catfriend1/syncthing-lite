@@ -13,11 +13,12 @@ AutoName: Syncthing-Lite
 
 RepoType: git
 Repo: https://github.com/Catfriend1/syncthing-lite.git
+Binaries: https://github.com/Catfriend1/syncthing-lite/releases/download/v%v/com.github.catfriend1.syncthinglite_release_v%v.apk
 
 Builds:
   - versionName: 1.30.0.0
     versionCode: 1300000
-    commit: 032a905e9b112744b4e7a703d45692cde9d6970d
+    commit: f76c496fc1d083d78a44d763746d61334ed10f25
     subdir: app
     sudo:
       - echo "deb https://deb.debian.org/debian trixie main" > /etc/apt/sources.list.d/trixie.list
@@ -30,7 +31,7 @@ Builds:
 AllowedAPKSigningKeys: d374b8de5057013143c7d1515a015598c2df403be8160cae01a58c227e6e86aa
 
 AutoUpdateMode: Version
-UpdateCheckMode: Tags ^v[a-z0-9.]*-fdroid$
+UpdateCheckMode: Tags ^v[a-z0-9.]*$
 UpdateCheckData: gradle/libs.versions.toml|version-code\s=\s"(\d+)"|.|version-name\s=\s"(.*)"
 CurrentVersion: 1.30.0.0
 CurrentVersionCode: 1300000
