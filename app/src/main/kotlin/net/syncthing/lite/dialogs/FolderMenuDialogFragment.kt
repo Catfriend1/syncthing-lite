@@ -110,13 +110,19 @@ class FolderMenuDialogFragment: BottomSheetDialogFragment() {
                 var fileCount = 0
                 
                 syncthingActivity.libraryHandler.syncthingClient { syncthingClient ->
-                    val counts = countFilesAndFoldersRecursively(
-                        syncthingClient.indexHandler.indexBrowser,
-                        folderId,
-                        folderPath
-                    )
-                    folderCount = counts.first
-                    fileCount = counts.second
+                    try {
+                        val counts = countFilesAndFoldersRecursively(
+                            syncthingClient.indexHandler.indexBrowser,
+                            folderId,
+                            folderPath
+                        )
+                        folderCount = counts.first
+                        fileCount = counts.second
+                    } catch (e: Exception) {
+                        // If we can't get counts, default to 0
+                        folderCount = 0
+                        fileCount = 0
+                    }
                 }
 
                 withContext(Dispatchers.Main) {
@@ -178,6 +184,12 @@ class FolderMenuDialogFragment: BottomSheetDialogFragment() {
                 val syncthingActivity = requireActivity() as SyncthingActivity
                 syncthingActivity.libraryHandler.syncthingClient { syncthingClient ->
                     val blockPusher = syncthingClient.getBlockPusher(folderId)
+                    val indexBrowser = syncthingClient.indexHandler.indexBrowser
+                    
+                    // First recursively delete all contents of the folder
+                    deleteRecursively(blockPusher, indexBrowser, folderId, folderPath)
+                    
+                    // Finally delete the folder itself
                     blockPusher.pushDelete(folderId, folderPath)
                 }
                 
@@ -189,6 +201,32 @@ class FolderMenuDialogFragment: BottomSheetDialogFragment() {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), R.string.toast_folder_delete_failed, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+    
+    private suspend fun deleteRecursively(
+        blockPusher: net.syncthing.java.bep.BlockPusher,
+        indexBrowser: net.syncthing.java.bep.index.browser.IndexBrowser,
+        folder: String,
+        path: String
+    ) {
+        val listing = indexBrowser.getDirectoryListing(folder, path)
+        
+        if (listing is DirectoryContentListing) {
+            for (entry in listing.entries) {
+                when (entry.type) {
+                    net.syncthing.java.core.beans.FileInfo.FileType.FILE -> {
+                        // Delete the file
+                        blockPusher.pushDelete(folder, entry.path)
+                    }
+                    net.syncthing.java.core.beans.FileInfo.FileType.DIRECTORY -> {
+                        // Recursively delete subdirectory contents first
+                        deleteRecursively(blockPusher, indexBrowser, folder, entry.path)
+                        // Then delete the subdirectory itself
+                        blockPusher.pushDelete(folder, entry.path)
+                    }
                 }
             }
         }
