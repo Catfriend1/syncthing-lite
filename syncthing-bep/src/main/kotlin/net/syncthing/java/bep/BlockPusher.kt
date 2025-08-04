@@ -72,11 +72,17 @@ class BlockPusher(private val localDeviceId: DeviceId,
 
     suspend fun pushFileWithBlocks(folderId: String, targetPath: String, fileSize: Long, blocks: List<BlockExchangeProtos.BlockInfo>): BlockExchangeProtos.IndexUpdate {
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
-        return sendIndexUpdate(folderId, BlockExchangeProtos.FileInfo.newBuilder()
+        val fileInfoBuilder = BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(targetPath)
                 .setType(BlockExchangeProtos.FileInfoType.FILE)
                 .setSize(fileSize)
-                .addAllBlocks(blocks), null)
+        
+        // Only set blocks field for non-empty files to avoid BEP protocol errors
+        if (fileSize > 0L && blocks.isNotEmpty()) {
+            fileInfoBuilder.addAllBlocks(blocks)
+        }
+        
+        return sendIndexUpdate(folderId, fileInfoBuilder, null)
     }
 
     suspend fun pushRename(folderId: String, oldPath: String, newPath: String) {
@@ -177,11 +183,17 @@ class BlockPusher(private val localDeviceId: DeviceId,
             }
         }
 
-        val indexUpdate = sendIndexUpdate(folderId, BlockExchangeProtos.FileInfo.newBuilder()
+        val fileInfoBuilder = BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(targetPath)
                 .setSize(fileSize)
                 .setType(BlockExchangeProtos.FileInfoType.FILE)
-                .addAllBlocks(dataSource.blocks), fileInfo?.versionList)
+        
+        // Only set blocks field for non-empty files to avoid BEP protocol errors
+        if (fileSize > 0L) {
+            fileInfoBuilder.addAllBlocks(dataSource.blocks)
+        }
+        
+        val indexUpdate = sendIndexUpdate(folderId, fileInfoBuilder, fileInfo?.versionList)
                 
         // For 0-byte files, mark as completed immediately since there are no blocks to transfer
         if (fileSize == 0L) {
