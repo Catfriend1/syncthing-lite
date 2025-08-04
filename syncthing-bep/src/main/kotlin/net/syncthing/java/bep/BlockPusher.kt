@@ -91,8 +91,12 @@ class BlockPusher(private val localDeviceId: DeviceId,
         
         // Step 2: Create the new file with the same content
         if (originalFileBlocks.size == 0L || originalFileBlocks.blocks.isEmpty()) {
-            // For 0-byte files, use pushFileWithBlocks with empty blocks list
-            pushFileWithBlocks(folderId, newPath, 0L, emptyList())
+            // For 0-byte files, create directly with sendIndexUpdate to ensure proper handling
+            logger.debug("Renaming 0-byte file from $oldPath to $newPath")
+            sendIndexUpdate(folderId, BlockExchangeProtos.FileInfo.newBuilder()
+                .setName(newPath)
+                .setType(BlockExchangeProtos.FileInfoType.FILE)
+                .setSize(0L), null)
         } else {
             // Convert core BlockInfo objects to protobuf format for non-empty files
             val protobufBlocks = originalFileBlocks.blocks.map { blockInfo ->
@@ -178,9 +182,20 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 .setSize(fileSize)
                 .setType(BlockExchangeProtos.FileInfoType.FILE)
                 .addAllBlocks(dataSource.blocks), fileInfo?.versionList)
+                
+        // For 0-byte files, mark as completed immediately since there are no blocks to transfer
+        if (fileSize == 0L) {
+            isCompleted.set(true)
+            synchronized(updateLock) {
+                updateLock.notifyAll()
+            }
+        }
         return object : FileUploadObserver() {
 
-            override fun progressPercentage() = if (isCompleted.get()) 100 else (sentBlocks.size.toFloat() / dataSource.getHashes().size).toInt()
+            override fun progressPercentage() = if (isCompleted.get()) 100 else {
+                val totalHashes = dataSource.getHashes().size
+                if (totalHashes == 0) 0 else (sentBlocks.size.toFloat() / totalHashes * 100).toInt()
+            }
 
             // return sentBlocks.size() == dataSource.getHashes().size();
             override fun isCompleted() = isCompleted.get()
