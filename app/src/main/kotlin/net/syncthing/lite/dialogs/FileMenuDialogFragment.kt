@@ -88,14 +88,7 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
         }
 
         binding.deleteButton.setOnClickListener {
-            LibraryHandler(requireContext()).syncthingClient { syncthingClient ->
-                DeleteFileDialog(
-                    requireContext(),
-                    syncthingClient,
-                    fileSpec.folder,
-                    fileSpec.path
-                ) { dismiss() }.show()
-            }
+            showDeleteConfirmationDialog()
         }
 
         return binding.root
@@ -145,18 +138,33 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 LibraryHandler(requireContext()).syncthingClient { syncthingClient ->
-                    RenameFileTask(
-                        requireContext(),
-                        syncthingClient,
-                        fileSpec.folder,
-                        fileSpec.path,
-                        newFileName
-                    ).execute()
-                }
-                
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), R.string.toast_file_rename_success, Toast.LENGTH_SHORT).show()
-                    dismiss()
+                    try {
+                        // Check if we have active connections for this folder
+                        val activeConnections = syncthingClient.getActiveConnectionsForFolder(fileSpec.folder)
+                        if (activeConnections.isEmpty()) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(requireContext(), R.string.toast_file_rename_failed_not_connected, Toast.LENGTH_SHORT).show()
+                            }
+                            return@syncthingClient
+                        }
+                        
+                        RenameFileTask(
+                            requireContext(),
+                            syncthingClient,
+                            fileSpec.folder,
+                            fileSpec.path,
+                            newFileName
+                        ).execute()
+                        
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(requireContext(), R.string.toast_file_rename_success, Toast.LENGTH_SHORT).show()
+                            dismiss()
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(requireContext(), R.string.toast_file_rename_failed, Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -164,6 +172,25 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
                 }
             }
         }
+    }
+    
+    private fun showDeleteConfirmationDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.dialog_delete_file_title)
+            .setMessage(getString(R.string.dialog_delete_file_message, fileSpec.fileName))
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                LibraryHandler(requireContext()).syncthingClient { syncthingClient ->
+                    DeleteFileDialog(
+                        requireContext(),
+                        syncthingClient,
+                        fileSpec.folder,
+                        fileSpec.path
+                    ) { dismiss() }.show()
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     fun show(fragmentManager: FragmentManager) {

@@ -125,8 +125,11 @@
     <!-- Rename file strings -->
     <string name="dialog_rename_file_title">Rename file</string>
     <string name="dialog_rename_file_hint">New filename</string>
+    <string name="dialog_delete_file_title">Delete file</string>
+    <string name="dialog_delete_file_message">Are you sure you want to delete "%1$s"? This action cannot be undone and the file will be deleted on all connected Syncthing devices.</string>
     <string name="toast_file_rename_success">File renamed successfully</string>
     <string name="toast_file_rename_failed">Failed to rename file</string>
+    <string name="toast_file_rename_failed_not_connected">File rename failed, not connected</string>
     <string name="error_empty_filename">Filename cannot be empty</string>
     <string name="error_invalid_filename">Invalid filename. Avoid characters: / \\ : * ? \" &lt; &gt; |</string>
     
