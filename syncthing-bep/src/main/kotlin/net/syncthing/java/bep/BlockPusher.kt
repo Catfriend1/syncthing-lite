@@ -104,38 +104,23 @@ class BlockPusher(private val localDeviceId: DeviceId,
         
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
         
-        // Perform atomic rename by sending both delete and create operations in sequence
-        // but ensure the create operation has a higher sequence number than delete
+        // Use simple delete followed by create with proper version management
+        // This ensures operations are processed correctly by the remote
         
-        // Step 1: Send delete operation for old file
-        val deleteFileInfo = BlockExchangeProtos.FileInfo.newBuilder()
-            .setName(oldPath)
-            .setType(BlockExchangeProtos.FileInfoType.valueOf(originalFileInfo.type.name))
-            .setDeleted(true)
-            .build()
+        // Step 1: Delete the original file
+        val deleteUpdate = pushDelete(folderId, oldPath)
         
-        val deleteUpdate = sendIndexUpdate(folderId, deleteFileInfo.toBuilder(), originalFileInfo.versionList)
-        
-        // Step 2: Send create operation for new file using incremented sequence from delete
+        // Step 2: Create new file using the delete operation's version as base
+        // This ensures proper version sequencing for BEP protocol compliance
         val deleteVersion = deleteUpdate.filesList[0].version.countersList.map { counter ->
             Version(counter.id, counter.value)
         }
         
-        val createFileInfoBuilder = BlockExchangeProtos.FileInfo.newBuilder()
-            .setName(newPath)
-            .setType(BlockExchangeProtos.FileInfoType.FILE)
-            .setSize(originalFileBlocks.size)
-        
+        // For rename operations, always use pushFileWithBlocks to ensure consistent handling
         if (originalFileBlocks.size == 0L || originalFileBlocks.blocks.isEmpty()) {
-            // For 0-byte files, add the required empty block as per BEP protocol
-            val emptyBlockHash = ByteString.copyFrom(SHA256_OF_NOTHING)
-            val emptyBlock = BlockExchangeProtos.BlockInfo.newBuilder()
-                .setOffset(0L)
-                .setSize(0)
-                .setHash(emptyBlockHash)
-                .build()
-            createFileInfoBuilder.addBlocks(emptyBlock)
+            // For 0-byte files, use empty blocks list - pushFileWithBlocks handles BEP protocol requirements
             logger.debug("Renaming 0-byte file from $oldPath to $newPath")
+            pushFileWithBlocks(folderId, newPath, 0L, emptyList(), deleteVersion)
         } else {
             // Convert core BlockInfo objects to protobuf format for non-empty files
             val protobufBlocks = originalFileBlocks.blocks.map { blockInfo ->
@@ -145,10 +130,12 @@ class BlockPusher(private val localDeviceId: DeviceId,
                     .setHash(com.google.protobuf.ByteString.copyFrom(org.bouncycastle.util.encoders.Hex.decode(blockInfo.hash)))
                     .build()
             }
-            createFileInfoBuilder.addAllBlocks(protobufBlocks)
+            pushFileWithBlocks(folderId, newPath, originalFileBlocks.size, protobufBlocks, deleteVersion)
         }
         
-        sendIndexUpdate(folderId, createFileInfoBuilder, deleteVersion)
+        // Important: After rename operations, ensure we wait for index acquisition
+        // This prevents issues with subsequent operations on the renamed file
+        indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler)
     }
 
     suspend fun pushFile(inputStream: InputStream, folderId: String, targetPath: String): FileUploadObserver {
