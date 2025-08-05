@@ -27,7 +27,7 @@ The project is translated on [Weblate](https://hosted.weblate.org/projects/synct
 
 ## Aknowledgements
 
-This project was forked from [GitHub/syncthing-lite](https://github.com/syncthing/syncthing-lite).
+This project was forked from [syncthing/syncthing-lite](https://github.com/syncthing/syncthing-lite).
 
 Special thanks to the former maintainers:
 
