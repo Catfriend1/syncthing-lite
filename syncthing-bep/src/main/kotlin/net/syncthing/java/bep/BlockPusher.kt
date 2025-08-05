@@ -70,7 +70,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 .setType(BlockExchangeProtos.FileInfoType.DIRECTORY), null)
     }
 
-    suspend fun pushFileWithBlocks(folderId: String, targetPath: String, fileSize: Long, blocks: List<BlockExchangeProtos.BlockInfo>): BlockExchangeProtos.IndexUpdate {
+    suspend fun pushFileWithBlocks(folderId: String, targetPath: String, fileSize: Long, blocks: List<BlockExchangeProtos.BlockInfo>, oldVersions: Iterable<Version>? = null): BlockExchangeProtos.IndexUpdate {
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
         val fileInfoBuilder = BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(targetPath)
@@ -90,24 +90,28 @@ class BlockPusher(private val localDeviceId: DeviceId,
             fileInfoBuilder.addAllBlocks(blocks)
         }
         
-        return sendIndexUpdate(folderId, fileInfoBuilder, null)
+        return sendIndexUpdate(folderId, fileInfoBuilder, oldVersions)
     }
 
     suspend fun pushRename(folderId: String, oldPath: String, newPath: String) {
+        // Get the original file info for version information
+        val originalFileInfo = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoByPath(folderId, oldPath)
+            ?: throw IllegalStateException("File not found in index: $oldPath")
+        
         // Get the original file blocks from the index
         val originalFileBlocks = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoAndBlocksByPath(folderId, oldPath)
-            ?: throw IllegalStateException("File not found in index: $oldPath")
+            ?: throw IllegalStateException("File blocks not found in index: $oldPath")
         
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
         
         // Step 1: Delete the original file
         pushDelete(folderId, oldPath)
         
-        // Step 2: Create the new file with the same content
+        // Step 2: Create the new file with the same content, preserving version information
         if (originalFileBlocks.size == 0L || originalFileBlocks.blocks.isEmpty()) {
             // For 0-byte files, use pushFileWithBlocks which handles empty blocks correctly
             logger.debug("Renaming 0-byte file from $oldPath to $newPath")
-            pushFileWithBlocks(folderId, newPath, 0L, emptyList())
+            pushFileWithBlocks(folderId, newPath, 0L, emptyList(), originalFileInfo.versionList)
         } else {
             // Convert core BlockInfo objects to protobuf format for non-empty files
             val protobufBlocks = originalFileBlocks.blocks.map { blockInfo ->
@@ -117,7 +121,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
                     .setHash(com.google.protobuf.ByteString.copyFrom(org.bouncycastle.util.encoders.Hex.decode(blockInfo.hash)))
                     .build()
             }
-            pushFileWithBlocks(folderId, newPath, originalFileBlocks.size, protobufBlocks)
+            pushFileWithBlocks(folderId, newPath, originalFileBlocks.size, protobufBlocks, originalFileInfo.versionList)
         }
     }
 
