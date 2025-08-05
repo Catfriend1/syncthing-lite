@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.2.0"
 kotlinx-coroutines = "1.10.2"
-android-gradle-plugin = "8.11.1"
+android-gradle-plugin = "8.12.0"
 protobuf-lite = "4.31.1"
 protobuf-plugin = "0.9.5"
 ksp = "2.2.0-2.0.2"
