@@ -112,13 +112,18 @@ class BlockPusher(private val localDeviceId: DeviceId,
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
         
         // Step 1: Delete the original file
-        pushDelete(folderId, oldPath)
+        val deleteUpdate = pushDelete(folderId, oldPath)
         
-        // Step 2: Create the new file with the same content, preserving version information
+        // Step 2: Create the new file with the same content, using the version from the delete operation
+        // to ensure proper sequence for rename operations
+        val deleteVersion = deleteUpdate.filesList[0].version.countersList.map { counter ->
+            Version(counter.id, counter.value)
+        }
+        
         if (originalFileBlocks.size == 0L || originalFileBlocks.blocks.isEmpty()) {
             // For 0-byte files, use pushFileWithBlocks which handles empty blocks correctly
             logger.debug("Renaming 0-byte file from $oldPath to $newPath")
-            pushFileWithBlocks(folderId, newPath, 0L, emptyList(), originalFileInfo.versionList)
+            pushFileWithBlocks(folderId, newPath, 0L, emptyList(), deleteVersion)
         } else {
             // Convert core BlockInfo objects to protobuf format for non-empty files
             val protobufBlocks = originalFileBlocks.blocks.map { blockInfo ->
@@ -128,7 +133,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
                     .setHash(com.google.protobuf.ByteString.copyFrom(org.bouncycastle.util.encoders.Hex.decode(blockInfo.hash)))
                     .build()
             }
-            pushFileWithBlocks(folderId, newPath, originalFileBlocks.size, protobufBlocks, originalFileInfo.versionList)
+            pushFileWithBlocks(folderId, newPath, originalFileBlocks.size, protobufBlocks, deleteVersion)
         }
     }
 
