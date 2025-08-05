@@ -63,16 +63,8 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 .setType(BlockExchangeProtos.FileInfoType.valueOf(fileInfo.type.name))
                 .setDeleted(true)
         
-        // For 0-byte files, include the empty block to ensure proper deletion signaling
-        if (fileInfo.size == 0L) {
-            val emptyBlockHash = ByteString.copyFrom(SHA256_OF_NOTHING)
-            val emptyBlock = BlockExchangeProtos.BlockInfo.newBuilder()
-                .setOffset(0L)
-                .setSize(0)
-                .setHash(emptyBlockHash)
-                .build()
-            fileInfoBuilder.addBlocks(emptyBlock)
-        }
+        // Deleted files should have no blocks list according to BEP protocol
+        // Do not add blocks for deleted files regardless of original file size
         
         return sendIndexUpdate(folderId, fileInfoBuilder, fileInfo.versionList)
     }
