@@ -25,7 +25,7 @@ This constraint does not apply for connections directly established through the 
 
 The project is translated on [Weblate](https://hosted.weblate.org/projects/syncthing/android/catfriend1/lite-stringsxml/).
 
-## Aknowledgements
+## Acknowledgments
 
 This project was forked from [syncthing/syncthing-lite](https://github.com/syncthing/syncthing-lite).
 
