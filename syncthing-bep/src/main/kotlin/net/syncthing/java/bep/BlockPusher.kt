@@ -55,12 +55,19 @@ class BlockPusher(private val localDeviceId: DeviceId,
                   private val requestHandlerRegistry: RequestHandlerRegistry) {
 
     suspend fun pushDelete(folderId: String, targetPath: String): BlockExchangeProtos.IndexUpdate {
-        val fileInfo = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoByPath(folderId, targetPath)!!
+        // Ensure we have the most current index state, especially important after rename operations
+        val remoteIndex = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler)
+        val fileInfo = remoteIndex.getFileInfoByPath(folderId, targetPath)!!
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(fileInfo.folder), {"supplied connection handler $connectionHandler will not share folder ${fileInfo.folder}"})
-        return sendIndexUpdate(folderId, BlockExchangeProtos.FileInfo.newBuilder()
+        
+        // Create a clean FileInfo builder for deletion to ensure BEP protocol compliance
+        val deleteFileInfoBuilder = BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(targetPath)
                 .setType(BlockExchangeProtos.FileInfoType.valueOf(fileInfo.type.name))
-                .setDeleted(true), fileInfo.versionList)
+                .setDeleted(true)
+        
+        logger.debug("Deleting file: $targetPath with version: ${fileInfo.versionList}")
+        return sendIndexUpdate(folderId, deleteFileInfoBuilder, fileInfo.versionList)
     }
 
     suspend fun pushDir(folder: String, path: String): BlockExchangeProtos.IndexUpdate {
@@ -136,6 +143,8 @@ class BlockPusher(private val localDeviceId: DeviceId,
         // Important: After rename operations, ensure we wait for index acquisition
         // This prevents issues with subsequent operations on the renamed file
         indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler)
+        
+        logger.debug("Rename operation completed: $oldPath -> $newPath. Index synchronized.")
     }
 
     suspend fun pushFile(inputStream: InputStream, folderId: String, targetPath: String): FileUploadObserver {
