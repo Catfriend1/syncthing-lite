@@ -1,6 +1,6 @@
 # Syncthing-Lite for Android
 
-[![MPLv2 License](https://img.shields.io/badge/license-MPLv2-blue.svg?style=flat-square)](https://www.mozilla.org/MPL/2.0/)<a href="https://tooomm.github.io/github-release-stats/?username=Catfriend1&repository=syncthing-lite" alt="GitHub Stats"><img src="https://img.shields.io/github/downloads/Catfriend1/syncthing-lite/total.svg" /></a>[![Build App](https://github.com/Catfriend1/syncthing-lite/actions/workflows/build-app.yaml/badge.svg)](https://github.com/Catfriend1/syncthing-lite/actions/workflows/build-app.yaml)
+[![MPLv2 License](https://img.shields.io/badge/license-MPLv2-blue.svg?style=flat-square)](https://www.mozilla.org/MPL/2.0/)<a href="https://github.com/Catfriend1/syncthing-lite/releases" alt="GitHub release"><img src="https://img.shields.io/github/release/Catfriend1/syncthing-lite/all.svg" /></a><a href="https://tooomm.github.io/github-release-stats/?username=Catfriend1&repository=syncthing-lite" alt="GitHub Stats"><img src="https://img.shields.io/github/downloads/Catfriend1/syncthing-lite/total.svg" /></a>[![Build App](https://github.com/Catfriend1/syncthing-lite/actions/workflows/build-app.yaml/badge.svg)](https://github.com/Catfriend1/syncthing-lite/actions/workflows/build-app.yaml)
 
 ⚡ Revival of the app which was abandoned years ago. Let's discuss it on [Syncthing-Forum](https://forum.syncthing.net/).
 
