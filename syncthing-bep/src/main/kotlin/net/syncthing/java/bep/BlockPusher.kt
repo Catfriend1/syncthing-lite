@@ -57,16 +57,10 @@ class BlockPusher(private val localDeviceId: DeviceId,
     suspend fun pushDelete(folderId: String, targetPath: String): BlockExchangeProtos.IndexUpdate {
         val fileInfo = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoByPath(folderId, targetPath)!!
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(fileInfo.folder), {"supplied connection handler $connectionHandler will not share folder ${fileInfo.folder}"})
-        
-        val fileInfoBuilder = BlockExchangeProtos.FileInfo.newBuilder()
+        return sendIndexUpdate(folderId, BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(targetPath)
                 .setType(BlockExchangeProtos.FileInfoType.valueOf(fileInfo.type.name))
-                .setDeleted(true)
-        
-        // Deleted files should have no blocks list according to BEP protocol
-        // Do not add blocks for deleted files regardless of original file size
-        
-        return sendIndexUpdate(folderId, fileInfoBuilder, fileInfo.versionList)
+                .setDeleted(true), fileInfo.versionList)
     }
 
     suspend fun pushDir(folder: String, path: String): BlockExchangeProtos.IndexUpdate {
