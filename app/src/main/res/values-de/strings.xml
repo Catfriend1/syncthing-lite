@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">Kein Ordner verfügbar</string>
@@ -67,4 +68,5 @@ Dies gilt nicht für Verbindungen, die per lokaler Gerätesuche hergestellt wurd
     <string name="skip">Überspringen</string>
     <string name="next">Weiter</string>
     <string name="done">Fertig</string>
+    <string name="open_source_licenses_summary">Verwendete Open-Source-Lizenzen anzeigen</string>
 </resources>
