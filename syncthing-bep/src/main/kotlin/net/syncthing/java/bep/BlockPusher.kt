@@ -77,8 +77,16 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 .setType(BlockExchangeProtos.FileInfoType.FILE)
                 .setSize(fileSize)
         
-        // Only set blocks field for non-empty files to avoid BEP protocol errors
-        if (fileSize > 0L && blocks.isNotEmpty()) {
+        if (fileSize == 0L) {
+            // For 0-byte files, create an empty block as required by BEP protocol
+            val emptyBlockHash = ByteString.copyFrom(SHA256_OF_NOTHING)
+            val emptyBlock = BlockExchangeProtos.BlockInfo.newBuilder()
+                .setOffset(0L)
+                .setSize(0)
+                .setHash(emptyBlockHash)
+                .build()
+            fileInfoBuilder.addBlocks(emptyBlock)
+        } else if (blocks.isNotEmpty()) {
             fileInfoBuilder.addAllBlocks(blocks)
         }
         
@@ -97,12 +105,9 @@ class BlockPusher(private val localDeviceId: DeviceId,
         
         // Step 2: Create the new file with the same content
         if (originalFileBlocks.size == 0L || originalFileBlocks.blocks.isEmpty()) {
-            // For 0-byte files, create directly with sendIndexUpdate to ensure proper handling
+            // For 0-byte files, use pushFileWithBlocks which handles empty blocks correctly
             logger.debug("Renaming 0-byte file from $oldPath to $newPath")
-            sendIndexUpdate(folderId, BlockExchangeProtos.FileInfo.newBuilder()
-                .setName(newPath)
-                .setType(BlockExchangeProtos.FileInfoType.FILE)
-                .setSize(0L), null)
+            pushFileWithBlocks(folderId, newPath, 0L, emptyList())
         } else {
             // Convert core BlockInfo objects to protobuf format for non-empty files
             val protobufBlocks = originalFileBlocks.blocks.map { blockInfo ->
@@ -188,8 +193,16 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 .setSize(fileSize)
                 .setType(BlockExchangeProtos.FileInfoType.FILE)
         
-        // Only set blocks field for non-empty files to avoid BEP protocol errors
-        if (fileSize > 0L) {
+        if (fileSize == 0L) {
+            // For 0-byte files, create an empty block as required by BEP protocol
+            val emptyBlockHash = ByteString.copyFrom(SHA256_OF_NOTHING)
+            val emptyBlock = BlockExchangeProtos.BlockInfo.newBuilder()
+                .setOffset(0L)
+                .setSize(0)
+                .setHash(emptyBlockHash)
+                .build()
+            fileInfoBuilder.addBlocks(emptyBlock)
+        } else {
             fileInfoBuilder.addAllBlocks(dataSource.blocks)
         }
         
@@ -389,6 +402,18 @@ class BlockPusher(private val localDeviceId: DeviceId,
     companion object {
         private val logger = LoggerFactory.getLogger(BlockPusher::class.java)
         const val BLOCK_SIZE = 128 * 1024
+        
+        // SHA256 hash of empty string, as defined in Syncthing's BEP protocol
+        private val SHA256_OF_NOTHING = byteArrayOf(
+            0xe3.toByte(), 0xb0.toByte(), 0xc4.toByte(), 0x42.toByte(), 
+            0x98.toByte(), 0xfc.toByte(), 0x1c.toByte(), 0x14.toByte(), 
+            0x9a.toByte(), 0xfb.toByte(), 0xf4.toByte(), 0xc8.toByte(), 
+            0x99.toByte(), 0x6f.toByte(), 0xb9.toByte(), 0x24.toByte(), 
+            0x27.toByte(), 0xae.toByte(), 0x41.toByte(), 0xe4.toByte(), 
+            0x64.toByte(), 0x9b.toByte(), 0x93.toByte(), 0x4c.toByte(), 
+            0xa4.toByte(), 0x95.toByte(), 0x99.toByte(), 0x1b.toByte(), 
+            0x78.toByte(), 0x52.toByte(), 0xb8.toByte(), 0x55.toByte()
+        )
     }
 
 }
