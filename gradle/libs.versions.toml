@@ -41,7 +41,7 @@ commons-codec = "1.18.0"
 commons-io = "2.20.0"
 gson = "2.13.1"
 bouncy-castle = "1.81"
-commons-cli = "1.9.0"
+commons-cli = "1.10.0"
 
 [libraries]
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
