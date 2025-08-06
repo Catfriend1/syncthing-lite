@@ -57,47 +57,53 @@ class BlockPusher(private val localDeviceId: DeviceId,
     suspend fun pushDelete(folderId: String, targetPath: String): BlockExchangeProtos.IndexUpdate {
         logger.debug("Starting deletion process for: $targetPath")
         
-        // Multiple rounds of synchronization to ensure we have the absolute latest state
-        // This is critical for repeated deletions after remote restoration
-        for (i in 1..3) {
-            logger.debug("Index synchronization round $i/3")
-            indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler, 5)
+        // Ensure we have the most current index state with aggressive synchronization
+        // This is absolutely critical for repeated deletions after remote restoration
+        repeat(5) { round ->
+            logger.debug("Index synchronization round ${round + 1}/5")
+            indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler, 3)
         }
         
-        // Get the most current index state
-        val currentIndex = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler)
+        // Force a fresh index fetch to ensure we have the latest state
+        val freshIndex = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler, 2)
         
-        val fileInfo = currentIndex.getFileInfoByPath(folderId, targetPath)
+        val fileInfo = freshIndex.getFileInfoByPath(folderId, targetPath)
         if (fileInfo == null) {
-            logger.warn("File $targetPath not found in index - cannot delete")
+            logger.error("File $targetPath not found in current index - cannot delete")
             throw IllegalStateException("File $targetPath not found in current index")
         }
         
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(fileInfo.folder), {"supplied connection handler $connectionHandler will not share folder ${fileInfo.folder}"})
         
-        logger.debug("File found for deletion: $targetPath")
-        logger.debug("Current file state - deleted: ${fileInfo.isDeleted}, lastModified: ${fileInfo.lastModified}")
-        logger.debug("File version: ${fileInfo.versionList}")
-        logger.debug("File type: ${fileInfo.type}, size: ${fileInfo.size}")
+        logger.debug("=== DELETION DEBUG INFO ===")
+        logger.debug("Target file: $targetPath")
+        logger.debug("File state: deleted=${fileInfo.isDeleted}, type=${fileInfo.type}, size=${fileInfo.size}")
+        logger.debug("File timestamp: ${fileInfo.lastModified}")
+        logger.debug("File version vector: ${fileInfo.versionList}")
+        logger.debug("===============================")
         
-        // Check if the file is already marked as deleted
+        // Verify the file is not already deleted
         if (fileInfo.isDeleted) {
-            logger.warn("File $targetPath is already marked as deleted in our index")
+            logger.error("File $targetPath is already marked as deleted - current state: ${fileInfo}")
             throw IllegalStateException("File $targetPath is already marked as deleted")
         }
         
-        // Create a deletion record with proper BEP protocol compliance
-        // Deleted files must have: deleted=true, size=0, no blocks, proper version
+        // Build deletion record with strict BEP protocol compliance
         val deleteFileInfoBuilder = BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(targetPath)
                 .setType(BlockExchangeProtos.FileInfoType.valueOf(fileInfo.type.name))
                 .setDeleted(true)
-                .setSize(0L)  // Deleted files must have size 0
+                .setSize(0L)
+                .clearBlocks()  // Ensure no blocks for deleted files
         
-        logger.debug("Sending deletion for: $targetPath with version base: ${fileInfo.versionList}")
+        logger.debug("Sending deletion update with base version: ${fileInfo.versionList}")
         val result = sendIndexUpdate(folderId, deleteFileInfoBuilder, fileInfo.versionList)
         
-        logger.debug("Deletion index update sent successfully for: $targetPath")
+        logger.debug("Deletion successfully sent for: $targetPath")
+        
+        // Wait briefly to allow the deletion to be processed
+        indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler, 2)
+        
         return result
     }
 
