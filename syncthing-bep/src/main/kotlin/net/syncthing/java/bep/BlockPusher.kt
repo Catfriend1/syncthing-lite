@@ -57,7 +57,33 @@ class BlockPusher(private val localDeviceId: DeviceId,
     suspend fun pushDelete(folderId: String, targetPath: String): BlockExchangeProtos.IndexUpdate {
         // Ensure we have the most current index state, especially important after rename operations
         val remoteIndex = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler)
-        val fileInfo = remoteIndex.getFileInfoByPath(folderId, targetPath)!!
+        val fileInfo = remoteIndex.getFileInfoByPath(folderId, targetPath)
+        
+        // If the file doesn't exist in our index, it might already be deleted
+        // Create a deletion record anyway to ensure consistency with the remote
+        if (fileInfo == null) {
+            logger.debug("File not found in local index, attempting deletion anyway: $targetPath")
+            // We need to determine the file type - check if it exists in the index browser
+            val indexBrowser = remoteIndex.indexBrowser
+            val directoryListing = indexBrowser.getDirectoryListing(folderId, net.syncthing.java.core.utils.PathUtils.getParentPath(targetPath))
+            
+            val fileType = if (directoryListing is net.syncthing.java.bep.index.browser.DirectoryContentListing) {
+                val fileName = net.syncthing.java.core.utils.PathUtils.getFileName(targetPath)
+                val entry = directoryListing.entries.find { it.fileName == fileName }
+                entry?.type ?: net.syncthing.java.core.beans.FileInfo.FileType.FILE // Default to FILE if not found
+            } else {
+                net.syncthing.java.core.beans.FileInfo.FileType.FILE // Default to FILE
+            }
+            
+            val deleteFileInfoBuilder = BlockExchangeProtos.FileInfo.newBuilder()
+                    .setName(targetPath)
+                    .setType(BlockExchangeProtos.FileInfoType.valueOf(fileType.name))
+                    .setDeleted(true)
+            
+            logger.debug("Creating deletion record for file not in index: $targetPath (type: $fileType)")
+            return sendIndexUpdate(folderId, deleteFileInfoBuilder, emptyList())
+        }
+        
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(fileInfo.folder), {"supplied connection handler $connectionHandler will not share folder ${fileInfo.folder}"})
         
         // Create a clean FileInfo builder for deletion to ensure BEP protocol compliance
