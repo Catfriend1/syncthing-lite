@@ -114,15 +114,15 @@ object IndexElementProcessor {
             folderStatsUpdateCollector: FolderStatsUpdateCollector
     ): FileInfo? {
         return if (shouldUpdateRecord(oldRecord, newRecord)) {
-            logger.trace("Local record contains newer update, thus discarding the old record ({})", newRecord)
-            null
-        } else {
             logger.trace("Loaded new record: {}.", newRecord)
 
             transaction.updateFileInfo(newRecord, fileBlocks)
             updateFolderStatsCollector(oldRecord, newRecord, folderStatsUpdateCollector)
 
             newRecord
+        } else {
+            logger.trace("Local record contains newer update, thus discarding the old record ({})", newRecord)
+            null
         }
     }
 
