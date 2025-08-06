@@ -55,36 +55,49 @@ class BlockPusher(private val localDeviceId: DeviceId,
                   private val requestHandlerRegistry: RequestHandlerRegistry) {
 
     suspend fun pushDelete(folderId: String, targetPath: String): BlockExchangeProtos.IndexUpdate {
-        // Ensure we have the most current index state, especially important after files are restored remotely
-        val remoteIndex = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler)
+        logger.debug("Starting deletion process for: $targetPath")
         
-        // Add additional synchronization to ensure we have the latest state
-        // This is crucial when a file was deleted and then restored remotely
-        indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler, 10)
+        // Multiple rounds of synchronization to ensure we have the absolute latest state
+        // This is critical for repeated deletions after remote restoration
+        for (i in 1..3) {
+            logger.debug("Index synchronization round $i/3")
+            indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler, 5)
+        }
         
-        val fileInfo = remoteIndex.getFileInfoByPath(folderId, targetPath)!!
+        // Get the most current index state
+        val currentIndex = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler)
+        
+        val fileInfo = currentIndex.getFileInfoByPath(folderId, targetPath)
+        if (fileInfo == null) {
+            logger.warn("File $targetPath not found in index - cannot delete")
+            throw IllegalStateException("File $targetPath not found in current index")
+        }
+        
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(fileInfo.folder), {"supplied connection handler $connectionHandler will not share folder ${fileInfo.folder}"})
         
-        logger.debug("Attempting to delete file: $targetPath")
-        logger.debug("Current file info - deleted: ${fileInfo.isDeleted}, lastModified: ${fileInfo.lastModified}, version: ${fileInfo.versionList}")
+        logger.debug("File found for deletion: $targetPath")
+        logger.debug("Current file state - deleted: ${fileInfo.isDeleted}, lastModified: ${fileInfo.lastModified}")
+        logger.debug("File version: ${fileInfo.versionList}")
         logger.debug("File type: ${fileInfo.type}, size: ${fileInfo.size}")
         
-        // Ensure the file is not already marked as deleted in our index
+        // Check if the file is already marked as deleted
         if (fileInfo.isDeleted) {
-            logger.warn("File $targetPath is already marked as deleted in our index - skipping deletion")
+            logger.warn("File $targetPath is already marked as deleted in our index")
             throw IllegalStateException("File $targetPath is already marked as deleted")
         }
         
-        // Create a clean FileInfo builder for deletion to ensure BEP protocol compliance
+        // Create a deletion record with proper BEP protocol compliance
+        // Deleted files must have: deleted=true, size=0, no blocks, proper version
         val deleteFileInfoBuilder = BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(targetPath)
                 .setType(BlockExchangeProtos.FileInfoType.valueOf(fileInfo.type.name))
                 .setDeleted(true)
+                .setSize(0L)  // Deleted files must have size 0
         
-        logger.debug("Deleting file: $targetPath with version: ${fileInfo.versionList}")
+        logger.debug("Sending deletion for: $targetPath with version base: ${fileInfo.versionList}")
         val result = sendIndexUpdate(folderId, deleteFileInfoBuilder, fileInfo.versionList)
         
-        logger.debug("Deletion index update sent for: $targetPath")
+        logger.debug("Deletion index update sent successfully for: $targetPath")
         return result
     }
 
