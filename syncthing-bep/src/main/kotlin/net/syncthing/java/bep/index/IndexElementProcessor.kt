@@ -104,7 +104,29 @@ object IndexElementProcessor {
     private fun shouldUpdateRecord(
             oldRecord: FileInfo?,
             newRecord: FileInfo
-    ) = oldRecord == null || newRecord.lastModified >= oldRecord.lastModified
+    ): Boolean {
+        // Always accept if no old record exists
+        if (oldRecord == null) {
+            return true
+        }
+        
+        // Special case: if we have a deleted record locally but receive a non-deleted record remotely,
+        // this represents a file restoration which should always be accepted regardless of timestamps
+        if (oldRecord.isDeleted && !newRecord.isDeleted) {
+            logger.debug("Accepting file restoration: {} (local deleted -> remote restored)", newRecord.path)
+            return true
+        }
+        
+        // Special case: if we have a non-deleted record locally but receive a deleted record remotely,
+        // this represents a remote deletion which should be accepted if timestamps allow
+        if (!oldRecord.isDeleted && newRecord.isDeleted) {
+            logger.debug("Processing remote deletion: {} (local exists -> remote deleted)", newRecord.path)
+            return newRecord.lastModified >= oldRecord.lastModified
+        }
+        
+        // For other cases, use timestamp comparison
+        return newRecord.lastModified >= oldRecord.lastModified
+    }
 
     private fun addRecord(
             transaction: IndexTransaction,
