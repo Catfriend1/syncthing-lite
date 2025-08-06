@@ -59,7 +59,10 @@
         This does not apply to local discovery connections.
     </string>
     <string name="dialog_file_save_as">Save as</string>
+    <string name="dialog_file_rename">Rename</string>
     <string name="dialog_file_delete">Delete</string>
+    <string name="dialog_folder_download">Download Folder</string>
+    <string name="dialog_folder_delete">Delete Folder</string>
     <string name="device_status_connecting">Connecting to %s</string>
     <string name="device_status_connected">Connected to %s</string>
     <string name="device_status_no_address">No known address for the device</string>
@@ -71,6 +74,7 @@
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
     <string name="toast_error">Something went wrong in Syncthing-Lite. You can view the details from the settings of Syncthing-Lite.</string>
     <string name="folder_browser_home">Home</string>
+    <string name="folder_browser_create_folder">Create folder</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="upload_file">Upload file</string>
@@ -104,4 +108,45 @@
     
     <!-- Summary of the preference showing the Open Source Licenses -->
     <string name="open_source_licenses_summary">Show the open source licenses used</string>
+    
+    <!-- Folder download strings -->
+    <string name="dialog_downloading_folder">Downloading folder %1$s</string>
+    <string name="toast_folder_download_failed">Folder download failed: %1$s</string>
+    
+    <!-- Plurals for folder download -->
+    <plurals name="dialog_downloading_folder_progress">
+        <item quantity="one">Downloading %1$s (%2$d of %3$d file)</item>
+        <item quantity="other">Downloading %1$s (%2$d of %3$d files)</item>
+    </plurals>
+    
+    <plurals name="toast_folder_download_success">
+        <item quantity="one">Successfully downloaded %1$d file to %2$s</item>
+        <item quantity="other">Successfully downloaded %1$d files to %2$s</item>
+    </plurals>
+    
+    <!-- Create folder strings -->
+    <string name="dialog_create_folder_title">Create folder</string>
+    <string name="dialog_create_folder_hint">Folder name</string>
+    <string name="toast_folder_create_success">Folder created successfully</string>
+    <string name="toast_folder_create_failed">Failed to create folder</string>
+    <string name="error_empty_folder_name">Folder name cannot be empty</string>
+    
+    <!-- Rename file strings -->
+    <string name="dialog_rename_file_title">Rename file</string>
+    <string name="dialog_rename_file_hint">New filename</string>
+    <string name="dialog_delete_file_title">Delete file</string>
+    <string name="dialog_delete_file_message">Are you sure you want to delete "%1$s"? This action cannot be undone and the file will be deleted on all connected Syncthing devices.</string>
+    <string name="toast_file_rename_success">File renamed successfully</string>
+    <string name="toast_file_rename_failed">Failed to rename file</string>
+    <string name="toast_file_rename_failed_not_connected">File rename failed, not connected</string>
+    <string name="error_empty_filename">Filename cannot be empty</string>
+    <string name="error_invalid_filename">Invalid filename. Avoid characters: / \\ : * ? \" &lt; &gt; |</string>
+    
+    <!-- Folder delete related strings -->
+    <string name="dialog_delete_folder_title">Delete Folder</string>
+    <string name="dialog_delete_folder_warning">⚠️ Warning: This will permanently delete the folder and all its contents on the remote device. This action cannot be undone and will be synchronized to all connected Syncthing devices.</string>
+    <string name="dialog_delete_folder_count_format">Folders: %1$s\nFiles: %2$s</string>
+    <string name="toast_folder_delete_success">Folder deleted successfully</string>
+    <string name="toast_folder_delete_failed">Failed to delete folder</string>
+    <string name="error_invalid_folder_name">Invalid folder name</string>
 </resources>

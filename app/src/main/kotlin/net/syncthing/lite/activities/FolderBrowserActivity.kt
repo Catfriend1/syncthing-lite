@@ -6,6 +6,9 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import kotlinx.coroutines.*
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.consumeEach
@@ -25,6 +28,7 @@ import net.syncthing.lite.databinding.ActivityFolderBrowserBinding
 import net.syncthing.lite.dialogs.EnableFolderSyncForNewDeviceDialog
 import net.syncthing.lite.dialogs.FileMenuDialogFragment
 import net.syncthing.lite.dialogs.FileUploadDialog
+import net.syncthing.lite.dialogs.FolderMenuDialogFragment
 import net.syncthing.lite.dialogs.ReconnectIssueDialogFragment
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileDialogFragment
 import androidx.activity.result.ActivityResultLauncher
@@ -40,6 +44,7 @@ class FolderBrowserActivity : SyncthingActivity() {
     }
 
     private lateinit var folder: String
+    private lateinit var folderLabel: String
     private lateinit var uploadFileLauncher: ActivityResultLauncher<Intent>
     private var currentUploadDialog: FileUploadDialog? = null
 
@@ -105,10 +110,16 @@ class FolderBrowserActivity : SyncthingActivity() {
             }
 
             override fun onItemLongClicked(fileInfo: FileInfo): Boolean {
-                return if (fileInfo.type == FileInfo.FileType.FILE) {
-                    FileMenuDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
-                    true
-                } else false
+                return when (fileInfo.type) {
+                    FileInfo.FileType.FILE -> {
+                        FileMenuDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
+                        true
+                    }
+                    FileInfo.FileType.DIRECTORY -> {
+                        FolderMenuDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
+                        true
+                    }
+                }
             }
         }
 
@@ -116,6 +127,13 @@ class FolderBrowserActivity : SyncthingActivity() {
 
         folder = intent.getStringExtra(EXTRA_FOLDER_NAME) ?: throw IllegalArgumentException("Missing folder name")
         path.value = if (savedInstanceState == null) IndexBrowser.ROOT_PATH else savedInstanceState.getString(STATUS_PATH) ?: IndexBrowser.ROOT_PATH
+
+        // Get the folder label for display
+        launch {
+            folderLabel = libraryHandler.libraryManager.withLibrary {
+                it.configuration.folders.find { it.folderId == folder }?.label ?: folder
+            }
+        }
 
         launch {
             var job = Job()
@@ -142,7 +160,7 @@ class FolderBrowserActivity : SyncthingActivity() {
                     binding.progressBar.visibility = View.VISIBLE
                     binding.listView.visibility = View.GONE
                 } else {
-                    supportActionBar?.title = if (PathUtils.isRoot(listing.path)) folder else PathUtils.getFileName(listing.path)
+                    supportActionBar?.title = if (PathUtils.isRoot(listing.path)) folderLabel else PathUtils.getFileName(listing.path)
                     binding.progressBar.visibility = View.GONE
                     binding.listView.visibility = View.VISIBLE
                     adapter.data = if (listing is DirectoryContentListing)
@@ -207,6 +225,10 @@ class FolderBrowserActivity : SyncthingActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.create_folder -> {
+            showCreateFolderDialog()
+            true
+        }
         R.id.go_home -> {
             finish()
             true
@@ -221,5 +243,63 @@ class FolderBrowserActivity : SyncthingActivity() {
     override fun onDestroy() {
         currentUploadDialog?.cleanup()
         super.onDestroy()
+    }
+    
+    private fun showCreateFolderDialog() {
+        val input = EditText(this).apply {
+            hint = getString(R.string.dialog_create_folder_hint)
+        }
+        
+        AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_create_folder_title)
+            .setView(input)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val folderName = input.text.toString().trim()
+                if (folderName.isEmpty()) {
+                    Toast.makeText(this, R.string.error_empty_folder_name, Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                
+                if (!isValidFolderName(folderName)) {
+                    Toast.makeText(this, R.string.error_invalid_folder_name, Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                
+                createRemoteFolder(folderName)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+    
+    private fun isValidFolderName(name: String): Boolean {
+        // Check for invalid characters that might cause issues
+        val invalidChars = charArrayOf('/', '\\', ':', '*', '?', '"', '<', '>', '|')
+        return name.isNotEmpty() && !name.any { it in invalidChars } && name != "." && name != ".."
+    }
+    
+    private fun createRemoteFolder(folderName: String) {
+        launch {
+            try {
+                libraryHandler.syncthingClient { syncthingClient ->
+                    val currentPath = path.value
+                    val fullPath = if (PathUtils.isRoot(currentPath)) {
+                        folderName
+                    } else {
+                        PathUtils.buildPath(currentPath, folderName)
+                    }
+                    
+                    val blockPusher = syncthingClient.getBlockPusher(folder)
+                    blockPusher.pushDir(folder, fullPath)
+                    
+                    runOnUiThread {
+                        Toast.makeText(this@FolderBrowserActivity, R.string.toast_folder_create_success, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this@FolderBrowserActivity, R.string.toast_folder_create_failed, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 }
