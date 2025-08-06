@@ -57,15 +57,22 @@ class BlockPusher(private val localDeviceId: DeviceId,
     suspend fun pushDelete(folderId: String, targetPath: String): BlockExchangeProtos.IndexUpdate {
         // Ensure we have the most current index state, especially important after files are restored remotely
         val remoteIndex = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler)
+        
+        // Add additional synchronization to ensure we have the latest state
+        // This is crucial when a file was deleted and then restored remotely
+        indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler, 10)
+        
         val fileInfo = remoteIndex.getFileInfoByPath(folderId, targetPath)!!
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(fileInfo.folder), {"supplied connection handler $connectionHandler will not share folder ${fileInfo.folder}"})
         
         logger.debug("Attempting to delete file: $targetPath")
         logger.debug("Current file info - deleted: ${fileInfo.isDeleted}, lastModified: ${fileInfo.lastModified}, version: ${fileInfo.versionList}")
+        logger.debug("File type: ${fileInfo.type}, size: ${fileInfo.size}")
         
         // Ensure the file is not already marked as deleted in our index
         if (fileInfo.isDeleted) {
-            logger.warn("File $targetPath is already marked as deleted in our index - this may indicate a synchronization issue")
+            logger.warn("File $targetPath is already marked as deleted in our index - skipping deletion")
+            throw IllegalStateException("File $targetPath is already marked as deleted")
         }
         
         // Create a clean FileInfo builder for deletion to ensure BEP protocol compliance
@@ -75,7 +82,10 @@ class BlockPusher(private val localDeviceId: DeviceId,
                 .setDeleted(true)
         
         logger.debug("Deleting file: $targetPath with version: ${fileInfo.versionList}")
-        return sendIndexUpdate(folderId, deleteFileInfoBuilder, fileInfo.versionList)
+        val result = sendIndexUpdate(folderId, deleteFileInfoBuilder, fileInfo.versionList)
+        
+        logger.debug("Deletion index update sent for: $targetPath")
+        return result
     }
 
     suspend fun pushDir(folder: String, path: String): BlockExchangeProtos.IndexUpdate {
