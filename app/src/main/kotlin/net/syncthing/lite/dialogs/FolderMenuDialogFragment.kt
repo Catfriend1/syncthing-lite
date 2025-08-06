@@ -199,10 +199,13 @@ class FolderMenuDialogFragment: BottomSheetDialogFragment() {
                     val indexBrowser = syncthingClient.indexHandler.indexBrowser
                     
                     // First recursively delete all contents of the folder
-                    deleteRecursively(blockPusher, indexBrowser, folderId, folderPath)
+                    deleteRecursively(blockPusher, indexBrowser, syncthingClient, folderId, folderPath)
                     
-                    // Finally delete the folder itself
+                    // Finally delete the folder itself and wait for synchronization
                     blockPusher.pushDelete(folderId, folderPath)
+                    // Ensure the final deletion is processed
+                    val connection = syncthingClient.getActiveConnectionsForFolder(folderId).first()
+                    syncthingClient.indexHandler.waitForRemoteIndexAcquiredWithTimeout(connection)
                 }
                 
                 withContext(Dispatchers.Main) {
@@ -221,6 +224,7 @@ class FolderMenuDialogFragment: BottomSheetDialogFragment() {
     private suspend fun deleteRecursively(
         blockPusher: net.syncthing.java.bep.BlockPusher,
         indexBrowser: net.syncthing.java.bep.index.browser.IndexBrowser,
+        syncthingClient: net.syncthing.java.client.SyncthingClient,
         folder: String,
         path: String
     ) {
@@ -230,14 +234,20 @@ class FolderMenuDialogFragment: BottomSheetDialogFragment() {
             for (entry in listing.entries) {
                 when (entry.type) {
                     net.syncthing.java.core.beans.FileInfo.FileType.FILE -> {
-                        // Delete the file
+                        // Delete the file and wait for index synchronization
                         blockPusher.pushDelete(folder, entry.path)
+                        // Ensure the deletion is processed before continuing
+                        val connection = syncthingClient.getActiveConnectionsForFolder(folder).first()
+                        syncthingClient.indexHandler.waitForRemoteIndexAcquiredWithTimeout(connection)
                     }
                     net.syncthing.java.core.beans.FileInfo.FileType.DIRECTORY -> {
                         // Recursively delete subdirectory contents first
-                        deleteRecursively(blockPusher, indexBrowser, folder, entry.path)
-                        // Then delete the subdirectory itself
+                        deleteRecursively(blockPusher, indexBrowser, syncthingClient, folder, entry.path)
+                        // Then delete the subdirectory itself and wait for synchronization
                         blockPusher.pushDelete(folder, entry.path)
+                        // Ensure the deletion is processed before continuing
+                        val connection = syncthingClient.getActiveConnectionsForFolder(folder).first()
+                        syncthingClient.indexHandler.waitForRemoteIndexAcquiredWithTimeout(connection)
                     }
                 }
             }
