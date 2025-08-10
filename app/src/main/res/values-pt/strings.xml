@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Syncthing Lite</string>
     <string name="folder_list_empty_message">Não há pastas disponíveis</string>
@@ -28,4 +29,23 @@
     <string name="share_device_id_chooser">Partilhar ID do dispositivo com</string>
     <string name="other_syncthing_instance_title">Está outra instância do Syncthing em execução</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
-    </resources>
+    <string name="toast_file_delete_failed">A eliminação do ficheiro falhou</string>
+    <string name="toast_delete_complete">A eliminação do ficheiro terminou</string>
+    <string name="dialog_deleting_file">Eliminando o ficheiro remoto</string>
+    <string name="intro_page_three_title">Partilhar as suas pastas</string>
+    <string name="intro_page_two_description">Escreva um ID de um dispositivo Syncthing ou leia um ID de dispositivo a partir de um código QR</string>
+    <string name="intro_page_three_description">Dispositivo encontrado. Agora peça ao dono do dispositivo para aceitar a nossa ligação de %1$s e partilhar uma pasta connosco. Continuaremos automaticamente depois disso. Aguarde.</string>
+    <string name="intro_page_three_searching_device">Tentando encontrar o outro dispositivo. Continuaremos automaticamente assim que a descoberta esteja completa. Aguarde.</string>
+    <string name="settings">Configurações</string>
+    <string name="settings_app_version_title">Versão da aplicação</string>
+    <string name="settings_local_device_name">Nome do dispositivo local</string>
+    <string name="settings_local_device_summary">O nome deste dispositivo que os outros dispositivos vão ver</string>
+    <string name="settings_force_stop">Forçar a paragem desta aplicação</string>
+    <string name="settings_last_error_title">Último erro</string>
+    <string name="settings_last_error_summary">Ver os detalhes do último erro</string>
+    <string name="settings_report_bug_title">Reportar um erro</string>
+    <string name="settings_report_bug_summary">Abrir as questões para esta aplicação no GitHub</string>
+    <string name="copy_to_clipboard">Copiar para a área de transferência</string>
+    <string name="copied_to_clipboard">Copiado para a área de transferência</string>
+    <string name="device_id_dialog_title">Escreva o ID do dispositivo</string>
+</resources>
