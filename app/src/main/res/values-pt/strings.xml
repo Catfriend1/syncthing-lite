@@ -48,4 +48,11 @@
     <string name="copy_to_clipboard">Copiar para a área de transferência</string>
     <string name="copied_to_clipboard">Copiado para a área de transferência</string>
     <string name="device_id_dialog_title">Escreva o ID do dispositivo</string>
+    <string name="upload_file">Carregar ficheiro</string>
+    <string name="add_device">Adicionar dispositivo</string>
+    <string name="qr_code_description">Código QR</string>
+    <string name="other_syncthing_instance_message">A descoberta local não irá funcionar. Pare a outra instância do Syncthing para habilitar a descoberta local.</string>
+    <string name="intro_page_one_title">Bem vindo/a ao Syncthing-Lite</string>
+    <string name="intro_page_one_description">O Syncthing é uma aplicação de código-aberto para sincronização de ficheiros. Para aceder aos ficheiros de outros dispositivos, os donos deles primeiro têm de adicionar o seu ID de dispositivo à lista de dispositivos deles. Depois têm de partilhar pastas que deverão poder ser acedidas por esta aplicação.\n\nAviso de segurança: Assegure-se sempre que tem uma cópia de segurança dos seus dados usando outros meios e que essa cópia de segurança está em dia antes de usar esta aplicação. A aplicação ainda está num estágio inicial de desenvolvimento. Não assumimos qualquer responsabilidade por perda ou corrupção de dados, embora tenhamos feito todos os esforços para fornecer qualidade.</string>
+    <string name="intro_page_two_title">Adicionar um dispositivo</string>
 </resources>
