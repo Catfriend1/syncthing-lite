@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">Kein Ordner verfügbar</string>
@@ -63,8 +64,29 @@ Dies gilt nicht für Verbindungen, die per lokaler Gerätesuche hergestellt wurd
     <string name="file_icon">Dateisymbol</string>
     <string name="scan_qr_code">QR-Code scannen</string>
     <string name="device_id_placeholder">XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX</string>
-    <string name="zxing_msg_default_status">Platzieren Sie einen QR-Code im Suchfeld-Rechteck, um ihn zu scannen.</string>
+    <string name="zxing_msg_default_status">Platzieren Sie einen QR-Code innerhalb des Sucherrechtecks, um ihn zu scannen.</string>
     <string name="skip">Überspringen</string>
     <string name="next">Weiter</string>
     <string name="done">Fertig</string>
+    <string name="open_source_licenses_summary">Verwendete Open-Source-Lizenzen anzeigen</string>
+    <string name="edit_device_dialog_summary">Adressen, durch Kommas getrennt, eingeben, z. B.: dynamic, tcp4://192.168.1.10:22000, relay://192.168.1.11:22067</string>
+    <string name="privacy_title">Datenschutzerklärung</string>
+    <string name="privacy_summary">Datenschutzrichtlinie von Syncthing-Lite öffnen, welche die (eventuelle) Nutzung personenbezogener Daten abdeckt.</string>
+    <string name="open_source_licenses_title">Open-Source-Lizenzen</string>
+    <string name="edit_device_dialog_title">Gerät bearbeiten</string>
+    <string name="edit_device_addresses_hint">Adressen</string>
+    <string name="edit_device_menu_item">Bearbeiten</string>
+    <string name="delete_device_menu_item">Löschen</string>
+    <string name="toast_file_delete_failed">Datei löschen fehlgeschlagen</string>
+    <string name="toast_delete_complete">Datei erfolgreich gelöscht</string>
+    <string name="dialog_deleting_file">Entfernte Datei wird gelöscht</string>
+    <string name="intro_page_three_description">Gerät gefunden. Nun den Besitzer des Geräts bitten, unsere Verbindung von %1$s zu akzeptieren und einen Ordner für uns freizugeben. Danach wird der Vorgang automatisch fortgesetzt. Bitte warten.</string>
+    <string name="intro_page_three_searching_device">Das andere Gerät wird gesucht. Sobald die Suche abgeschlossen ist, wird der Vorgang automatisch fortgesetzt. Bitte warten.</string>
+    <string name="dialog_file_delete">Löschen</string>
+    <string name="add_device">Gerät hinzufügen</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nein</string>
+    <string name="upload_file">Datei hochladen</string>
+    <string name="folder_browser_home">Home</string>
+    <string name="intro_page_one_description">Syncthing ist eine quelloffene Anwendung zur Dateisynchronisierung. Um Dateien anderer Geräte zu durchsuchen, muss deren Besitzer zunächst Ihre eindeutige Geräte-ID zu seiner Geräteliste hinzufügen. Anschließend muss er die Ordner freigeben, die über diese App durchsucht werden sollen. \n \nSicherheitshinweis: Bitte vor der Verwendung dieser App immer sicherstellen, dass Sie Ihre Daten auf andere Weise gesichert haben und dass diese Sicherung auf dem neuesten Stand ist. Die App befindet sich noch in einer frühen Entwicklungsphase. Wir übernehmen keine Haftung für Datenbeschädigungen oder -verluste, obwohl wir uns bemühen, Qualität zu liefern.</string>
 </resources>

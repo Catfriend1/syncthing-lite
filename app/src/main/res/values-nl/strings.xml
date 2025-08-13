@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">Geen map beschikbaar</string>
@@ -61,4 +62,7 @@
     <string name="dialog_folder_info_device_list">Map delen met:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
     <string name="toast_error">Er ging iets mis in Syncthing-Lite. Je kan de details van de instellingen van Syncthing-Lite bekijken.</string>
+    <string name="toast_file_delete_failed">Verwijderen van bestand mislukt</string>
+    <string name="toast_delete_complete">Verwijderen van bestand voltooid</string>
+    <string name="dialog_deleting_file">Extern bestand verwijderen</string>
 </resources>

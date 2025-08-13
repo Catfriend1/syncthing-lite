@@ -23,6 +23,8 @@ import kotlinx.coroutines.channels.*
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.bep.index.IndexHandler
 import net.syncthing.java.core.beans.DeviceAddress
+import net.syncthing.java.core.beans.DeviceAddress.AddressType
+import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.utils.Logger
 import net.syncthing.java.core.utils.LoggerFactory
@@ -39,6 +41,11 @@ object ConnectionActorGenerator {
     private val logger = LoggerFactory.getLogger(ConnectionActorGenerator::class.java)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    private val BASE_SCORE_MAP = mapOf(
+        AddressType.TCP to 0,
+        AddressType.RELAY to 2000
+    )
+
     /**
      * Check if a channel is open for sending.
      * We check both that it's not the closed sentinel and that it's actually open for sending.
@@ -47,42 +54,102 @@ object ConnectionActorGenerator {
         return channel != closed && !channel.isClosedForSend
     }
 
-    private fun deviceAddressesGenerator(deviceAddress: ReceiveChannel<DeviceAddress>) = scope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
+    private fun deviceAddressesGenerator(
+        deviceAddress: ReceiveChannel<DeviceAddress>,
+        configuration: Configuration,
+        deviceId: DeviceId
+    ) = scope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
         val addresses = mutableMapOf<String, DeviceAddress>()
 
-        deviceAddress.consumeEach { address ->
-            val isNew = addresses[address.address] == null
+        // Add addresses from configuration for this specific device
+        val peer = configuration.peers.find { it.deviceId == deviceId }
+        val hasDynamic = peer?.addresses?.contains("dynamic") ?: true
+        
+        peer?.addresses?.forEach { addressString ->
+            // Skip "dynamic" addresses as they represent discovery mechanisms
+            if (addressString != "dynamic") {
+                val addressType = when {
+                    addressString.startsWith("tcp://") -> AddressType.TCP
+                    addressString.startsWith("tcp4://") -> AddressType.TCP
+                    addressString.startsWith("tcp6://") -> AddressType.TCP
+                    addressString.startsWith("relay://") -> AddressType.RELAY
+                    else -> AddressType.RELAY
+                }
+                val score = BASE_SCORE_MAP[addressType] ?: 0
+                
+                val configAddress = DeviceAddress.Builder()
+                    .setDeviceId(deviceId)
+                    .setAddress(addressString)
+                    .setScore(score)
+                    .setProducer(DeviceAddress.AddressProducer.UNKNOWN) // Configuration addresses
+                    .build()
+                
+                addresses[addressString] = configAddress
+            }
+        }
 
-            addresses[address.address] = address
+        // Send initial list if we have configuration addresses
+        if (addresses.isNotEmpty()) {
+            send(addresses.values.sortedBy { it.score })
+        }
 
-            if (isNew) {
-                send(
-                        addresses.values.sortedBy { it.score }
-                )
+        // Only process discovery addresses if "dynamic" is present in configuration
+        if (hasDynamic) {
+            deviceAddress.consumeEach { address ->
+                val isNew = addresses[address.address] == null
+
+                addresses[address.address] = address
+
+                if (isNew) {
+                    send(
+                            addresses.values.sortedBy { it.score }
+                    )
+                }
+            }
+        } else {
+            // Keep channel open for retry attempts even without dynamic discovery
+            // This prevents the channel from closing and breaking the retry mechanism
+            while (true) {
+                delay(30000) // Wait 30 seconds between checks
+                // Resend current addresses to enable retry attempts
+                if (addresses.isNotEmpty()) {
+                    send(addresses.values.sortedBy { it.score })
+                }
             }
         }
     }
 
     private fun <T> waitForFirstValue(source: ReceiveChannel<T>, time: Long) = scope.produce<T> {
         source.consume {
-            val firstValue = source.receive()
-            var lastValue = firstValue
-
             try {
-                withTimeout(time) {
-                    while (true) {
-                        lastValue = source.receive()
+                val firstValue = source.receive()
+                var lastValue = firstValue
+
+                try {
+                    withTimeout(time) {
+                        while (true) {
+                            lastValue = source.receive()
+                        }
                     }
+                } catch (ex: TimeoutCancellationException) {
+                    // this is expected here
+                } catch (ex: ClosedReceiveChannelException) {
+                    // Channel was closed while waiting for more values - use what we have
+                    logger.trace("Source channel closed while waiting for more values, using last received value")
                 }
-            } catch (ex: TimeoutCancellationException) {
-                // this is expected here
-            }
 
-            send(lastValue)
+                send(lastValue)
 
-            // other values without delay
-            for (value in source) {
-                send(value)
+                // other values without delay
+                for (value in source) {
+                    send(value)
+                }
+            } catch (ex: ClosedReceiveChannelException) {
+                // Channel was closed before we could receive the first value
+                logger.trace("Source channel closed before receiving first value - no addresses available")
+                // Send an empty list to maintain proper channel flow instead of sending nothing
+                @Suppress("UNCHECKED_CAST")
+                send(emptyList<Any>() as T)
             }
         }
     }
@@ -91,10 +158,11 @@ object ConnectionActorGenerator {
             deviceAddress: ReceiveChannel<DeviceAddress>,
             configuration: Configuration,
             indexHandler: IndexHandler,
-            requestHandler: (BlockExchangeProtos.Request) -> Deferred<BlockExchangeProtos.Response>
+            requestHandler: (BlockExchangeProtos.Request) -> Deferred<BlockExchangeProtos.Response>,
+            deviceId: DeviceId
     ) = generateConnectionActorsFromDeviceAddressList(
             deviceAddressSource = waitForFirstValue(
-                    source = deviceAddressesGenerator(deviceAddress),
+                    source = deviceAddressesGenerator(deviceAddress, configuration, deviceId),
                     time = 1000
             ),
             configuration = configuration,

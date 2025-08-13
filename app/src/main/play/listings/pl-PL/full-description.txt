@@ -1,0 +1,13 @@
+⚡ Wskrzeszenie aplikacji, która została porzucona lata temu.
+
+✅ Ostrzeżenie dotyczące bezpieczeństwa: przed użyciem tej aplikacji zawsze upewnij się, że wykonano kopię zapasową danych w inny sposób i że ta kopia zapasowa jest aktualna. Aplikacja jest wciąż w fazie wczesnego rozwoju.
+
+⚠️ Nie ponosimy odpowiedzialności za uszkodzenie lub utratę danych, chociaż dokładamy wszelkich starań, aby zapewnić wysoką jakość.
+
+To aplikacja na Androida, którą możesz używać jako klienta, aby uzyskać dostęp do zasobów Syncthing oferowanych przez urządzenia zdalne. Działa podobnie do aplikacji do udostępniania plików uzyskujących dostęp do swojego serwera.
+
+To implementacja zorientowana na klienta, zaprojektowana do pracy online poprzez pobieranie i przesyłanie plików z aktywnego urządzenia w sieci, zamiast synchronizowania lokalnej kopii całego folderu. Z tego powodu postęp synchronizacji na innych urządzeniach będzie wynosił 0%, co jest oczekiwane. Jest to przydatne w przypadku urządzeń, na których nie chcesz pobierać całej zawartości folderu współdzielonego. Na przykład w przypadku urządzeń mobilnych z ograniczoną ilością dostępnej pamięci, na których chcesz uzyskać dostęp do folderu współdzielonego Syncthing. Działa to zupełnie inaczej niż w przypadku aplikacji Syncthing-Fork.
+
+Należy pamiętać, że z przyczyn technicznych ponowne połączenie przez przekaźnik nie będzie możliwe przez kilka minut po zamknięciu aplikacji. Może się to zdarzyć z powodu usunięcia z listy ostatnio używanych aplikacji, wymuszonego zamknięcia lub przerwania połączenia ze zdalnym urządzeniem. To ograniczenie nie dotyczy połączeń nawiązywanych bezpośrednio przez sieć lokalną.
+
+Kod źródłowy: https://github.com/Catfriend1/syncthing-lite

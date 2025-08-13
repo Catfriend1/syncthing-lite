@@ -21,6 +21,7 @@ import net.syncthing.lite.adapters.DeviceAdapterListener
 import net.syncthing.lite.adapters.DevicesAdapter
 import net.syncthing.lite.databinding.FragmentDevicesBinding
 import net.syncthing.lite.databinding.ViewEnterDeviceIdBinding
+import net.syncthing.lite.databinding.DialogEditDeviceBinding
 import net.syncthing.lite.utils.Util
 import java.io.IOException
 
@@ -53,37 +54,18 @@ class DevicesFragment : SyncthingFragment() {
 
         adapter.listener = object : DeviceAdapterListener {
             override fun onDeviceLongClicked(deviceInfo: DeviceInfo): Boolean {
+                // Show context menu with Edit and Delete options
                 AlertDialog.Builder(requireContext())
-                        .setTitle(getString(R.string.remove_device_title, deviceInfo.name))
-                        .setMessage(getString(R.string.remove_device_message, deviceInfo.deviceId.deviceId.substring(0, 7)))
-                        .setPositiveButton(resources.getText(R.string.yes)) { _, _ ->
-                            launch {
-                                libraryHandler.libraryManager.withLibrary { library ->
-                                    library.configuration.update { oldConfig ->
-                                        val updatedFolders = oldConfig.folders.map { folder ->
-                                            folder.copy(
-                                                deviceIdWhitelist = folder.deviceIdWhitelist - deviceInfo.deviceId,
-                                                deviceIdBlacklist = folder.deviceIdBlacklist - deviceInfo.deviceId,
-                                                ignoredDeviceIdList = folder.ignoredDeviceIdList - deviceInfo.deviceId
-                                            )
-                                        }.toSet()
-
-                                        oldConfig.copy(
-                                            peers = oldConfig.peers.filterNot { it.deviceId == deviceInfo.deviceId }.toSet(),
-                                            folders = updatedFolders
-                                        )
-                                    }
-
-                                    library.configuration.persistLater()
-                                    library.syncthingClient.disconnect(deviceInfo.deviceId)
-                                    updateDeviceList()
-                                }
+                        .setTitle(deviceInfo.name)
+                        .setItems(arrayOf(getString(R.string.edit_device_menu_item), getString(R.string.delete_device_menu_item))) { _, which ->
+                            when (which) {
+                                0 -> showEditDeviceDialog(deviceInfo) // Edit
+                                1 -> showDeleteDeviceDialog(deviceInfo) // Delete
                             }
                         }
-                        .setNegativeButton(resources.getText(R.string.no), null)
                         .show()
 
-                return false
+                return true
             }
         }
 
@@ -138,6 +120,107 @@ class DevicesFragment : SyncthingFragment() {
         // Use different listener to keep dialog open after button click.
         // https://stackoverflow.com/a/15619098
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)!!.setOnClickListener { handleAddClick() }
+    }
+
+    private fun showDeleteDeviceDialog(deviceInfo: DeviceInfo) {
+        AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.remove_device_title, deviceInfo.name))
+                .setMessage(getString(R.string.remove_device_message, deviceInfo.deviceId.deviceId.substring(0, 7)))
+                .setPositiveButton(resources.getText(R.string.yes)) { _, _ ->
+                    launch {
+                        libraryHandler.libraryManager.withLibrary { library ->
+                            library.configuration.update { oldConfig ->
+                                val updatedFolders = oldConfig.folders.map { folder ->
+                                    folder.copy(
+                                        deviceIdWhitelist = folder.deviceIdWhitelist - deviceInfo.deviceId,
+                                        deviceIdBlacklist = folder.deviceIdBlacklist - deviceInfo.deviceId,
+                                        ignoredDeviceIdList = folder.ignoredDeviceIdList - deviceInfo.deviceId
+                                    )
+                                }.toSet()
+
+                                oldConfig.copy(
+                                    peers = oldConfig.peers.filterNot { it.deviceId == deviceInfo.deviceId }.toSet(),
+                                    folders = updatedFolders
+                                )
+                            }
+
+                            library.configuration.persistLater()
+                            library.syncthingClient.disconnect(deviceInfo.deviceId)
+                            updateDeviceList()
+                        }
+                    }
+                }
+                .setNegativeButton(resources.getText(R.string.no), null)
+                .show()
+    }
+
+    private fun showEditDeviceDialog(deviceInfo: DeviceInfo) {
+        val binding = DialogEditDeviceBinding.inflate(LayoutInflater.from(context), null, false)
+        
+        // Display the device ID
+        binding.deviceIdDisplay.text = deviceInfo.deviceId.deviceId
+        
+        // Display current addresses as comma-separated string
+        val addressesText = if (deviceInfo.addresses.isEmpty()) {
+            ""
+        } else {
+            deviceInfo.addresses.joinToString(", ")
+        }
+        binding.addressesInput.setText(addressesText)
+
+        val dialog = AlertDialog.Builder(requireContext())
+                .setTitle(R.string.edit_device_dialog_title)
+                .setView(binding.root)
+                .setPositiveButton(android.R.string.ok, null)
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+
+        fun handleEditSave() {
+            try {
+                val addressesInputText = binding.addressesInput.text.toString().trim()
+                
+                // Parse addresses from comma-separated input
+                val newAddresses = if (addressesInputText.isEmpty()) {
+                    emptyList()
+                } else {
+                    addressesInputText.split(",")
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() }
+                }
+
+                // Update device with new addresses
+                launch {
+                    libraryHandler.libraryManager.withLibrary { library ->
+                        library.configuration.update { oldConfig ->
+                            val updatedPeers = oldConfig.peers.map { peer ->
+                                if (peer.deviceId == deviceInfo.deviceId) {
+                                    peer.copy(addresses = newAddresses.ifEmpty { listOf("dynamic") })
+                                } else {
+                                    peer
+                                }
+                            }.toSet()
+
+                            oldConfig.copy(peers = updatedPeers)
+                        }
+
+                        library.configuration.persistLater()
+                        
+                        // Force recreation of connection actor with updated configuration
+                        // First disconnect to clean up and remove old connection actor from map
+                        library.syncthingClient.disconnect(deviceInfo.deviceId)
+                        // Then trigger creation of new connection actor with updated config
+                        library.syncthingClient.connectToNewlyAddedDevices()
+                    }
+                }
+                
+                dialog.dismiss()
+            } catch (e: Exception) {
+                binding.addressesHolder.error = "Error updating device addresses"
+            }
+        }
+
+        // Use different listener to keep dialog open after button click if there's an error
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)!!.setOnClickListener { handleEditSave() }
     }
 
     private fun updateDeviceList() {

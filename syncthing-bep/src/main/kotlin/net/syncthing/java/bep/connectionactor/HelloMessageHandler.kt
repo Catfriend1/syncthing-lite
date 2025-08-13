@@ -97,7 +97,7 @@ suspend fun processHelloMessage(
         oldConfig.copy(
                 peers = oldConfig.peers.map { peer ->
                     if (peer.deviceId == deviceId) {
-                        DeviceInfo(deviceId, hello.deviceName)
+                        peer.copy(name = hello.deviceName)
                     } else {
                         peer
                     }
