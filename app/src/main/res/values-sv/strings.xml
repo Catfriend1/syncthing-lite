@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">Ingen mapp tillgänglig</string>
@@ -61,4 +62,34 @@
     <string name="dialog_folder_info_device_list">Dela mapp med:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
     <string name="toast_error">Något gick fel i Syncthing-Lite. Du kan visa detaljerna från inställningarna för Syncthing-Lite.</string>
+    <string name="toast_file_delete_failed">Filborttagning misslyckades</string>
+    <string name="toast_delete_complete">Filborttagning slutförd</string>
+    <string name="dialog_deleting_file">Tar bort fjärrfil</string>
+    <string name="intro_page_one_description">Syncthing är ett program för filsynkronisering med öppen källkod. För att kunna bläddra bland filer på andra enheter måste deras ägare först lägga till ditt unika enhets-ID i sin enhetslista. Därefter måste de dela mappar som ska vara bläddrabara från den här appen.\n\nSäkerhetsvarning: Se alltid till att du har säkerhetskopierat dina data på annat sätt och att säkerhetskopian är uppdaterad innan du använder den här appen. Appen är fortfarande i tidig utveckling. Vi tar inget ansvar för datakorruption eller förlust, även om vi gör allt för att leverera kvalitet.</string>
+    <string name="intro_page_three_description">Enhet hittad. Be nu enhetens ägare att acceptera vår anslutning från %1$s och dela en mapp med oss. Vi fortsätter automatiskt efter att det har hänt. Vänta.</string>
+    <string name="intro_page_three_searching_device">Försöker hitta den andra enheten. Vi fortsätter automatiskt när upptäckten är klar. Vänta.</string>
+    <string name="dialog_file_delete">Ta bort</string>
+    <string name="folder_browser_home">Hem</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nej</string>
+    <string name="upload_file">Ladda upp fil</string>
+    <string name="add_device">Lägg till enhet</string>
+    <string name="qr_code_description">QR-kod</string>
+    <string name="device_icon">Enhetsikon</string>
+    <string name="file_icon">Filikon</string>
+    <string name="scan_qr_code">Skanna QR-koden</string>
+    <string name="device_id_placeholder">XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX</string>
+    <string name="zxing_msg_default_status">Placera en QR-kod inuti sökarens rektangel för att skanna den.</string>
+    <string name="skip">Hoppa över</string>
+    <string name="next">Nästa</string>
+    <string name="done">Klart</string>
+    <string name="delete_device_menu_item">Ta bort</string>
+    <string name="edit_device_addresses_hint">Adresser</string>
+    <string name="edit_device_menu_item">Redigera</string>
+    <string name="edit_device_dialog_title">Redigera enhet</string>
+    <string name="edit_device_dialog_summary">Ange adresser separerade med kommatecken, t.ex.: dynamic, tcp4://192.168.1.10:22000, relay://192.168.1.11:22067</string>
+    <string name="privacy_title">Integritetspolicy</string>
+    <string name="privacy_summary">Öppna Syncthing-Lites integritetspolicy, som täcker användning (om någon) av personuppgifter.</string>
+    <string name="open_source_licenses_title">Öppen källkodslicenser</string>
+    <string name="open_source_licenses_summary">Visa de använda licenserna för öppen källkod</string>
 </resources>
