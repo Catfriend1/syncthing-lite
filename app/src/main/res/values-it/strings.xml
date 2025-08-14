@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">Nessuna cartella disponibile</string>
@@ -44,12 +45,7 @@
     <string name="copy_to_clipboard">Copia negli appunti</string>
     <string name="copied_to_clipboard">Copiato negli appunti</string>
     <string name="device_id_dialog_title">Inserisci ID Dispositivo</string>
-    <string name="dialog_warning_reconnect_problem">
-        A causa del comportamento di quest\'App e del comportamento del Server Syncthing,
-        non è possibile riconnettersi per alcuni minuti se l\'app è stata chiusa (a causa della rimozione dall\'elenco app recenti)
-        o la connessione è stata interrotta.
-        Questo non si applica alle connessioni di individuazione locale
-    </string>
+    <string name="dialog_warning_reconnect_problem">A causa del comportamento di quest\'App e del comportamento del Server Syncthing, non è possibile riconnettersi per alcuni minuti se l\'app è stata chiusa (a causa della rimozione dall\'elenco app recenti) o la connessione è stata interrotta. Questo non si applica alle connessioni di individuazione locale.</string>
     <string name="dialog_file_save_as">Salva come</string>
     <string name="device_status_connecting">Connessione a %s</string>
     <string name="device_status_connected">Connesso a %s</string>
@@ -61,4 +57,23 @@
     <string name="dialog_folder_info_device_list">Condividi la cartella con:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
     <string name="toast_error">Qualcosa non ha funzionato in Syncthing-Lite. È possibile visualizzare i dettagli dalle impostazioni di Syncthing-Lite.</string>
+    <string name="toast_file_delete_failed">Cancellazione file non riuscita</string>
+    <string name="toast_delete_complete">File cancellato</string>
+    <string name="dialog_deleting_file">Cancellazione file remoto</string>
+    <string name="intro_page_one_description">Syncthing è un\'applicazione open-source per la sincronizzazione dei file. Per sfogliare i file di altri dispositivi, il loro proprietario deve prima aggiungere il tuo ID dispositivo univoco al proprio elenco dispositivi. Successivamente deve condividere le cartelle che dovrebbero essere sfogliabili da questa app.\n\nAvvertenza di sicurezza: assicurati sempre di aver fatto il backup dei tuoi dati con altri metodi e che questo backup sia aggiornato prima di utilizzare questa app. L\'app è ancora in fase di sviluppo iniziale. Non ci assumiamo alcuna responsabilità per la corruzione o la perdita di dati, anche se facciamo ogni sforzo per garantire la qualità della app.</string>
+    <string name="intro_page_three_description">Dispositivo trovato. Ora chiedi al proprietario del dispositivo di accettare la nostra connessione da %1$s e di condividere una cartella con noi. Continueremo automaticamente dopo che questo sarà avvenuto. Attendi per favore.</string>
+    <string name="intro_page_three_searching_device">Ricerca dell\'altro dispositivo in corso. La procedura continuerà automaticamente una volta completata la ricerca. Attendi per favore.</string>
+    <string name="dialog_file_delete">Elimina</string>
+    <string name="add_device">Aggiungi dispositivo</string>
+    <string name="qr_code_description">QR Code</string>
+    <string name="skip">Salta</string>
+    <string name="next">Successivo</string>
+    <string name="done">Fatto</string>
+    <string name="edit_device_dialog_summary">Inserisci gli indirizzi separati da virgola, ad esempio dynamic, tcp4://192.168.1.10:22000, relay://192.168.1.11:22067</string>
+    <string name="open_source_licenses_title">Licenze Open Source</string>
+    <string name="open_source_licenses_summary">Visualizza le licenze open source utilizzate</string>
+    <string name="folder_browser_home">Home</string>
+    <string name="yes">Sì</string>
+    <string name="no">No</string>
+    <string name="upload_file">Carica file</string>
 </resources>
