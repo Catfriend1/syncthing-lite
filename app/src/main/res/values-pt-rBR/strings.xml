@@ -1,2 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    </resources>
+    <string name="intro_page_three_searching_device">Tentando encontrar o outro dispositivo. Continuaremos automaticamente assim que a descoberta for completada. Por favor aguarde.</string>
+    <string name="settings">Configurações</string>
+    <string name="settings_app_version_title">Versão do aplicativo</string>
+    <string name="settings_local_device_name">Nome do dispositivo local</string>
+    <string name="settings_local_device_summary">Nome que outros dispositivos verão para este dispositivo</string>
+    <string name="settings_force_stop">Forçar parada deste aplicativo</string>
+    <string name="settings_last_error_title">Último erro</string>
+    <string name="settings_last_error_summary">Ver detalhes do último erro</string>
+    <string name="settings_report_bug_title">Reportar um bug</string>
+    <string name="copy_to_clipboard">Copiar para área de transferência</string>
+    <string name="copied_to_clipboard">Copiado para a área de transferência</string>
+    <string name="device_id_dialog_title">Entre a ID do dispositivo</string>
+    <string name="dialog_warning_reconnect_problem">Devido ao comportamento deste aplicativo e o comportamento do Servidor Syncthing, você não pode reconectar por alguns minutos se o aplicativo foi finalizado (por ter sido removido da lista de aplicativos recentes) ou a conexão foi interrompida. Isto não se aplica a conexões de descoberta locais.</string>
+    <string name="dialog_file_save_as">Salvar como</string>
+    <string name="dialog_file_delete">Apagar</string>
+    <string name="device_status_connecting">Conectando a %s</string>
+    <string name="device_status_connected">Conectado a %s</string>
+    <string name="device_status_no_address">Nenhum endereço conhecido para o dispositivo</string>
+    <string name="dialog_enable_folder_sync_for_new_device_title">Abilitar sincronização de pastas para novo dispositivo</string>
+    <string name="dialog_enable_folder_sync_for_new_device_text">Você deseja sincronizar %1$s com %2$s (%3$s)?</string>
+    <string name="dialog_enable_folder_sync_for_new_device_positive">Sincronizar</string>
+    <string name="dialog_enable_folder_sync_for_new_device_negative">Não sincronizar</string>
+    <string name="dialog_folder_info_device_list">Compartilhar pasta com:</string>
+    <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
+    <string name="toast_error">Algo deu errado com Syncthing-Lite. Você pode ver os detalhes nas configurações do Syncthing-Lite.</string>
+    <string name="yes">Sim</string>
+    <string name="no">Não</string>
+    <string name="add_device">Adicionar dispositivo</string>
+    <string name="qr_code_description">Código QR</string>
+    <string name="device_icon">Ícone do dispositivo</string>
+    <string name="file_icon">Ícone do arquivo</string>
+    <string name="scan_qr_code">Escanear código QR</string>
+    <string name="device_id_placeholder">XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX</string>
+    <string name="zxing_msg_default_status">Coloque um código QR dentro do retângulo para escaneá-lo.</string>
+    <string name="skip">Pular</string>
+    <string name="next">Próximo</string>
+    <string name="done">Pronto</string>
+    <string name="delete_device_menu_item">Apagar</string>
+    <string name="edit_device_addresses_hint">Endereços</string>
+    <string name="edit_device_menu_item">Editar</string>
+    <string name="edit_device_dialog_title">Editar Dispositivo</string>
+    <string name="privacy_title">Política de Privacidade</string>
+    <string name="privacy_summary">Abrir política de provacidade do Syncthing-Lite, que cobre o uso (se houver) de dados pessoais.</string>
+    <string name="open_source_licenses_title">Licenças de Código Aberto</string>
+    <string name="open_source_licenses_summary">Mostrar as licenças de código aberto usadas</string>
+    <string name="folder_browser_home">Início</string>
+    <string name="edit_device_dialog_summary">Digite endereços separados por vírgula, como: dynamic, tcp4://192.168.1.10:22000, relay://192.168.1.11:22067</string>
+</resources>
