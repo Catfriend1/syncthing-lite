@@ -85,4 +85,6 @@
     <string name="intro_page_three_title">Compartilhar suas pastas</string>
     <string name="intro_page_two_description">Inserir um ID do Syncthing do dispositivo, ou escanear um ID de dispositivo de um código QR</string>
     <string name="intro_page_three_description">Dispositivo não encontrado. Peça ao dono do dispositivo para permitir nossa conexão de %1$s e compartilhar um pasta conosco. Continuaremos automaticamente depois disso. Por favor aguarde.</string>
+    <string name="settings_report_bug_summary">Abrir os problemas deste aplicativo no GitHub</string>
+    <string name="upload_file">Enviar arquivo</string>
 </resources>
