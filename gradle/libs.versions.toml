@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.2.0"
+kotlin = "2.2.10"
 kotlinx-coroutines = "1.10.2"
 android-gradle-plugin = "8.11.1"
 protobuf-lite = "4.31.1"
