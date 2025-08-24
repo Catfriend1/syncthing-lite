@@ -1,0 +1,13 @@
+⚡ Revival of the app which was abandoned years ago.
+
+✅ Safety warning: Please always ensure that you have backed up your data by other means and that this backup is up to date before using this app. The app is still in early development.
+
+⚠️ We assume no liability for data corruption or loss, although we make every effort to deliver quality.
+
+This is an Android app which you can use as a client to access Syncthing shares offered by remote devices. It works similar to file sharing apps  accessing their server. 
+
+This is a client-oriented implementation, designed to work online by downloading and uploading files from an active device on the network instead of synchronizing a local copy of the entire folder. Due to that, you will see a sync progress of 0% at other devices which is expected. This is useful for devices where you don't want to download the entire contents of a shared folder. For example, mobile devices with limited storage available where you like to access a syncthing shared folder. This is quite different from the way the Syncthing-Fork app works.
+
+Please note that for technical reasons you can't reconnect via relay connection for some minutes after the app was closed. This may happen due to removing from the recent apps list, force close or an interrupted connection to remote device. This constraint does not apply for connections directly established through the local network.
+
+Source code: https://github.com/Catfriend1/syncthing-lite
