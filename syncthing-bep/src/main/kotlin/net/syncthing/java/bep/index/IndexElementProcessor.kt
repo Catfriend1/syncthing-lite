@@ -104,7 +104,38 @@ object IndexElementProcessor {
     private fun shouldUpdateRecord(
             oldRecord: FileInfo?,
             newRecord: FileInfo
-    ) = oldRecord == null || newRecord.lastModified >= oldRecord.lastModified
+    ): Boolean {
+        // Always accept if no old record exists
+        if (oldRecord == null) {
+            return true
+        }
+        
+        // Special case: if we have a deleted record locally but receive a non-deleted record remotely,
+        // this represents a file restoration which should always be accepted regardless of timestamps
+        if (oldRecord.isDeleted && !newRecord.isDeleted) {
+            logger.debug("File restoration detected: {} (local deleted -> remote restored)", newRecord.path)
+            logger.debug("Old record (deleted): lastModified={}, version={}", oldRecord.lastModified, oldRecord.versionList)
+            logger.debug("New record (restored): lastModified={}, version={}", newRecord.lastModified, newRecord.versionList)
+            return true
+        }
+        
+        // Special case: if we have a non-deleted record locally but receive a deleted record remotely,
+        // this represents a remote deletion which should be accepted if timestamps allow
+        if (!oldRecord.isDeleted && newRecord.isDeleted) {
+            logger.debug("Remote deletion detected: {} (local exists -> remote deleted)", newRecord.path)
+            logger.debug("Old record (exists): lastModified={}, version={}", oldRecord.lastModified, oldRecord.versionList)
+            logger.debug("New record (deleted): lastModified={}, version={}", newRecord.lastModified, newRecord.versionList)
+            val shouldAccept = newRecord.lastModified >= oldRecord.lastModified
+            logger.debug("Remote deletion accepted: {}", shouldAccept)
+            return shouldAccept
+        }
+        
+        // For same deletion state, use timestamp and version comparison
+        val shouldAccept = newRecord.lastModified >= oldRecord.lastModified
+        logger.trace("Standard record comparison for {}: {} (timestamps: {} >= {})", 
+                   newRecord.path, shouldAccept, newRecord.lastModified, oldRecord.lastModified)
+        return shouldAccept
+    }
 
     private fun addRecord(
             transaction: IndexTransaction,
@@ -114,15 +145,21 @@ object IndexElementProcessor {
             folderStatsUpdateCollector: FolderStatsUpdateCollector
     ): FileInfo? {
         return if (shouldUpdateRecord(oldRecord, newRecord)) {
-            logger.trace("Local record contains newer update, thus discarding the old record ({})", newRecord)
-            null
-        } else {
-            logger.trace("Loaded new record: {}.", newRecord)
+            logger.trace("Applying record update for: {}. Old: {}, New: {}", 
+                       newRecord.path, 
+                       oldRecord?.let { "deleted=${it.isDeleted}, lastModified=${it.lastModified}" } ?: "null",
+                       "deleted=${newRecord.isDeleted}, lastModified=${newRecord.lastModified}")
 
             transaction.updateFileInfo(newRecord, fileBlocks)
             updateFolderStatsCollector(oldRecord, newRecord, folderStatsUpdateCollector)
 
             newRecord
+        } else {
+            logger.trace("Discarding record update for: {}. Local record is newer - Old: {}, New: {}", 
+                       newRecord.path,
+                       oldRecord?.let { "deleted=${it.isDeleted}, lastModified=${it.lastModified}" } ?: "null",
+                       "deleted=${newRecord.isDeleted}, lastModified=${newRecord.lastModified}")
+            null
         }
     }
 
