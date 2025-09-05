@@ -1,2 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Syncthing輕量版</string>
+    <string name="folder_list_empty_message">無可用資料夾</string>
+    <string name="clear_local_cache_index_label">清除本機快取／索引</string>
+    <string name="devices_list_view_empty_message">無可用裝置</string>
+    <string name="invalid_device_id">錯誤：裝置識別碼無效</string>
+    <string name="dialog_downloading_file">正在下載檔案：%1$s</string>
+    <string name="toast_file_download_failed">下載檔案失敗</string>
+    <string name="toast_open_file_failed">未發現相容的軟體</string>
+    <string name="toast_file_upload_failed">檔案上傳失敗</string>
+    <string name="toast_file_delete_failed">檔案刪除失敗</string>
+    <string name="toast_upload_complete">檔案上傳完成</string>
+    <string name="toast_delete_complete">檔案刪除完成</string>
+    <string name="dialog_uploading_file">正在上傳檔案：%1$s</string>
+    <string name="dialog_deleting_file">正在刪除遠端檔案</string>
+    <string name="clear_cache_and_index_title">是否清除快取與索引？</string>
+    <string name="clear_cache_and_index_body">是否清除所有本機快取與索引資料？</string>
+    <string name="loading_config_starting_syncthing_client">正在載入配置，正在啟動Syncthing用戶端...…</string>
+    <string name="last_modified_time">上次變更：%1$s</string>
+    <string name="remove_device_title">是否要移除裝置 %1$s？</string>
+    <string name="remove_device_message">是否要將 %1$s 從已知裝置清單移除？</string>
+    <string name="device_import_success">成功導入裝置 %1$s</string>
+    <string name="device_already_known">裝置 %1$s 已存在</string>
+    <string name="folders_label">資料夾</string>
+    <string name="devices_label">裝置</string>
+    <string name="folder_label_format">%1$s(%2$s)</string>
+    <string name="file_info">%1$s，上次變更：%2$s</string>
+    <string name="show_device_id">顯示裝置識別碼</string>
+    <string name="device_id">裝置識別碼</string>
+    <string name="device_id_copied">裝置識別碼已複製至剪貼簿</string>
+    <string name="share_device_id_chooser">分享裝置識別碼給</string>
+    <string name="other_syncthing_instance_title">另一個Syncthing程序正在運作中</string>
+    <string name="other_syncthing_instance_message">地方探索將不會運作。停止另一個Syncthjng程序以啟動地方探索。</string>
+    <string name="intro_page_one_title">歡迎來到Syncthing輕量版</string>
+    <string name="intro_page_one_description">Syncthing是一個開源的檔案同步程式。若要瀏覽其他裝置的檔案，該裝置的所有者必須先將您的裝置識別碼輸入至該裝置的裝置列表，並將資料夾與您共用。\n\n安全警告：請隨時確保您已經以其他方式備份資料以及在使用此軟體前該備份已更新至最新版本。此軟體仍處於早期開發階段。儘管我們盡每一分力臻求品質，我們無法對資料毀損或遺失負責。</string>
+    <string name="intro_page_two_title">新增裝置</string>
+    <string name="intro_page_three_title">分享您的資料夾</string>
+    <string name="intro_page_two_description">手動輸入或掃描QR code以讀取裝置識別碼</string>
+    <string name="intro_page_three_description">已找到裝置。現在請要求該裝置所有者接受來自您的裝置 %1$s 的連線並將資料夾與您共用。請稍後，我們會自動在該動作完成後繼續。</string>
+    <string name="intro_page_three_searching_device">正在嘗試找到其他裝置。請稍後，我們會自動在探索完成後繼續。</string>
+    <string name="settings">設定</string>
+    <string name="settings_app_version_title">軟體版本</string>
+    <string name="settings_local_device_name">本機裝置名稱</string>
 </resources>
