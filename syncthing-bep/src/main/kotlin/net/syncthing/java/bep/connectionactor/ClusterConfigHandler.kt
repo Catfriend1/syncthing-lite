@@ -56,14 +56,22 @@ object ClusterConfigHandler {
                                 BlockExchangeProtos.Device.newBuilder()
                                         .setId(ByteString.copyFrom(deviceId.toHashData()))
                                         .apply {
-                                            indexSequenceInfo?.let {
+                                            if (indexSequenceInfo != null) {
                                                 indexId = indexSequenceInfo.indexId
                                                 maxSequence = indexSequenceInfo.localSequence
 
-                                                logger.info("Send delta index information: Device = {}, Index = {}, Max (Local) Sequence = {}.",
+                                                logger.info("Send delta index information: Device = {}, Folder = {}, Index = {}, Max (Local) Sequence = {}.",
                                                         indexSequenceInfo.deviceId,
+                                                        folder.folderId,
                                                         indexSequenceInfo.indexId,
                                                         indexSequenceInfo.localSequence)
+                                            } else {
+                                                indexId = 0L
+                                                maxSequence = 0L
+
+                                                logger.info("No index information found for Device = {} and Folder = {}. Requesting full index (indexId=0, maxSequence=0).",
+                                                        deviceId,
+                                                        folder.folderId)
                                             }
                                         }
                         )
