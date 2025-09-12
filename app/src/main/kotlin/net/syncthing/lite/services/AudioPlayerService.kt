@@ -13,18 +13,27 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import net.syncthing.lite.R
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileSpec
+import java.io.File
 import java.io.IOException
 
 class AudioPlayerService : Service() {
 
     companion object {
         private const val EXTRA_FILE_SPEC = "file_spec"
+        private const val EXTRA_FILE_PATH = "file_path"
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "audio_player_channel"
         
         fun newIntent(context: Context, fileSpec: DownloadFileSpec): Intent {
             return Intent(context, AudioPlayerService::class.java).apply {
                 putExtra(EXTRA_FILE_SPEC, fileSpec)
+            }
+        }
+        
+        fun newIntent(context: Context, fileSpec: DownloadFileSpec, file: File): Intent {
+            return Intent(context, AudioPlayerService::class.java).apply {
+                putExtra(EXTRA_FILE_SPEC, fileSpec)
+                putExtra(EXTRA_FILE_PATH, file.absolutePath)
             }
         }
     }
@@ -56,12 +65,40 @@ class AudioPlayerService : Service() {
                 it.getSerializableExtra(EXTRA_FILE_SPEC) as? DownloadFileSpec
             }
             
+            val filePath = it.getStringExtra(EXTRA_FILE_PATH)
+            
             spec?.let { fileSpec ->
                 this.fileSpec = fileSpec
-                initializeMediaPlayer(fileSpec)
+                if (filePath != null) {
+                    initializeMediaPlayerWithFile(File(filePath))
+                } else {
+                    initializeMediaPlayer(fileSpec)
+                }
             }
         }
         return START_NOT_STICKY
+    }
+
+    private fun initializeMediaPlayerWithFile(file: File) {
+        try {
+            mediaPlayer?.release()
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(file.absolutePath)
+                setOnPreparedListener {
+                    isPlayerReady = true
+                }
+                setOnCompletionListener {
+                    stop()
+                }
+                setOnErrorListener { _, _, _ ->
+                    stop()
+                    true
+                }
+                prepareAsync() // Prepare the media player asynchronously
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
     private fun initializeMediaPlayer(fileSpec: DownloadFileSpec) {

@@ -11,15 +11,24 @@ import androidx.appcompat.app.AppCompatActivity
 import net.syncthing.lite.databinding.ActivityAudioPlayerBinding
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileSpec
 import net.syncthing.lite.services.AudioPlayerService
+import java.io.File
 
 class AudioPlayerActivity : AppCompatActivity() {
     
     companion object {
         private const val EXTRA_FILE_SPEC = "file_spec"
+        private const val EXTRA_FILE_PATH = "file_path"
         
         fun newIntent(context: Context, fileSpec: DownloadFileSpec): Intent {
             return Intent(context, AudioPlayerActivity::class.java).apply {
                 putExtra(EXTRA_FILE_SPEC, fileSpec)
+            }
+        }
+        
+        fun newIntent(context: Context, fileSpec: DownloadFileSpec, file: File): Intent {
+            return Intent(context, AudioPlayerActivity::class.java).apply {
+                putExtra(EXTRA_FILE_SPEC, fileSpec)
+                putExtra(EXTRA_FILE_PATH, file.absolutePath)
             }
         }
     }
@@ -54,6 +63,8 @@ class AudioPlayerActivity : AppCompatActivity() {
             intent.getSerializableExtra(EXTRA_FILE_SPEC) as DownloadFileSpec
         }
         
+        val filePath = intent.getStringExtra(EXTRA_FILE_PATH)
+        
         binding.fileNameText.text = fileSpec.fileName
         
         binding.playButton.setOnClickListener {
@@ -72,7 +83,11 @@ class AudioPlayerActivity : AppCompatActivity() {
         }
         
         // Start and bind to the audio service
-        val serviceIntent = AudioPlayerService.newIntent(this, fileSpec)
+        val serviceIntent = if (filePath != null) {
+            AudioPlayerService.newIntent(this, fileSpec, File(filePath))
+        } else {
+            AudioPlayerService.newIntent(this, fileSpec)
+        }
         startService(serviceIntent)
         bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
     }
