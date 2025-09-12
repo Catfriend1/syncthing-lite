@@ -52,6 +52,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.MainActivity" />
         </activity>
+        <activity android:name=".activities.AudioPlayerActivity"
+            android:label="@string/audio_player_title"
+            android:exported="false" />
+        <service android:name=".services.AudioPlayerService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
         <provider
             android:name=".library.CacheFileProvider"
             android:authorities="${applicationId}.fileprovider"
