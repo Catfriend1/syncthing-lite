@@ -25,8 +25,10 @@ import net.syncthing.lite.databinding.ActivityFolderBrowserBinding
 import net.syncthing.lite.dialogs.EnableFolderSyncForNewDeviceDialog
 import net.syncthing.lite.dialogs.FileMenuDialogFragment
 import net.syncthing.lite.dialogs.FileUploadDialog
+import net.syncthing.lite.dialogs.Mp3OptionsDialogFragment
 import net.syncthing.lite.dialogs.ReconnectIssueDialogFragment
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileDialogFragment
+import net.syncthing.lite.utils.MimeType
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.OnBackPressedCallback
@@ -100,7 +102,12 @@ class FolderBrowserActivity : SyncthingActivity() {
                 if (fileInfo.isDirectory()) {
                     path.value = fileInfo.path
                 } else {
-                    DownloadFileDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
+                    // Check if it's an MP3 file and show the appropriate dialog
+                    if (MimeType.isMp3File(fileInfo.fileName)) {
+                        Mp3OptionsDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
+                    } else {
+                        DownloadFileDialogFragment.newInstance(fileInfo).show(supportFragmentManager)
+                    }
                 }
             }
 

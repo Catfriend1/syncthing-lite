@@ -60,6 +60,8 @@
     </string>
     <string name="dialog_file_save_as">Save as</string>
     <string name="dialog_file_delete">Delete</string>
+    <string name="dialog_mp3_play_in_app">Play in app</string>
+    <string name="dialog_mp3_open_with_app">Open with associated application</string>
     <string name="device_status_connecting">Connecting to %s</string>
     <string name="device_status_connected">Connected to %s</string>
     <string name="device_status_no_address">No known address for the device</string>

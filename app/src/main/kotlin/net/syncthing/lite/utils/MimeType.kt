@@ -16,4 +16,9 @@ object MimeType {
     fun getFromFilename(path: String) = getFromExtension(
             PathUtils.getFileExtensionFromFilename(path).lowercase(Locale.getDefault())
     )
+    
+    fun isMp3File(filename: String): Boolean {
+        val extension = PathUtils.getFileExtensionFromFilename(filename).lowercase(Locale.getDefault())
+        return extension == "mp3"
+    }
 }
