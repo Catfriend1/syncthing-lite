@@ -3,6 +3,7 @@ package net.syncthing.lite.services
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -10,8 +11,12 @@ import android.media.MediaPlayer
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
+import androidx.media.session.MediaButtonReceiver
 import net.syncthing.lite.R
+import net.syncthing.lite.activities.AudioPlayerActivity
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileSpec
 import java.io.File
 import java.io.IOException
@@ -23,6 +28,13 @@ class AudioPlayerService : Service() {
         private const val EXTRA_FILE_PATH = "file_path"
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "audio_player_channel"
+        
+        // Media session actions
+        const val ACTION_PLAY = "action_play"
+        const val ACTION_PAUSE = "action_pause"
+        const val ACTION_STOP = "action_stop"
+        const val ACTION_SEEK = "action_seek"
+        const val EXTRA_SEEK_POSITION = "seek_position"
         
         fun newIntent(context: Context, fileSpec: DownloadFileSpec): Intent {
             return Intent(context, AudioPlayerService::class.java).apply {
@@ -43,6 +55,7 @@ class AudioPlayerService : Service() {
     private var fileSpec: DownloadFileSpec? = null
     private var isPlayerReady = false
     private var onPlayerReadyListener: (() -> Unit)? = null
+    private var mediaSession: MediaSessionCompat? = null
 
     inner class AudioPlayerBinder : Binder() {
         fun getService(): AudioPlayerService = this@AudioPlayerService
@@ -51,6 +64,7 @@ class AudioPlayerService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        setupMediaSession()
     }
 
     override fun onBind(intent: Intent?): IBinder {
@@ -58,6 +72,29 @@ class AudioPlayerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Handle media button actions first
+        intent?.action?.let { action ->
+            when (action) {
+                ACTION_PLAY -> play()
+                ACTION_PAUSE -> pause()
+                ACTION_STOP -> stop()
+                ACTION_SEEK -> {
+                    val position = intent.getIntExtra(EXTRA_SEEK_POSITION, 0)
+                    seekTo(position)
+                }
+                else -> {
+                    // Handle regular start command
+                    handleStartCommand(intent, flags, startId)
+                }
+            }
+            return START_NOT_STICKY
+        }
+        
+        // Regular start command handling
+        return handleStartCommand(intent, flags, startId)
+    }
+    
+    private fun handleStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
             val spec = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 it.getSerializableExtra(EXTRA_FILE_SPEC, DownloadFileSpec::class.java)
@@ -131,6 +168,7 @@ class AudioPlayerService : Service() {
         mediaPlayer?.let { player ->
             if (isPlayerReady && !player.isPlaying) {
                 player.start()
+                updatePlaybackState()
                 startForeground(NOTIFICATION_ID, createNotification())
             }
         }
@@ -140,7 +178,11 @@ class AudioPlayerService : Service() {
         mediaPlayer?.let { player ->
             if (player.isPlaying) {
                 player.pause()
+                updatePlaybackState()
                 stopForeground(false)
+                // Update notification to show play button
+                val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.notify(NOTIFICATION_ID, createNotification())
             }
         }
     }
@@ -153,6 +195,7 @@ class AudioPlayerService : Service() {
             player.reset()
             isPlayerReady = false
         }
+        updatePlaybackState()
         stopForeground(true)
     }
 
@@ -171,6 +214,51 @@ class AudioPlayerService : Service() {
             listener.invoke()
         }
     }
+    
+    fun getCurrentPosition(): Int {
+        return mediaPlayer?.currentPosition ?: 0
+    }
+    
+    fun getDuration(): Int {
+        return if (isPlayerReady) {
+            mediaPlayer?.duration ?: 0
+        } else {
+            0
+        }
+    }
+    
+    fun seekTo(position: Int) {
+        mediaPlayer?.let { player ->
+            if (isPlayerReady) {
+                player.seekTo(position)
+                updatePlaybackState()
+            }
+        }
+    }
+    
+    private fun updatePlaybackState() {
+        mediaSession?.let { session ->
+            val state = if (isPlaying()) {
+                PlaybackStateCompat.STATE_PLAYING
+            } else if (isPlayerReady) {
+                PlaybackStateCompat.STATE_PAUSED
+            } else {
+                PlaybackStateCompat.STATE_NONE
+            }
+            
+            val playbackState = PlaybackStateCompat.Builder()
+                .setState(state, getCurrentPosition().toLong(), 1.0f)
+                .setActions(
+                    PlaybackStateCompat.ACTION_PLAY or
+                    PlaybackStateCompat.ACTION_PAUSE or
+                    PlaybackStateCompat.ACTION_STOP or
+                    PlaybackStateCompat.ACTION_SEEK_TO
+                )
+                .build()
+                
+            session.setPlaybackState(playbackState)
+        }
+    }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -183,17 +271,84 @@ class AudioPlayerService : Service() {
             notificationManager.createNotificationChannel(channel)
         }
     }
+    
+    private fun setupMediaSession() {
+        mediaSession = MediaSessionCompat(this, "AudioPlayerService").apply {
+            setCallback(object : MediaSessionCompat.Callback() {
+                override fun onPlay() {
+                    play()
+                }
+                
+                override fun onPause() {
+                    pause()
+                }
+                
+                override fun onStop() {
+                    stop()
+                }
+                
+                override fun onSeekTo(pos: Long) {
+                    seekTo(pos.toInt())
+                }
+            })
+            
+            setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+            isActive = true
+        }
+    }
 
     private fun createNotification(): Notification {
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        val activityIntent = Intent(this, AudioPlayerActivity::class.java).apply {
+            fileSpec?.let { spec ->
+                putExtra("file_spec", spec)
+            }
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, activityIntent, 
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        // Create action intents
+        val playIntent = Intent(this, AudioPlayerService::class.java).apply { action = ACTION_PLAY }
+        val pauseIntent = Intent(this, AudioPlayerService::class.java).apply { action = ACTION_PAUSE }
+        val stopIntent = Intent(this, AudioPlayerService::class.java).apply { action = ACTION_STOP }
+        
+        val playPendingIntent = PendingIntent.getService(this, 0, playIntent, PendingIntent.FLAG_IMMUTABLE)
+        val pausePendingIntent = PendingIntent.getService(this, 1, pauseIntent, PendingIntent.FLAG_IMMUTABLE)
+        val stopPendingIntent = PendingIntent.getService(this, 2, stopIntent, PendingIntent.FLAG_IMMUTABLE)
+        
+        val isCurrentlyPlaying = isPlaying()
+        
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.audio_player_notification_title))
             .setContentText(fileSpec?.fileName ?: "")
-            .setSmallIcon(android.R.drawable.ic_media_play)
-            .build()
+            .setSmallIcon(if (isCurrentlyPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play)
+            .setContentIntent(pendingIntent)
+            .setDeleteIntent(stopPendingIntent)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            
+        // Add media controls
+        if (isCurrentlyPlaying) {
+            builder.addAction(android.R.drawable.ic_media_pause, "Pause", pausePendingIntent)
+        } else {
+            builder.addAction(android.R.drawable.ic_media_play, "Play", playPendingIntent)
+        }
+        builder.addAction(android.R.drawable.ic_delete, "Stop", stopPendingIntent)
+        
+        // Set media session token for MediaStyle
+        mediaSession?.let { session ->
+            builder.setStyle(androidx.media.app.NotificationCompat.MediaStyle()
+                .setMediaSession(session.sessionToken)
+                .setShowActionsInCompactView(0, 1))
+        }
+        
+        return builder.build()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        mediaSession?.release()
+        mediaSession = null
         mediaPlayer?.release()
         mediaPlayer = null
     }

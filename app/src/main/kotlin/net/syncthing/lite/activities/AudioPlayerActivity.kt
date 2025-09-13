@@ -5,13 +5,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.view.View
+import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import net.syncthing.lite.databinding.ActivityAudioPlayerBinding
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileSpec
 import net.syncthing.lite.services.AudioPlayerService
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 class AudioPlayerActivity : AppCompatActivity() {
     
@@ -36,6 +40,8 @@ class AudioPlayerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAudioPlayerBinding
     private var audioService: AudioPlayerService? = null
     private var isServiceBound = false
+    private var progressHandler: Handler? = null
+    private var isUserSeeking = false
     
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -43,6 +49,7 @@ class AudioPlayerActivity : AppCompatActivity() {
             audioService = binder.getService()
             isServiceBound = true
             updateUI()
+            setupProgressTracking()
             // Automatically start playback when service is connected
             startPlaybackWhenReady()
         }
@@ -50,6 +57,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         override fun onServiceDisconnected(name: ComponentName?) {
             audioService = null
             isServiceBound = false
+            stopProgressTracking()
         }
     }
     
@@ -84,6 +92,32 @@ class AudioPlayerActivity : AppCompatActivity() {
             updateUI()
         }
         
+        // Setup seek bar listener
+        binding.progressSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    audioService?.let { service ->
+                        val duration = service.getDuration()
+                        val position = (progress * duration / 100)
+                        binding.currentTimeText.text = formatTime(position)
+                    }
+                }
+            }
+            
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                isUserSeeking = true
+            }
+            
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                audioService?.let { service ->
+                    val duration = service.getDuration()
+                    val position = (seekBar?.progress ?: 0) * duration / 100
+                    service.seekTo(position)
+                }
+                isUserSeeking = false
+            }
+        })
+        
         // Start and bind to the audio service
         val serviceIntent = if (filePath != null) {
             AudioPlayerService.newIntent(this, fileSpec, File(filePath))
@@ -96,6 +130,7 @@ class AudioPlayerActivity : AppCompatActivity() {
     
     override fun onDestroy() {
         super.onDestroy()
+        stopProgressTracking()
         if (isServiceBound) {
             unbindService(serviceConnection)
         }
@@ -120,6 +155,53 @@ class AudioPlayerActivity : AppCompatActivity() {
                     updateUI()
                 }
             }
+        }
+    }
+    
+    private fun setupProgressTracking() {
+        progressHandler = Handler(Looper.getMainLooper())
+        startProgressTracking()
+    }
+    
+    private fun startProgressTracking() {
+        progressHandler?.post(object : Runnable {
+            override fun run() {
+                audioService?.let { service ->
+                    if (service.isPlayerReady() && !isUserSeeking) {
+                        val currentPosition = service.getCurrentPosition()
+                        val duration = service.getDuration()
+                        
+                        if (duration > 0) {
+                            val progress = (currentPosition * 100 / duration)
+                            binding.progressSeekBar.progress = progress
+                            binding.currentTimeText.text = formatTime(currentPosition)
+                            binding.totalTimeText.text = formatTime(duration)
+                        }
+                    }
+                }
+                
+                // Continue updating every 1000ms if service is still bound
+                if (isServiceBound) {
+                    progressHandler?.postDelayed(this, 1000)
+                }
+            }
+        })
+    }
+    
+    private fun stopProgressTracking() {
+        progressHandler?.removeCallbacksAndMessages(null)
+        progressHandler = null
+    }
+    
+    private fun formatTime(milliseconds: Int): String {
+        val hours = TimeUnit.MILLISECONDS.toHours(milliseconds.toLong())
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds.toLong()) % 60
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds.toLong()) % 60
+        
+        return if (hours > 0) {
+            String.format("%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            String.format("%d:%02d", minutes, seconds)
         }
     }
 }
