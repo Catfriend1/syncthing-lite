@@ -274,8 +274,13 @@ class AudioPlayerService : Service() {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 getString(R.string.audio_player_notification_channel),
-                NotificationManager.IMPORTANCE_LOW
-            )
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Controls for audio playback"
+                setShowBadge(false)
+                // Allow media controls to appear on lock screen
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            }
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
@@ -316,44 +321,69 @@ class AudioPlayerService : Service() {
             fileSpec?.let { spec ->
                 putExtra("file_spec", spec)
             }
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, activityIntent, 
+        val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+        val pendingIntent = PendingIntent.getActivity(this, 0, activityIntent, pendingIntentFlags)
         
-        // Create action intents
+        // Create action intents with unique request codes to ensure they're distinct
         val playIntent = Intent(this, AudioPlayerService::class.java).apply { action = ACTION_PLAY }
         val pauseIntent = Intent(this, AudioPlayerService::class.java).apply { action = ACTION_PAUSE }
         val stopIntent = Intent(this, AudioPlayerService::class.java).apply { action = ACTION_STOP }
         
-        val playPendingIntent = PendingIntent.getService(this, 0, playIntent, PendingIntent.FLAG_IMMUTABLE)
-        val pausePendingIntent = PendingIntent.getService(this, 1, pauseIntent, PendingIntent.FLAG_IMMUTABLE)
-        val stopPendingIntent = PendingIntent.getService(this, 2, stopIntent, PendingIntent.FLAG_IMMUTABLE)
+        val servicePendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_IMMUTABLE
+        } else {
+            0
+        }
+        
+        val playPendingIntent = PendingIntent.getService(this, 100, playIntent, servicePendingIntentFlags)
+        val pausePendingIntent = PendingIntent.getService(this, 101, pauseIntent, servicePendingIntentFlags)
+        val stopPendingIntent = PendingIntent.getService(this, 102, stopIntent, servicePendingIntentFlags)
         
         val isCurrentlyPlaying = isPlaying()
         
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.audio_player_notification_title))
-            .setContentText(fileSpec?.fileName ?: "")
-            .setSmallIcon(if (isCurrentlyPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play)
+            .setContentText(fileSpec?.fileName ?: getString(R.string.audio_player_notification_title))
+            .setSmallIcon(R.drawable.ic_music_note)
             .setContentIntent(pendingIntent)
             .setDeleteIntent(stopPendingIntent)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setShowWhen(false)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setOngoing(isCurrentlyPlaying)
             
-        // Add media controls
+        // Add media controls with proper icons and labels
         if (isCurrentlyPlaying) {
-            builder.addAction(android.R.drawable.ic_media_pause, getString(R.string.audio_player_pause), pausePendingIntent)
+            builder.addAction(
+                R.drawable.ic_pause, 
+                getString(R.string.audio_player_pause), 
+                pausePendingIntent
+            )
         } else {
-            builder.addAction(android.R.drawable.ic_media_play, getString(R.string.audio_player_play), playPendingIntent)
+            builder.addAction(
+                R.drawable.ic_play_arrow, 
+                getString(R.string.audio_player_play), 
+                playPendingIntent
+            )
         }
-        builder.addAction(android.R.drawable.ic_delete, getString(R.string.audio_player_stop), stopPendingIntent)
+        builder.addAction(
+            R.drawable.ic_stop, 
+            getString(R.string.audio_player_stop), 
+            stopPendingIntent
+        )
         
         // Set media session token for MediaStyle
         mediaSession?.let { session ->
             builder.setStyle(androidx.media.app.NotificationCompat.MediaStyle()
                 .setMediaSession(session.sessionToken)
-                .setShowActionsInCompactView(0, 1))
+                .setShowActionsInCompactView(0, 1)
+                .setCancelButtonIntent(stopPendingIntent))
         }
         
         return builder.build()
