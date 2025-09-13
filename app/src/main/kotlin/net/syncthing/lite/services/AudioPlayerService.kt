@@ -42,6 +42,7 @@ class AudioPlayerService : Service() {
     private var mediaPlayer: MediaPlayer? = null
     private var fileSpec: DownloadFileSpec? = null
     private var isPlayerReady = false
+    private var onPlayerReadyListener: (() -> Unit)? = null
 
     inner class AudioPlayerBinder : Binder() {
         fun getService(): AudioPlayerService = this@AudioPlayerService
@@ -86,6 +87,7 @@ class AudioPlayerService : Service() {
                 setDataSource(file.absolutePath)
                 setOnPreparedListener {
                     isPlayerReady = true
+                    onPlayerReadyListener?.invoke()
                 }
                 setOnCompletionListener {
                     stop()
@@ -156,6 +158,18 @@ class AudioPlayerService : Service() {
 
     fun isPlaying(): Boolean {
         return mediaPlayer?.isPlaying ?: false
+    }
+    
+    fun isPlayerReady(): Boolean {
+        return isPlayerReady
+    }
+    
+    fun setOnPlayerReadyListener(listener: () -> Unit) {
+        onPlayerReadyListener = listener
+        // If already ready, call immediately
+        if (isPlayerReady) {
+            listener.invoke()
+        }
     }
 
     private fun createNotificationChannel() {

@@ -43,6 +43,8 @@ class AudioPlayerActivity : AppCompatActivity() {
             audioService = binder.getService()
             isServiceBound = true
             updateUI()
+            // Automatically start playback when service is connected
+            startPlaybackWhenReady()
         }
         
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -103,6 +105,21 @@ class AudioPlayerActivity : AppCompatActivity() {
         audioService?.let { service ->
             binding.playButton.visibility = if (service.isPlaying()) View.GONE else View.VISIBLE
             binding.pauseButton.visibility = if (service.isPlaying()) View.VISIBLE else View.GONE
+        }
+    }
+    
+    private fun startPlaybackWhenReady() {
+        audioService?.let { service ->
+            if (service.isPlayerReady()) {
+                service.play()
+                updateUI()
+            } else {
+                // If player is not ready yet, set up a callback to start when ready
+                service.setOnPlayerReadyListener {
+                    service.play()
+                    updateUI()
+                }
+            }
         }
     }
 }
