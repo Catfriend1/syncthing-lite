@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.media.MediaPlayer
 import android.os.Binder
 import android.os.Build
@@ -75,12 +76,22 @@ class AudioPlayerService : Service() {
         // Handle media button actions first
         intent?.action?.let { action ->
             when (action) {
-                ACTION_PLAY -> play()
-                ACTION_PAUSE -> pause()
-                ACTION_STOP -> stop()
+                ACTION_PLAY -> {
+                    play()
+                    updateNotification()
+                }
+                ACTION_PAUSE -> {
+                    pause()
+                    updateNotification()
+                }
+                ACTION_STOP -> {
+                    stop()
+                    // No need to update notification as stop() removes it
+                }
                 ACTION_SEEK -> {
                     val position = intent.getIntExtra(EXTRA_SEEK_POSITION, 0)
                     seekTo(position)
+                    updateNotification()
                 }
                 else -> {
                     // Handle regular start command
@@ -179,10 +190,8 @@ class AudioPlayerService : Service() {
             if (player.isPlaying) {
                 player.pause()
                 updatePlaybackState()
-                stopForeground(false)
-                // Update notification to show play button
-                val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                notificationManager.notify(NOTIFICATION_ID, createNotification())
+                stopForeground(Service.STOP_FOREGROUND_DETACH)
+                updateNotification()
             }
         }
     }
@@ -196,7 +205,7 @@ class AudioPlayerService : Service() {
             isPlayerReady = false
         }
         updatePlaybackState()
-        stopForeground(true)
+        stopForeground(Service.STOP_FOREGROUND_REMOVE)
     }
 
     fun isPlaying(): Boolean {
@@ -296,6 +305,11 @@ class AudioPlayerService : Service() {
             isActive = true
         }
     }
+    
+    private fun updateNotification() {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(NOTIFICATION_ID, createNotification())
+    }
 
     private fun createNotification(): Notification {
         val activityIntent = Intent(this, AudioPlayerActivity::class.java).apply {
@@ -329,11 +343,11 @@ class AudioPlayerService : Service() {
             
         // Add media controls
         if (isCurrentlyPlaying) {
-            builder.addAction(android.R.drawable.ic_media_pause, "Pause", pausePendingIntent)
+            builder.addAction(android.R.drawable.ic_media_pause, getString(R.string.audio_player_pause), pausePendingIntent)
         } else {
-            builder.addAction(android.R.drawable.ic_media_play, "Play", playPendingIntent)
+            builder.addAction(android.R.drawable.ic_media_play, getString(R.string.audio_player_play), playPendingIntent)
         }
-        builder.addAction(android.R.drawable.ic_delete, "Stop", stopPendingIntent)
+        builder.addAction(android.R.drawable.ic_delete, getString(R.string.audio_player_stop), stopPendingIntent)
         
         // Set media session token for MediaStyle
         mediaSession?.let { session ->
