@@ -13,6 +13,7 @@ import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import net.syncthing.lite.databinding.ActivityAudioPlayerBinding
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileSpec
+import java.util.Locale
 import net.syncthing.lite.services.AudioPlayerService
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -199,9 +200,9 @@ class AudioPlayerActivity : AppCompatActivity() {
         val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds.toLong()) % 60
         
         return if (hours > 0) {
-            String.format("%d:%02d:%02d", hours, minutes, seconds)
+            String.format(Locale.ROOT, "%d:%02d:%02d", hours, minutes, seconds)
         } else {
-            String.format("%d:%02d", minutes, seconds)
+            String.format(Locale.ROOT, "%d:%02d", minutes, seconds)
         }
     }
 }

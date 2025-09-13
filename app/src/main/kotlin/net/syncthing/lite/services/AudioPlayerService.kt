@@ -190,7 +190,11 @@ class AudioPlayerService : Service() {
             if (player.isPlaying) {
                 player.pause()
                 updatePlaybackState()
-                stopForeground(Service.STOP_FOREGROUND_DETACH)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                    stopForeground(Service.STOP_FOREGROUND_DETACH)
+                } else {
+                    stopForeground(false)
+                }
                 updateNotification()
             }
         }
@@ -205,7 +209,11 @@ class AudioPlayerService : Service() {
             isPlayerReady = false
         }
         updatePlaybackState()
-        stopForeground(Service.STOP_FOREGROUND_REMOVE)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            stopForeground(Service.STOP_FOREGROUND_REMOVE)
+        } else {
+            stopForeground(true)
+        }
     }
 
     fun isPlaying(): Boolean {

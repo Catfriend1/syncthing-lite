@@ -10,7 +10,7 @@
         android:id="@+id/fileNameText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Audio File"
+        android:text="@string/audio_player_title"
         android:textSize="18sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -28,7 +28,7 @@
             android:id="@+id/currentTimeText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0:00"
+            android:text="@string/audio_player_time_initial"
             android:textSize="14sp"
             android:layout_marginEnd="8dp" />
 
@@ -44,7 +44,7 @@
             android:id="@+id/totalTimeText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0:00"
+            android:text="@string/audio_player_time_initial"
             android:textSize="14sp"
             android:layout_marginStart="8dp" />
 
