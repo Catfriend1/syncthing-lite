@@ -51,6 +51,12 @@ class AudioPlayerActivity : AppCompatActivity() {
             isServiceBound = true
             updateUI()
             setupProgressTracking()
+            // Set up completion listener to update UI when playback finishes
+            audioService?.setOnPlaybackCompletedListener {
+                runOnUiThread {
+                    updateUI()
+                }
+            }
             // Automatically start playback when service is connected
             startPlaybackWhenReady()
         }

@@ -56,7 +56,9 @@ class AudioPlayerService : Service() {
     private var fileSpec: DownloadFileSpec? = null
     private var isPlayerReady = false
     private var onPlayerReadyListener: (() -> Unit)? = null
+    private var onPlaybackCompletedListener: (() -> Unit)? = null
     private var mediaSession: MediaSessionCompat? = null
+    private var audioFile: File? = null
 
     inner class AudioPlayerBinder : Binder() {
         fun getService(): AudioPlayerService = this@AudioPlayerService
@@ -130,6 +132,7 @@ class AudioPlayerService : Service() {
 
     private fun initializeMediaPlayerWithFile(file: File) {
         try {
+            audioFile = file
             mediaPlayer?.release()
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(file.absolutePath)
@@ -138,7 +141,12 @@ class AudioPlayerService : Service() {
                     onPlayerReadyListener?.invoke()
                 }
                 setOnCompletionListener {
-                    stop()
+                    // Reset to beginning instead of stopping completely
+                    seekTo(0)
+                    pause()
+                    updatePlaybackState()
+                    updateNotification()
+                    onPlaybackCompletedListener?.invoke()
                 }
                 setOnErrorListener { _, _, _ ->
                     stop()
@@ -161,7 +169,12 @@ class AudioPlayerService : Service() {
                     isPlayerReady = true
                 }
                 setOnCompletionListener {
-                    stop()
+                    // Reset to beginning instead of stopping completely
+                    seekTo(0)
+                    pause()
+                    updatePlaybackState()
+                    updateNotification()
+                    onPlaybackCompletedListener?.invoke()
                 }
                 setOnErrorListener { _, _, _ ->
                     stop()
@@ -205,8 +218,14 @@ class AudioPlayerService : Service() {
             if (player.isPlaying) {
                 player.stop()
             }
-            player.reset()
-            isPlayerReady = false
+            // Don't reset if we have an audio file - allow restart
+            if (audioFile != null) {
+                // Re-prepare with the same file for restart capability
+                initializeMediaPlayerWithFile(audioFile!!)
+            } else {
+                player.reset()
+                isPlayerReady = false
+            }
         }
         updatePlaybackState()
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
@@ -230,6 +249,10 @@ class AudioPlayerService : Service() {
         if (isPlayerReady) {
             listener.invoke()
         }
+    }
+    
+    fun setOnPlaybackCompletedListener(listener: () -> Unit) {
+        onPlaybackCompletedListener = listener
     }
     
     fun getCurrentPosition(): Int {
