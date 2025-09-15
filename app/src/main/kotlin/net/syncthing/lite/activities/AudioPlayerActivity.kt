@@ -86,6 +86,8 @@ class AudioPlayerActivity : AppCompatActivity() {
         // If service is already bound, update it with the new file
         if (isServiceBound) {
             audioService?.loadNewFile(getCurrentFileSpec(), getCurrentFilePath())
+            // Automatically start playback for the new file when ready
+            startPlaybackWhenReady()
         } else {
             // If not bound yet, start and bind again
             startAndBindService()
