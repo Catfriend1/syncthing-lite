@@ -23,8 +23,8 @@ class CircularBadgeView @JvmOverloads constructor(
     private var deviceCount = 0
     
     // Farben für verbunden (grün) und nicht verbunden (rot)
-    private val connectedColor = ContextCompat.getColor(context, android.R.color.holo_green_dark)
-    private val disconnectedColor = ContextCompat.getColor(context, android.R.color.holo_red_dark)
+    private val connectedColor = ContextCompat.getColor(context, android.R.color.holo_green_light)
+    private val disconnectedColor = ContextCompat.getColor(context, android.R.color.holo_red_light)
     private val textColor = ContextCompat.getColor(context, android.R.color.white)
     
     // Paint-Objekte für Kreis und Text
@@ -41,8 +41,8 @@ class CircularBadgeView @JvmOverloads constructor(
     }
     
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        // Quadratische View mit fester Größe (32dp)
-        val size = (32 * resources.displayMetrics.density).toInt()
+        // Quadratische View mit fester Größe (40dp für bessere Sichtbarkeit)
+        val size = (40 * resources.displayMetrics.density).toInt()
         setMeasuredDimension(size, size)
     }
     
