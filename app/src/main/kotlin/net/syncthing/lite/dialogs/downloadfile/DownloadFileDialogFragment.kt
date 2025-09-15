@@ -18,6 +18,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.lite.R
+import net.syncthing.lite.activities.AudioPlayerActivity
 import net.syncthing.lite.library.CacheFileProviderUrl
 import net.syncthing.lite.library.LibraryHandler
 import net.syncthing.lite.utils.MimeType
@@ -28,6 +29,7 @@ class DownloadFileDialogFragment : DialogFragment() {
     companion object {
         private const val ARG_FILE_SPEC = "file spec"
         private const val ARG_SAVE_AS_URI = "save as"
+        private const val ARG_COMPLETION_ACTION = "completion_action"
         private const val TAG = "DownloadFileDialog"
 
         fun newInstance(fileInfo: FileInfo): DownloadFileDialogFragment = newInstance(
@@ -38,11 +40,16 @@ class DownloadFileDialogFragment : DialogFragment() {
             )
         )
 
-        fun newInstance(fileSpec: DownloadFileSpec, outputUri: Uri? = null): DownloadFileDialogFragment {
+        fun newInstance(
+            fileSpec: DownloadFileSpec, 
+            outputUri: Uri? = null,
+            completionAction: DownloadCompletionAction = DownloadCompletionAction.OPEN_WITH_APP
+        ): DownloadFileDialogFragment {
             return DownloadFileDialogFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(ARG_FILE_SPEC, fileSpec)
                     outputUri?.let { putParcelable(ARG_SAVE_AS_URI, it) }
+                    putSerializable(ARG_COMPLETION_ACTION, completionAction)
                 }
             }
         }
@@ -93,6 +100,14 @@ class DownloadFileDialogFragment : DialogFragment() {
             @Suppress("DEPRECATION")
             arguments?.getParcelable<Uri>(ARG_SAVE_AS_URI)
         }
+        val completionAction = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getSerializable(ARG_COMPLETION_ACTION, DownloadCompletionAction::class.java) 
+                ?: DownloadCompletionAction.OPEN_WITH_APP
+        } else {
+            @Suppress("DEPRECATION")
+            arguments?.getSerializable(ARG_COMPLETION_ACTION) as? DownloadCompletionAction 
+                ?: DownloadCompletionAction.OPEN_WITH_APP
+        }
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_download_progress, null)
         progressBar = dialogView.findViewById(R.id.progress_bar)
@@ -115,31 +130,41 @@ class DownloadFileDialogFragment : DialogFragment() {
                 }
                 is DownloadFileStatusDone -> {
                     dismissAllowingStateLoss()
-                    if (outputUri == null) {
-                        val file = status.file
-                        val mimeType = MimeType.getFromFilename(fileSpec.fileName)
-                        try {
-                            startActivity(
-                                Intent(Intent.ACTION_VIEW)
-                                    .setDataAndType(
-                                        CacheFileProviderUrl.fromFile(
-                                            filename = fileSpec.fileName,
-                                            mimeType = mimeType,
-                                            file = file,
-                                            context = requireContext()
-                                        ).serialized,
-                                        mimeType
+                    
+                    when (completionAction) {
+                        DownloadCompletionAction.OPEN_WITH_APP -> {
+                            if (outputUri == null) {
+                                val file = status.file
+                                val mimeType = MimeType.getFromFilename(fileSpec.fileName)
+                                try {
+                                    startActivity(
+                                        Intent(Intent.ACTION_VIEW)
+                                            .setDataAndType(
+                                                CacheFileProviderUrl.fromFile(
+                                                    filename = fileSpec.fileName,
+                                                    mimeType = mimeType,
+                                                    file = file,
+                                                    context = requireContext()
+                                                ).serialized,
+                                                mimeType
+                                            )
+                                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                     )
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            )
-                        } catch (e: ActivityNotFoundException) {
-                            Log.w(TAG, "No handler found for file ${file.name}", e)
-                            Toast.makeText(
-                                requireContext(),
-                                getString(R.string.toast_open_file_failed),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                                } catch (e: ActivityNotFoundException) {
+                                    Log.w(TAG, "No handler found for file ${file.name}", e)
+                                    Toast.makeText(
+                                        requireContext(),
+                                        getString(R.string.toast_open_file_failed),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        }
+                        DownloadCompletionAction.PLAY_IN_AUDIO_PLAYER -> {
+                            // Start audio player with the downloaded file
+                            val intent = AudioPlayerActivity.newIntent(requireContext(), fileSpec, status.file)
+                            startActivity(intent)
                         }
                     }
                 }
