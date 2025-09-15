@@ -73,6 +73,26 @@ class AudioPlayerActivity : AppCompatActivity() {
         binding = ActivityAudioPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        handleIntent(intent)
+        setupUI()
+        startAndBindService()
+    }
+    
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent) // Update the activity's intent
+        handleIntent(intent)
+        
+        // If service is already bound, update it with the new file
+        if (isServiceBound) {
+            audioService?.loadNewFile(getCurrentFileSpec(), getCurrentFilePath())
+        } else {
+            // If not bound yet, start and bind again
+            startAndBindService()
+        }
+    }
+    
+    private fun handleIntent(intent: Intent) {
         val fileSpec = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             intent.getSerializableExtra(EXTRA_FILE_SPEC, DownloadFileSpec::class.java)!!
         } else {
@@ -80,9 +100,23 @@ class AudioPlayerActivity : AppCompatActivity() {
             intent.getSerializableExtra(EXTRA_FILE_SPEC) as DownloadFileSpec
         }
         
-        val filePath = intent.getStringExtra(EXTRA_FILE_PATH)
-        
         binding.fileNameText.text = fileSpec.fileName
+    }
+    
+    private fun getCurrentFileSpec(): DownloadFileSpec {
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra(EXTRA_FILE_SPEC, DownloadFileSpec::class.java)!!
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra(EXTRA_FILE_SPEC) as DownloadFileSpec
+        }
+    }
+    
+    private fun getCurrentFilePath(): String? {
+        return intent.getStringExtra(EXTRA_FILE_PATH)
+    }
+    
+    private fun setupUI() {
         
         binding.playButton.setOnClickListener {
             audioService?.let { service ->
@@ -135,6 +169,11 @@ class AudioPlayerActivity : AppCompatActivity() {
                 isUserSeeking = false
             }
         })
+    }
+    
+    private fun startAndBindService() {
+        val fileSpec = getCurrentFileSpec()
+        val filePath = getCurrentFilePath()
         
         // Start and bind to the audio service
         val serviceIntent = if (filePath != null) {

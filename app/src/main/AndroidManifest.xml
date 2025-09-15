@@ -54,7 +54,8 @@
         </activity>
         <activity android:name=".activities.AudioPlayerActivity"
             android:label="@string/audio_player_title"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleTop" />
         <service android:name=".services.AudioPlayerService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />

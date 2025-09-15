@@ -229,6 +229,34 @@ class AudioPlayerService : Service() {
         }
     }
     
+    fun loadNewFile(fileSpec: DownloadFileSpec, filePath: String?) {
+        // Stop current playback and reset
+        mediaPlayer?.let { player ->
+            if (player.isPlaying) {
+                player.stop()
+            }
+            player.reset()
+        }
+        
+        // Update service state
+        this.fileSpec = fileSpec
+        isPlayerReady = false
+        
+        // Stop any current foreground notification
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            stopForeground(Service.STOP_FOREGROUND_REMOVE)
+        } else {
+            stopForeground(true)
+        }
+        
+        // Initialize with new file
+        if (filePath != null) {
+            initializeMediaPlayerWithFile(File(filePath))
+        } else {
+            initializeMediaPlayer(fileSpec)
+        }
+    }
+    
     fun restart() {
         // Re-initialize with the same file for restart capability
         audioFile?.let { file ->
