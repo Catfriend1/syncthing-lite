@@ -5,8 +5,9 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
+import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GravityCompat
@@ -15,6 +16,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.get
 import androidx.core.view.size
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R
 import net.syncthing.lite.databinding.ActivityMainBinding
@@ -22,6 +26,8 @@ import net.syncthing.lite.dialogs.DeviceIdDialogFragment
 import net.syncthing.lite.fragments.DevicesFragment
 import net.syncthing.lite.fragments.FoldersFragment
 import net.syncthing.lite.fragments.SettingsFragment
+import net.syncthing.lite.viewmodels.ConnectionStatusViewModel
+import net.syncthing.lite.views.CircularBadgeView
 
 class MainActivity : SyncthingActivity() {
 
@@ -32,6 +38,11 @@ class MainActivity : SyncthingActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var drawerToggle: ActionBarDrawerToggle? = null
+    
+    // ViewModel for managing device connection status
+    private val connectionStatusViewModel: ConnectionStatusViewModel by viewModels()
+    private var deviceBadge: CircularBadgeView? = null
+    private var isObservingConnectionStatus = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,6 +97,46 @@ class MainActivity : SyncthingActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         drawerToggle?.onConfigurationChanged(newConfig)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_actionbar, menu)
+        
+        // Retrieve and reference the Badge-View from the ActionBar menu
+        val badgeItem = menu.findItem(R.id.action_device_badge)
+        deviceBadge = badgeItem?.actionView as? CircularBadgeView
+        
+        // Start observing connection status if library is already loaded
+        if (libraryHandler != null) {
+            startObservingConnectionStatus()
+        }
+        
+        return true
+    }
+    
+    override fun onLibraryLoaded() {
+        super.onLibraryLoaded()
+        
+        // Initialize ViewModel with LibraryHandler
+        connectionStatusViewModel.initialize(libraryHandler)
+        
+        // Start observing if badge view is already initialized
+        startObservingConnectionStatus()
+    }
+    
+    private fun startObservingConnectionStatus() {
+        // Only start observing if both badge and library are available and not already observing
+        if (deviceBadge != null && libraryHandler != null && !isObservingConnectionStatus) {
+            isObservingConnectionStatus = true
+            // Observe StateFlow and update badge accordingly
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    connectionStatusViewModel.connectedDeviceCount.collect { count ->
+                        deviceBadge?.setDeviceCount(count)
+                    }
+                }
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
