@@ -2,17 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     
-    <!-- Badge für verbundene Geräte in der ActionBar -->
+    <!-- Badge for connected devices in the ActionBar -->
     <item
         android:id="@+id/action_device_badge"
         android:title="@string/connected_devices_badge"
         app:showAsAction="always"
         app:actionViewClass="net.syncthing.lite.views.CircularBadgeView" />
-    
-    <!-- Test-Menu Item für Entwicklung (kann später entfernt werden) -->
-    <item
-        android:id="@+id/action_test_badge"
-        android:title="@string/test_badge_action"
-        app:showAsAction="never" />
         
 </menu>

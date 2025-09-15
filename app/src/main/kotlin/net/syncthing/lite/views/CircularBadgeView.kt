@@ -10,9 +10,9 @@ import androidx.core.content.ContextCompat
 import net.syncthing.lite.R
 
 /**
- * Kreisförmiges Badge-Widget zur Anzeige der Anzahl verbundener Syncthing-Geräte.
- * Zeigt einen roten Kreis mit "0" wenn keine Geräte verbunden sind,
- * oder einen grünen Kreis mit der Gerätezahl wenn Geräte verbunden sind.
+ * Circular badge widget for displaying the number of connected Syncthing devices.
+ * Shows a red circle with "0" when no devices are connected,
+ * or a green circle with the device count when devices are connected.
  */
 class CircularBadgeView @JvmOverloads constructor(
     context: Context,
@@ -22,12 +22,12 @@ class CircularBadgeView @JvmOverloads constructor(
 
     private var deviceCount = 0
     
-    // Farben für verbunden (grün) und nicht verbunden (rot)
+    // Colors for connected (green) and disconnected (red)
     private val connectedColor = ContextCompat.getColor(context, android.R.color.holo_green_light)
     private val disconnectedColor = ContextCompat.getColor(context, android.R.color.holo_red_light)
     private val textColor = ContextCompat.getColor(context, android.R.color.white)
     
-    // Paint-Objekte für Kreis und Text
+    // Paint objects for circle and text
     private val circlePaint = Paint().apply {
         isAntiAlias = true
         style = Paint.Style.FILL
@@ -41,14 +41,14 @@ class CircularBadgeView @JvmOverloads constructor(
     }
     
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        // Quadratische View mit fester Größe (40dp für bessere Sichtbarkeit)
+        // Square view with fixed size (40dp for better visibility)
         val size = (40 * resources.displayMetrics.density).toInt()
         setMeasuredDimension(size, size)
     }
     
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        // Textgröße basierend auf View-Größe anpassen
+        // Adjust text size based on view size
         textPaint.textSize = w * 0.5f
     }
     
@@ -57,33 +57,33 @@ class CircularBadgeView @JvmOverloads constructor(
         
         val centerX = width / 2f
         val centerY = height / 2f
-        val radius = (width.coerceAtMost(height) / 2f) * 0.9f // 10% Padding
+        val radius = (width.coerceAtMost(height) / 2f) * 0.9f // 10% padding
         
-        // Kreis-Farbe basierend auf Verbindungsstatus setzen
+        // Set circle color based on connection status
         circlePaint.color = if (deviceCount > 0) connectedColor else disconnectedColor
         
-        // Kreis zeichnen
+        // Draw circle
         canvas.drawCircle(centerX, centerY, radius, circlePaint)
         
-        // Text (Gerätezahl) in der Mitte zeichnen
+        // Draw text (device count) in the center
         val text = deviceCount.toString()
         val textY = centerY - (textPaint.descent() + textPaint.ascent()) / 2
         canvas.drawText(text, centerX, textY, textPaint)
     }
     
     /**
-     * Setzt die Anzahl der verbundenen Geräte und löst einen Redraw aus.
-     * Die Farbe des Kreises wird automatisch angepasst.
+     * Sets the number of connected devices and triggers a redraw.
+     * The color of the circle is automatically adjusted.
      */
     fun setDeviceCount(count: Int) {
         if (deviceCount != count) {
             deviceCount = count
-            invalidate() // View neu zeichnen
+            invalidate() // Redraw view
         }
     }
     
     /**
-     * Gibt die aktuelle Anzahl der verbundenen Geräte zurück.
+     * Returns the current number of connected devices.
      */
     fun getDeviceCount(): Int = deviceCount
 }

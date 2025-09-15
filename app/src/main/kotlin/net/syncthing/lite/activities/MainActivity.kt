@@ -39,9 +39,10 @@ class MainActivity : SyncthingActivity() {
     private lateinit var binding: ActivityMainBinding
     private var drawerToggle: ActionBarDrawerToggle? = null
     
-    // ViewModel für die Verwaltung des Verbindungsstatus der Geräte
+    // ViewModel for managing device connection status
     private val connectionStatusViewModel: ConnectionStatusViewModel by viewModels()
     private var deviceBadge: CircularBadgeView? = null
+    private var isObservingConnectionStatus = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,9 +102,14 @@ class MainActivity : SyncthingActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_actionbar, menu)
         
-        // Badge-View aus dem ActionBar-Menu abrufen und referenzieren
+        // Retrieve and reference the Badge-View from the ActionBar menu
         val badgeItem = menu.findItem(R.id.action_device_badge)
         deviceBadge = badgeItem?.actionView as? CircularBadgeView
+        
+        // Start observing connection status if library is already loaded
+        if (libraryHandler != null) {
+            startObservingConnectionStatus()
+        }
         
         return true
     }
@@ -111,26 +117,29 @@ class MainActivity : SyncthingActivity() {
     override fun onLibraryLoaded() {
         super.onLibraryLoaded()
         
-        // ViewModel mit LibraryHandler initialisieren
+        // Initialize ViewModel with LibraryHandler
         connectionStatusViewModel.initialize(libraryHandler)
         
-        // StateFlow observieren und Badge entsprechend aktualisieren
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                connectionStatusViewModel.connectedDeviceCount.collect { count ->
-                    deviceBadge?.setDeviceCount(count)
+        // Start observing if badge view is already initialized
+        startObservingConnectionStatus()
+    }
+    
+    private fun startObservingConnectionStatus() {
+        // Only start observing if both badge and library are available and not already observing
+        if (deviceBadge != null && libraryHandler != null && !isObservingConnectionStatus) {
+            isObservingConnectionStatus = true
+            // Observe StateFlow and update badge accordingly
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    connectionStatusViewModel.connectedDeviceCount.collect { count ->
+                        deviceBadge?.setDeviceCount(count)
+                    }
                 }
             }
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle test badge cycling for development/demonstration
-        if (item.itemId == R.id.action_test_badge) {
-            connectionStatusViewModel.testBadgeCycling()
-            return true
-        }
-        
         // Pass the event to ActionBarDrawerToggle, if it returns
         // true, then it has handled the app icon touch event
         return if (drawerToggle?.onOptionsItemSelected(item) == true) {

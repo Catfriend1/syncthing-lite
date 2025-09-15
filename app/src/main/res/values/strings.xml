@@ -107,7 +107,5 @@
     
     <!-- Connected devices badge in ActionBar -->
     <string name="connected_devices_badge">Connected devices</string>
-    
-    <!-- Test action for badge demonstration -->
-    <string name="test_badge_action">Test Badge (0→3→0)</string>
+
 </resources>

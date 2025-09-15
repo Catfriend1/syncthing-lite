@@ -12,8 +12,8 @@ import net.syncthing.java.bep.connectionactor.ConnectionStatus
 import net.syncthing.lite.library.LibraryHandler
 
 /**
- * ViewModel zur zentralen Verwaltung des Verbindungsstatus von Syncthing-Geräten.
- * Stellt die Anzahl der aktuell verbundenen Geräte als StateFlow bereit.
+ * ViewModel for centralized management of Syncthing device connection status.
+ * Provides the number of currently connected devices as StateFlow.
  */
 class ConnectionStatusViewModel : ViewModel() {
     
@@ -21,51 +21,24 @@ class ConnectionStatusViewModel : ViewModel() {
     val connectedDeviceCount: StateFlow<Int> = _connectedDeviceCount.asStateFlow()
     
     private var libraryHandler: LibraryHandler? = null
-    private var isTestMode = false
     
     /**
-     * Initialisiert das ViewModel mit dem LibraryHandler und startet die Überwachung
-     * des Verbindungsstatus.
+     * Initializes the ViewModel with the LibraryHandler and starts monitoring
+     * the connection status.
      */
     fun initialize(libraryHandler: LibraryHandler) {
         this.libraryHandler = libraryHandler
-        if (!isTestMode) {
-            observeConnectionStatus()
-        }
+        observeConnectionStatus()
     }
     
     /**
-     * Aktiviert den Test-Modus für Entwicklung und Demo-Zwecke.
-     * Zykliert durch verschiedene Verbindungszustände: 0 → 1 → 2 → 3 → 0...
-     */
-    fun testBadgeCycling() {
-        isTestMode = true
-        viewModelScope.launch {
-            val testCounts = listOf(0, 1, 2, 3)
-            var currentIndex = 0
-            
-            repeat(testCounts.size) {
-                _connectedDeviceCount.value = testCounts[currentIndex]
-                currentIndex = (currentIndex + 1) % testCounts.size
-                kotlinx.coroutines.delay(1500) // 1.5 Sekunden zwischen Änderungen
-            }
-            
-            // Nach dem Test zurück zum echten Modus
-            isTestMode = false
-            observeConnectionStatus()
-        }
-    }
-    
-    /**
-     * Überwacht den Verbindungsstatus aller Geräte und aktualisiert die Anzahl
-     * der verbundenen Geräte automatisch.
+     * Monitors the connection status of all devices and automatically updates the count
+     * of connected devices.
      */
     private fun observeConnectionStatus() {
-        if (isTestMode) return
-        
         viewModelScope.launch {
             libraryHandler?.subscribeToConnectionStatus()?.collectLatest { connectionInfoMap ->
-                // Zähle alle Geräte, die aktuell verbunden sind
+                // Count all devices that are currently connected
                 val connectedCount = connectionInfoMap.values.count { connectionInfo ->
                     connectionInfo.status == ConnectionStatus.Connected
                 }
