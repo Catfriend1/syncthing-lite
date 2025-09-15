@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <!-- Badge für verbundene Geräte in der ActionBar -->
+    <item
+        android:id="@+id/action_device_badge"
+        android:title="@string/connected_devices_badge"
+        app:showAsAction="always"
+        app:actionViewClass="net.syncthing.lite.views.CircularBadgeView" />
+        
+</menu>

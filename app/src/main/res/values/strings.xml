@@ -104,4 +104,7 @@
     
     <!-- Summary of the preference showing the Open Source Licenses -->
     <string name="open_source_licenses_summary">Show the open source licenses used</string>
+    
+    <!-- Connected devices badge in ActionBar -->
+    <string name="connected_devices_badge">Connected devices</string>
 </resources>
