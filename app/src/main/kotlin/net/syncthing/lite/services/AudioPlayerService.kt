@@ -218,20 +218,21 @@ class AudioPlayerService : Service() {
             if (player.isPlaying) {
                 player.stop()
             }
-            // Don't reset if we have an audio file - allow restart
-            if (audioFile != null) {
-                // Re-prepare with the same file for restart capability
-                initializeMediaPlayerWithFile(audioFile!!)
-            } else {
-                player.reset()
-                isPlayerReady = false
-            }
+            player.reset()
+            isPlayerReady = false
         }
         updatePlaybackState()
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             stopForeground(Service.STOP_FOREGROUND_REMOVE)
         } else {
             stopForeground(true)
+        }
+    }
+    
+    fun restart() {
+        // Re-initialize with the same file for restart capability
+        audioFile?.let { file ->
+            initializeMediaPlayerWithFile(file)
         }
     }
 

@@ -85,8 +85,19 @@ class AudioPlayerActivity : AppCompatActivity() {
         binding.fileNameText.text = fileSpec.fileName
         
         binding.playButton.setOnClickListener {
-            audioService?.play()
-            updateUI()
+            audioService?.let { service ->
+                if (service.isPlayerReady()) {
+                    service.play()
+                } else {
+                    // If player is not ready (e.g., after stop), restart it
+                    service.restart()
+                    service.setOnPlayerReadyListener {
+                        service.play()
+                        updateUI()
+                    }
+                }
+                updateUI()
+            }
         }
         
         binding.pauseButton.setOnClickListener {
