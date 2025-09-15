@@ -125,6 +125,12 @@ class MainActivity : SyncthingActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle test badge cycling for development/demonstration
+        if (item.itemId == R.id.action_test_badge) {
+            connectionStatusViewModel.testBadgeCycling()
+            return true
+        }
+        
         // Pass the event to ActionBarDrawerToggle, if it returns
         // true, then it has handled the app icon touch event
         return if (drawerToggle?.onOptionsItemSelected(item) == true) {

@@ -21,6 +21,7 @@ class ConnectionStatusViewModel : ViewModel() {
     val connectedDeviceCount: StateFlow<Int> = _connectedDeviceCount.asStateFlow()
     
     private var libraryHandler: LibraryHandler? = null
+    private var isTestMode = false
     
     /**
      * Initialisiert das ViewModel mit dem LibraryHandler und startet die Überwachung
@@ -28,7 +29,31 @@ class ConnectionStatusViewModel : ViewModel() {
      */
     fun initialize(libraryHandler: LibraryHandler) {
         this.libraryHandler = libraryHandler
-        observeConnectionStatus()
+        if (!isTestMode) {
+            observeConnectionStatus()
+        }
+    }
+    
+    /**
+     * Aktiviert den Test-Modus für Entwicklung und Demo-Zwecke.
+     * Zykliert durch verschiedene Verbindungszustände: 0 → 1 → 2 → 3 → 0...
+     */
+    fun testBadgeCycling() {
+        isTestMode = true
+        viewModelScope.launch {
+            val testCounts = listOf(0, 1, 2, 3)
+            var currentIndex = 0
+            
+            repeat(testCounts.size) {
+                _connectedDeviceCount.value = testCounts[currentIndex]
+                currentIndex = (currentIndex + 1) % testCounts.size
+                kotlinx.coroutines.delay(1500) // 1.5 Sekunden zwischen Änderungen
+            }
+            
+            // Nach dem Test zurück zum echten Modus
+            isTestMode = false
+            observeConnectionStatus()
+        }
     }
     
     /**
@@ -36,6 +61,8 @@ class ConnectionStatusViewModel : ViewModel() {
      * der verbundenen Geräte automatisch.
      */
     private fun observeConnectionStatus() {
+        if (isTestMode) return
+        
         viewModelScope.launch {
             libraryHandler?.subscribeToConnectionStatus()?.collectLatest { connectionInfoMap ->
                 // Zähle alle Geräte, die aktuell verbunden sind

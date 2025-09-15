@@ -8,5 +8,11 @@
         android:title="@string/connected_devices_badge"
         app:showAsAction="always"
         app:actionViewClass="net.syncthing.lite.views.CircularBadgeView" />
+    
+    <!-- Test-Menu Item für Entwicklung (kann später entfernt werden) -->
+    <item
+        android:id="@+id/action_test_badge"
+        android:title="@string/test_badge_action"
+        app:showAsAction="never" />
         
 </menu>
