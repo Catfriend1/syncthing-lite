@@ -55,12 +55,56 @@ class BlockPusher(private val localDeviceId: DeviceId,
                   private val requestHandlerRegistry: RequestHandlerRegistry) {
 
     suspend fun pushDelete(folderId: String, targetPath: String): BlockExchangeProtos.IndexUpdate {
-        val fileInfo = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoByPath(folderId, targetPath)!!
+        logger.debug("Starting deletion process for: $targetPath")
+        
+        // Ensure we have the most current index state with aggressive synchronization
+        // This is absolutely critical for repeated deletions after remote restoration
+        repeat(5) { round ->
+            logger.debug("Index synchronization round ${round + 1}/5")
+            indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler, 3)
+        }
+        
+        // Force a fresh index fetch to ensure we have the latest state
+        val freshIndex = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler, 2)
+        
+        val fileInfo = freshIndex.getFileInfoByPath(folderId, targetPath)
+        if (fileInfo == null) {
+            logger.error("File $targetPath not found in current index - cannot delete")
+            throw IllegalStateException("File $targetPath not found in current index")
+        }
+        
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(fileInfo.folder), {"supplied connection handler $connectionHandler will not share folder ${fileInfo.folder}"})
-        return sendIndexUpdate(folderId, BlockExchangeProtos.FileInfo.newBuilder()
+        
+        logger.debug("=== DELETION DEBUG INFO ===")
+        logger.debug("Target file: $targetPath")
+        logger.debug("File state: deleted=${fileInfo.isDeleted}, type=${fileInfo.type}, size=${fileInfo.size}")
+        logger.debug("File timestamp: ${fileInfo.lastModified}")
+        logger.debug("File version vector: ${fileInfo.versionList}")
+        logger.debug("===============================")
+        
+        // Verify the file is not already deleted
+        if (fileInfo.isDeleted) {
+            logger.error("File $targetPath is already marked as deleted - current state: ${fileInfo}")
+            throw IllegalStateException("File $targetPath is already marked as deleted")
+        }
+        
+        // Build deletion record with strict BEP protocol compliance
+        val deleteFileInfoBuilder = BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(targetPath)
                 .setType(BlockExchangeProtos.FileInfoType.valueOf(fileInfo.type.name))
-                .setDeleted(true), fileInfo.versionList)
+                .setDeleted(true)
+                .setSize(0L)
+                .clearBlocks()  // Ensure no blocks for deleted files
+        
+        logger.debug("Sending deletion update with base version: ${fileInfo.versionList}")
+        val result = sendIndexUpdate(folderId, deleteFileInfoBuilder, fileInfo.versionList)
+        
+        logger.debug("Deletion successfully sent for: $targetPath")
+        
+        // Wait briefly to allow the deletion to be processed
+        indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler, 2)
+        
+        return result
     }
 
     suspend fun pushDir(folder: String, path: String): BlockExchangeProtos.IndexUpdate {
@@ -68,6 +112,76 @@ class BlockPusher(private val localDeviceId: DeviceId,
         return sendIndexUpdate(folder, BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(path)
                 .setType(BlockExchangeProtos.FileInfoType.DIRECTORY), null)
+    }
+
+    suspend fun pushFileWithBlocks(folderId: String, targetPath: String, fileSize: Long, blocks: List<BlockExchangeProtos.BlockInfo>, oldVersions: Iterable<Version>? = null): BlockExchangeProtos.IndexUpdate {
+        NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
+        val fileInfoBuilder = BlockExchangeProtos.FileInfo.newBuilder()
+                .setName(targetPath)
+                .setType(BlockExchangeProtos.FileInfoType.FILE)
+                .setSize(fileSize)
+        
+        if (fileSize == 0L) {
+            // For 0-byte files, create an empty block as required by BEP protocol
+            val emptyBlockHash = ByteString.copyFrom(SHA256_OF_NOTHING)
+            val emptyBlock = BlockExchangeProtos.BlockInfo.newBuilder()
+                .setOffset(0L)
+                .setSize(0)
+                .setHash(emptyBlockHash)
+                .build()
+            fileInfoBuilder.addBlocks(emptyBlock)
+        } else if (blocks.isNotEmpty()) {
+            fileInfoBuilder.addAllBlocks(blocks)
+        }
+        
+        return sendIndexUpdate(folderId, fileInfoBuilder, oldVersions)
+    }
+
+    suspend fun pushRename(folderId: String, oldPath: String, newPath: String) {
+        // Get the original file info for version information
+        val originalFileInfo = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoByPath(folderId, oldPath)
+            ?: throw IllegalStateException("File not found in index: $oldPath")
+        
+        // Get the original file blocks from the index
+        val originalFileBlocks = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoAndBlocksByPath(folderId, oldPath)
+            ?: throw IllegalStateException("File blocks not found in index: $oldPath")
+        
+        NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
+        
+        // Use simple delete followed by create with proper version management
+        // This ensures operations are processed correctly by the remote
+        
+        // Step 1: Delete the original file
+        val deleteUpdate = pushDelete(folderId, oldPath)
+        
+        // Step 2: Create new file using the delete operation's version as base
+        // This ensures proper version sequencing for BEP protocol compliance
+        val deleteVersion = deleteUpdate.filesList[0].version.countersList.map { counter ->
+            Version(counter.id, counter.value)
+        }
+        
+        // For rename operations, always use pushFileWithBlocks to ensure consistent handling
+        if (originalFileBlocks.size == 0L || originalFileBlocks.blocks.isEmpty()) {
+            // For 0-byte files, use empty blocks list - pushFileWithBlocks handles BEP protocol requirements
+            logger.debug("Renaming 0-byte file from $oldPath to $newPath")
+            pushFileWithBlocks(folderId, newPath, 0L, emptyList(), deleteVersion)
+        } else {
+            // Convert core BlockInfo objects to protobuf format for non-empty files
+            val protobufBlocks = originalFileBlocks.blocks.map { blockInfo ->
+                BlockExchangeProtos.BlockInfo.newBuilder()
+                    .setOffset(blockInfo.offset)
+                    .setSize(blockInfo.size)
+                    .setHash(com.google.protobuf.ByteString.copyFrom(org.bouncycastle.util.encoders.Hex.decode(blockInfo.hash)))
+                    .build()
+            }
+            pushFileWithBlocks(folderId, newPath, originalFileBlocks.size, protobufBlocks, deleteVersion)
+        }
+        
+        // Important: After rename operations, ensure we wait for index acquisition
+        // This prevents issues with subsequent operations on the renamed file
+        indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler)
+        
+        logger.debug("Rename operation completed: $oldPath -> $newPath. Index synchronized.")
     }
 
     suspend fun pushFile(inputStream: InputStream, folderId: String, targetPath: String): FileUploadObserver {
@@ -137,14 +251,39 @@ class BlockPusher(private val localDeviceId: DeviceId,
             }
         }
 
-        val indexUpdate = sendIndexUpdate(folderId, BlockExchangeProtos.FileInfo.newBuilder()
+        val fileInfoBuilder = BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(targetPath)
                 .setSize(fileSize)
                 .setType(BlockExchangeProtos.FileInfoType.FILE)
-                .addAllBlocks(dataSource.blocks), fileInfo?.versionList)
+        
+        if (fileSize == 0L) {
+            // For 0-byte files, create an empty block as required by BEP protocol
+            val emptyBlockHash = ByteString.copyFrom(SHA256_OF_NOTHING)
+            val emptyBlock = BlockExchangeProtos.BlockInfo.newBuilder()
+                .setOffset(0L)
+                .setSize(0)
+                .setHash(emptyBlockHash)
+                .build()
+            fileInfoBuilder.addBlocks(emptyBlock)
+        } else {
+            fileInfoBuilder.addAllBlocks(dataSource.blocks)
+        }
+        
+        val indexUpdate = sendIndexUpdate(folderId, fileInfoBuilder, fileInfo?.versionList)
+                
+        // For 0-byte files, mark as completed immediately since there are no blocks to transfer
+        if (fileSize == 0L) {
+            isCompleted.set(true)
+            synchronized(updateLock) {
+                updateLock.notifyAll()
+            }
+        }
         return object : FileUploadObserver() {
 
-            override fun progressPercentage() = if (isCompleted.get()) 100 else (sentBlocks.size.toFloat() / dataSource.getHashes().size).toInt()
+            override fun progressPercentage() = if (isCompleted.get()) 100 else {
+                val totalHashes = dataSource.getHashes().size
+                if (totalHashes == 0) 0 else (sentBlocks.size.toFloat() / totalHashes * 100).toInt()
+            }
 
             // return sentBlocks.size() == dataSource.getHashes().size();
             override fun isCompleted() = isCompleted.get()
@@ -326,6 +465,18 @@ class BlockPusher(private val localDeviceId: DeviceId,
     companion object {
         private val logger = LoggerFactory.getLogger(BlockPusher::class.java)
         const val BLOCK_SIZE = 128 * 1024
+        
+        // SHA256 hash of empty string, as defined in Syncthing's BEP protocol
+        private val SHA256_OF_NOTHING = byteArrayOf(
+            0xe3.toByte(), 0xb0.toByte(), 0xc4.toByte(), 0x42.toByte(), 
+            0x98.toByte(), 0xfc.toByte(), 0x1c.toByte(), 0x14.toByte(), 
+            0x9a.toByte(), 0xfb.toByte(), 0xf4.toByte(), 0xc8.toByte(), 
+            0x99.toByte(), 0x6f.toByte(), 0xb9.toByte(), 0x24.toByte(), 
+            0x27.toByte(), 0xae.toByte(), 0x41.toByte(), 0xe4.toByte(), 
+            0x64.toByte(), 0x9b.toByte(), 0x93.toByte(), 0x4c.toByte(), 
+            0xa4.toByte(), 0x95.toByte(), 0x99.toByte(), 0x1b.toByte(), 
+            0x78.toByte(), 0x52.toByte(), 0xb8.toByte(), 0x55.toByte()
+        )
     }
 
 }

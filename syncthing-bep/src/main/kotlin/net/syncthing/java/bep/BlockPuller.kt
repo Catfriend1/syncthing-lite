@@ -59,6 +59,18 @@ object BlockPuller {
 
         logger.info("Pulling File: {}, File Blocks: {}.", fileBlocks.path, fileBlocks.blocks)
 
+        // Handle 0-byte files specially - they have no blocks
+        if (fileBlocks.size == 0L || fileBlocks.blocks.isEmpty()) {
+            logger.info("File is 0-byte, returning empty stream: {}", fileBlocks.path)
+            val status = BlockPullerStatus(
+                downloadedBytes = 0,
+                totalTransferSize = 0,
+                totalFileSize = 0
+            )
+            progressListener(status)
+            return ByteArrayInputStream(ByteArray(0))
+        }
+
         val blockTempIdByHash = Collections.synchronizedMap(HashMap<String, String>())
 
         var status = BlockPullerStatus(

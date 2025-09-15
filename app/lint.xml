@@ -18,4 +18,8 @@
 	<!-- Issues to be resolved in the future -->
 	<issue id="AndroidGradlePluginVersion" severity="ignore" />
 	<issue id="TrustAllX509TrustManager" severity="ignore" />
+  <!-- Issues where following the advice breaks a function of the app -->
+  <issue id="AlwaysShowAction">
+      <ignore path="src/main/res/menu/folder_browser.xml" />
+  </issue>
 </lint>
