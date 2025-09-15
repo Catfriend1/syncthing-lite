@@ -4,7 +4,7 @@ kotlinx-coroutines = "1.10.2"
 android-gradle-plugin = "8.11.1"
 protobuf-lite = "4.32.1"
 protobuf-plugin = "0.9.5"
-ksp = "2.2.10-2.0.2"
+ksp = "2.2.20-2.0.3"
 
 # Android SDK versions
 compile-sdk = "36"
