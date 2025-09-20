@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Syncthing-Lite</string>
     <string name="folder_list_empty_message">Carpeta no disponible</string>
@@ -5,16 +6,15 @@
     <string name="devices_list_view_empty_message">Dispositivos no disponibles</string>
     <string name="invalid_device_id">Error: identificador de dispositivo inválido</string>
     <string name="dialog_downloading_file">Descargando archivo %1$s</string>
-    <string name="toast_file_download_failed">Falló al descargar el archivo</string>
+    <string name="toast_file_download_failed">Error al descargar el archivo</string>
     <string name="toast_open_file_failed">No se ha encontrado una app compatible</string>
-    <string name="toast_file_upload_failed">Error en la carga de archivos
-</string>
+    <string name="toast_file_upload_failed">Error al cargar el archivo</string>
     <string name="toast_upload_complete">Carga de archivos completa
 </string>
     <string name="dialog_uploading_file">Cargando archivo %1$s</string>
     <string name="clear_cache_and_index_title">¿Borrar la caché local y el índice?</string>
     <string name="clear_cache_and_index_body">¿Borrar todos los datos de la caché local y los datos de índice?</string>
-    <string name="loading_config_starting_syncthing_client">Cargando configuración, iniciando el cliente de sincronización….</string>
+    <string name="loading_config_starting_syncthing_client">Cargando configuración, iniciando el cliente de sincronización…</string>
     <string name="last_modified_time">Última modificación: %1$s</string>
     <string name="remove_device_title">¿Quitar dispositivo %1$s?</string>
     <string name="remove_device_message">¿Quitar dispositivo %1$s de la lista de dispositivos conocidos?</string>
@@ -63,4 +63,34 @@ Debido al comportamiento de esta aplicación y al comportamiento del servidor de
     <string name="dialog_folder_info_device_list">Compartir la carpeta con:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
     <string name="toast_error">Algo salió mal en Syncthing-Lite. Puedes ver los detalles en la configuración de Syncthing-Lite.</string>
+    <string name="toast_file_delete_failed">Error al eliminar el archivo</string>
+    <string name="toast_delete_complete">Eliminación de archivo completada</string>
+    <string name="dialog_deleting_file">Eliminando archivo remoto</string>
+    <string name="intro_page_one_description">Syncthing es una aplicación de sincronización de archivos de código abierto. Para explorar los archivos de otros dispositivos, su propietario debe añadir primero su ID de dispositivo único a la lista de dispositivos. Después deberá compartir las carpetas que se quieran explorar desde esta app.\n\nAviso de seguridad: asegúrate de tener siempre una copia de seguridad de tus datos por otros medios y de que esa copia esté actualizada antes de usar esta app. La app todavía está en desarrollo temprano. No asumimos responsabilidad por la corrupción o pérdida de datos, aunque hacemos todo lo posible para ofrecer calidad.</string>
+    <string name="intro_page_three_description">Dispositivo encontrado. Ahora pide al propietario del dispositivo que acepte nuestra conexión desde %1$s y que comparta una carpeta con nosotros. Continuará automáticamente cuando eso ocurra. Por favor, espera.</string>
+    <string name="intro_page_three_searching_device">Buscando el otro dispositivo. Continuará automáticamente una vez completado el proceso. Por favor, espera.</string>
+    <string name="dialog_file_delete">Eliminar</string>
+    <string name="folder_browser_home">Inicio</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+    <string name="upload_file">Cargar archivo</string>
+    <string name="add_device">Añadir dispositivo</string>
+    <string name="qr_code_description">Código QR</string>
+    <string name="device_icon">Icono del dispositivo</string>
+    <string name="file_icon">Icono del archivo</string>
+    <string name="scan_qr_code">Escanear código QR</string>
+    <string name="device_id_placeholder">XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX</string>
+    <string name="zxing_msg_default_status">Coloca un código QR dentro del visor para escanearlo.</string>
+    <string name="skip">Omitir</string>
+    <string name="next">Siguiente</string>
+    <string name="done">Hecho</string>
+    <string name="delete_device_menu_item">Eliminar</string>
+    <string name="edit_device_addresses_hint">Direcciones</string>
+    <string name="edit_device_menu_item">Editar</string>
+    <string name="edit_device_dialog_title">Editar dispositivo</string>
+    <string name="edit_device_dialog_summary">Introduce direcciones separadas por comas, p. ej.: dynamic, tcp4://192.168.1.10:22000, relay://192.168.1.11:22067</string>
+    <string name="privacy_title">Política de privacidad</string>
+    <string name="privacy_summary">Abre la política de privacidad de Syncthing-Lite que cubre el uso (si lo hay) de datos personales.</string>
+    <string name="open_source_licenses_title">Licencias de Código Abierto</string>
+    <string name="open_source_licenses_summary">Mostrar las licencias de código abierto empleadas</string>
 </resources>
