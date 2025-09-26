@@ -12,8 +12,8 @@ min-sdk = "23"
 target-sdk = "36"
 
 # App version
-version-code = "1300000"
-version-name = "1.30.0.0"
+version-code = "2000000"
+version-name = "2.0.0.0"
 
 # AndroidX and Google libraries
 activity = "1.11.0"
