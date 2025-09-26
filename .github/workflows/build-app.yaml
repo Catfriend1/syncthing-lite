@@ -129,6 +129,9 @@ jobs:
           git config --global --add safe.directory '*'
           java -version
           ./gradlew --no-daemon lintDebug assembleDebug
+          
+          # Remove debug signing
+          rm -f "${{ runner.temp }}/.android/debug.keystore"
 
       - name: prepare-artifacts
         shell: bash
