@@ -36,6 +36,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-android-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-
             ${{ runner.os }}-gradle-android-
+
+      - name: Set Gradle and Android user home environment variables
+        run: |
+          set -eu
+          echo "GRADLE_USER_HOME=${{ runner.temp }}/.gradle" >> $GITHUB_ENV
+          echo "ANDROID_USER_HOME=${{ runner.temp }}/.android" >> $GITHUB_ENV
+          
+          # Create directories to ensure they exist
+          mkdir -p "${{ runner.temp }}/.gradle"
+          mkdir -p "${{ runner.temp }}/.android"
+          
+          echo "Set GRADLE_USER_HOME to: ${{ runner.temp }}/.gradle"
+          echo "Set ANDROID_USER_HOME to: ${{ runner.temp }}/.android"
       - name: Get app version from libs.versions.toml
         id: get_version
         run: |
