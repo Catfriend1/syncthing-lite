@@ -133,7 +133,7 @@ jobs:
           # Remove debug signing
           rm -f "${{ runner.temp }}/.android/debug.keystore"
 
-      - name: prepare-artifacts
+      - name: Prepare artifacts
         shell: bash
         run: |
           set -eu
