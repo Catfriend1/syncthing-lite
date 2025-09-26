@@ -2,27 +2,28 @@ name: Build App
 
 permissions:
   contents: read
-  packages: read
 
 on:
   pull_request:
   push:
     branches:
-      - fdroid
       - main
-      - release
 
 jobs:
   build:
     name: Debug Build
     runs-on: ubuntu-latest
-    container: ghcr.io/catfriend1/syncthing-lite-builder
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
       - name: Get app version from libs.versions.toml
         id: get_version
         run: |
