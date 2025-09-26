@@ -1,8 +1,8 @@
 pluginManagement {
     repositories {
+        gradlePluginPortal()
         google()
         mavenCentral()
-        gradlePluginPortal()
         maven { url = uri("https://jitpack.io") }
     }
 }
@@ -16,4 +16,12 @@ dependencyResolutionManagement {
     }
 }
 
-include(":app", ":syncthing-repository-android", ":syncthing-relay-client", ":syncthing-bep", ":syncthing-core", ":syncthing-client", ":syncthing-discovery")
+include(
+    ":app",
+    ":syncthing-repository-android",
+    ":syncthing-relay-client",
+    ":syncthing-bep",
+    ":syncthing-core",
+    ":syncthing-client",
+    ":syncthing-discovery"
+)
