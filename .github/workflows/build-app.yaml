@@ -24,6 +24,18 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+
+      - name: Cache Gradle and Android user home
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.temp }}/.gradle/caches
+            ${{ runner.temp }}/.gradle/wrapper
+            ${{ runner.temp }}/.android
+          key: ${{ runner.os }}-gradle-android-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-${{ steps.get_ndk_version.outputs.ndk_version }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-android-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-
+            ${{ runner.os }}-gradle-android-
       - name: Get app version from libs.versions.toml
         id: get_version
         run: |
