@@ -7,6 +7,7 @@ protobuf-plugin = "0.9.5"
 ksp = "2.2.20-2.0.3"
 
 # Android SDK versions
+android-cmdline-tools = "11076708"
 compile-sdk = "36"
 min-sdk = "23"
 target-sdk = "36"
