@@ -34,7 +34,6 @@ jobs:
             ${{ runner.temp }}/.android
           key: ${{ runner.os }}-gradle-android-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-android-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-
             ${{ runner.os }}-gradle-android-
 
       - name: Set Gradle and Android user home environment variables
