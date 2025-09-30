@@ -21,12 +21,17 @@ class ConnectionStatusViewModel : ViewModel() {
     val connectedDeviceCount: StateFlow<Int> = _connectedDeviceCount.asStateFlow()
     
     private var libraryHandler: LibraryHandler? = null
+    private var isInitialized = false
     
     /**
      * Initializes the ViewModel with the LibraryHandler and starts monitoring
-     * the connection status.
+     * the connection status. Can only be called once.
      */
     fun initialize(libraryHandler: LibraryHandler) {
+        if (isInitialized) {
+            return // Prevent multiple initializations
+        }
+        isInitialized = true
         this.libraryHandler = libraryHandler
         observeConnectionStatus()
     }

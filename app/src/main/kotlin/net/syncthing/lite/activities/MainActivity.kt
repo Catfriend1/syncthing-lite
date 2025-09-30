@@ -42,7 +42,7 @@ class MainActivity : SyncthingActivity() {
     // ViewModel for managing device connection status
     private val connectionStatusViewModel: ConnectionStatusViewModel by viewModels()
     private var deviceBadge: CircularBadgeView? = null
-    private var isObservingConnectionStatus = false
+    private var observationJob: kotlinx.coroutines.Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,6 +106,9 @@ class MainActivity : SyncthingActivity() {
         val badgeItem = menu.findItem(R.id.action_device_badge)
         deviceBadge = badgeItem?.actionView as? CircularBadgeView
         
+        // Set badge to current value immediately (in case menu is recreated)
+        deviceBadge?.setDeviceCount(connectionStatusViewModel.connectedDeviceCount.value)
+        
         // Start observing connection status if library is already loaded
         if (libraryHandler != null) {
             startObservingConnectionStatus()
@@ -125,11 +128,13 @@ class MainActivity : SyncthingActivity() {
     }
     
     private fun startObservingConnectionStatus() {
-        // Only start observing if both badge and library are available and not already observing
-        if (deviceBadge != null && libraryHandler != null && !isObservingConnectionStatus) {
-            isObservingConnectionStatus = true
-            // Observe StateFlow and update badge accordingly
-            lifecycleScope.launch {
+        // Only start observing if both badge and library are available
+        if (deviceBadge != null && libraryHandler != null) {
+            // Cancel previous observation job if it exists
+            observationJob?.cancel()
+            
+            // Start new observation with the current badge view reference
+            observationJob = lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     connectionStatusViewModel.connectedDeviceCount.collect { count ->
                         deviceBadge?.setDeviceCount(count)
