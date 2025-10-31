@@ -6,41 +6,31 @@
     android:layout_height="wrap_content">
 
     <TextView
-        android:id="@+id/filename_text"
+        android:id="@+id/foldername_text"
         android:padding="8dp"
         android:textAppearance="?android:textAppearanceMedium"
-        tools:text="Filename.type"
+        tools:text="Folder Name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <Button
         android:drawableStart="@drawable/ic_save_black_24dp"
-        android:id="@+id/save_as_button"
+        android:id="@+id/download_folder_button"
         android:padding="8dp"
         android:gravity="start|center_vertical"
-        android:text="@string/dialog_file_save_as"
+        android:text="@string/dialog_folder_download"
         android:background="?selectableItemBackground"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/rename_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?selectableItemBackground"
-        android:drawableStart="@drawable/ic_edit_gray_24dp"
-        android:gravity="start|center_vertical"
-        android:padding="8dp"
-        android:text="@string/dialog_file_rename" />
-
-    <Button
-        android:id="@+id/delete_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?selectableItemBackground"
         android:drawableStart="@drawable/ic_delete_gray_24dp"
-        android:gravity="start|center_vertical"
+        android:id="@+id/delete_folder_button"
         android:padding="8dp"
-        android:text="@string/dialog_file_delete" />
+        android:gravity="start|center_vertical"
+        android:text="@string/dialog_folder_delete"
+        android:background="?selectableItemBackground"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

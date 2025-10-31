@@ -53,4 +53,8 @@
         <ignore path="src/main/res/values-zh-rCN" />
         <ignore path="src/main/res/values-zh-rTW" />
     </issue>
+    <!-- Issues where following the advice breaks a function of the app -->
+    <issue id="AlwaysShowAction">
+        <ignore path="src/main/res/menu/folder_browser.xml" />
+    </issue>
 </lint>
