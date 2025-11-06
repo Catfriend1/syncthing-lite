@@ -24,7 +24,7 @@
     <string name="devices_label">Dispositivos</string>
     <string name="folder_label_format">%1$s (%2$s)</string>
     <string name="file_info">%1$s, modificado por última vez %2$s</string>
-    <string name="show_device_id">Mostrar ID de dispositivo </string>
+    <string name="show_device_id">ID del dispositivo</string>
     <string name="device_id">ID de dispositivo</string>
     <string name="device_id_copied">ID de dispositivo copiado al portapapeles</string>
     <string name="share_device_id_chooser">Compartir ID de dispositivo con</string>
@@ -91,6 +91,6 @@ Debido al comportamiento de esta aplicación y al comportamiento del servidor de
     <string name="edit_device_dialog_summary">Introduce direcciones separadas por comas, p. ej.: dynamic, tcp4://192.168.1.10:22000, relay://192.168.1.11:22067</string>
     <string name="privacy_title">Política de privacidad</string>
     <string name="privacy_summary">Abre la política de privacidad de Syncthing-Lite que cubre el uso (si lo hay) de datos personales.</string>
-    <string name="open_source_licenses_title">Licencias de Código Abierto</string>
+    <string name="open_source_licenses_title">Licencias de código abierto</string>
     <string name="open_source_licenses_summary">Mostrar las licencias de código abierto empleadas</string>
 </resources>
