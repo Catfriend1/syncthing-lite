@@ -10,4 +10,4 @@ To implementacja zorientowana na klienta, zaprojektowana do pracy online poprzez
 
 Należy pamiętać, że z przyczyn technicznych ponowne połączenie przez przekaźnik nie będzie możliwe przez kilka minut po zamknięciu aplikacji. Może się to zdarzyć z powodu usunięcia z listy ostatnio używanych aplikacji, wymuszonego zamknięcia lub przerwania połączenia ze zdalnym urządzeniem. To ograniczenie nie dotyczy połączeń nawiązywanych bezpośrednio przez sieć lokalną.
 
-Kod źródłowy: https://github.com/Catfriend1/syncthing-lite
+Kod źródłowy: https://github.com/researchxxl/syncthing-lite
