@@ -103,10 +103,6 @@ jobs:
           set -eu
           #
           mv "app/build/outputs/apk/release/app-release.apk" "app/build/outputs/apk/release/${{ env.APPLICATION_ID }}_release_v${{ env.VERSION }}.apk"
-          #
-          cd "app/build/outputs/apk/release"
-          echo '${{ secrets.GNUPG_SIGNING_KEY_BASE64 }}' | base64 -d | gpg --import
-          sha256sum "${{ env.APPLICATION_ID }}_release_v${{ env.VERSION }}.apk" | gpg --clearsign > sha256sum.txt.asc
 
       - uses: ncipollo/release-action@v1
         with:
