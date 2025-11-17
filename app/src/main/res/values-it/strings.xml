@@ -76,4 +76,15 @@
     <string name="yes">Sì</string>
     <string name="no">No</string>
     <string name="upload_file">Carica file</string>
+    <string name="device_icon">Icona del dispositivo</string>
+    <string name="file_icon">Icona del file</string>
+    <string name="scan_qr_code">Scansiona codice QR</string>
+    <string name="device_id_placeholder">XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX</string>
+    <string name="zxing_msg_default_status">Inserisci un codice QR nel rettangolo del mirino per scansionarlo.</string>
+    <string name="delete_device_menu_item">Elimina</string>
+    <string name="edit_device_addresses_hint">Indirizzi</string>
+    <string name="edit_device_menu_item">Modifica</string>
+    <string name="edit_device_dialog_title">Modifica dispositivo</string>
+    <string name="privacy_title">Privacy Policy</string>
+    <string name="privacy_summary">Apri l\'informativa sulla privacy di Syncthing-Lite, che riguarda l\'utilizzo (se presente) dei dati personali.</string>
 </resources>

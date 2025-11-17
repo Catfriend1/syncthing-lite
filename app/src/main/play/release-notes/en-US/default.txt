@@ -1,3 +1,2 @@
-Compatible with Syncthing v2.x nodes
-Updated translations
-Updated dependencies
+Re-release of v2.0.0.0
+No code changes except GitHub reference
