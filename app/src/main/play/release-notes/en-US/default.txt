@@ -1,2 +1,1 @@
-Re-release of v2.0.0.0
-No code changes except GitHub reference
+Re-release of v2.0.0.0 including latest main before taking over
