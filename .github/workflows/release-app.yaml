@@ -8,12 +8,7 @@ on:
     inputs:
       tag:
         description: 'Tag to publish (e.g. v1.0.0.0 or v1.0.0.0-rc.1)'
-        required: false
-  push:
-    # Cannot filter on both branches (release) and tags - it's ORed
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+.[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+.[0-9]+-rc\.[0-9]+'
+        required: true
 
 jobs:
   release:
