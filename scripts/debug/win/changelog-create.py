@@ -7,7 +7,7 @@ import requests
 ## python changelog-create.py
 #
 # Consts.
-REPO = "Catfriend1/syncthing-lite"
+REPO = "researchxxl/syncthing-lite"
 TOKEN = "GHP_TOKEN"
 API_URL = f"https://api.github.com/repos/{REPO}/releases"
 #

@@ -4,6 +4,11 @@ permissions:
   contents: write
 
 on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish (e.g. v1.0.0.0 or v1.0.0.0-rc.1)'
+        required: false
   push:
     # Cannot filter on both branches (release) and tags - it's ORed
     tags:
@@ -14,6 +19,7 @@ jobs:
   release:
     name: Release Build and Publish
     runs-on: ubuntu-latest
+    environment: prod
     steps:
       - uses: actions/checkout@v4
         with:
@@ -103,10 +109,6 @@ jobs:
           set -eu
           #
           mv "app/build/outputs/apk/release/app-release.apk" "app/build/outputs/apk/release/${{ env.APPLICATION_ID }}_release_v${{ env.VERSION }}.apk"
-          #
-          cd "app/build/outputs/apk/release"
-          echo '${{ secrets.GNUPG_SIGNING_KEY_BASE64 }}' | base64 -d | gpg --import
-          sha256sum "${{ env.APPLICATION_ID }}_release_v${{ env.VERSION }}.apk" | gpg --clearsign > sha256sum.txt.asc
 
       - uses: ncipollo/release-action@v1
         with:

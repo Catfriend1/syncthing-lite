@@ -10,4 +10,4 @@ This is a client-oriented implementation, designed to work online by downloading
 
 Please note that for technical reasons you can't reconnect via relay connection for some minutes after the app was closed. This may happen due to removing from the recent apps list, force close or an interrupted connection to remote device. This constraint does not apply for connections directly established through the local network.
 
-Source code: https://github.com/Catfriend1/syncthing-lite
+Source code: https://github.com/researchxxl/syncthing-lite
