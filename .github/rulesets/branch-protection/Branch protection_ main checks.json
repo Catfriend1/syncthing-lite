@@ -3,7 +3,7 @@
   "name": "Branch protection: main checks",
   "target": "branch",
   "source_type": "Repository",
-  "source": "Catfriend1/syncthing-lite",
+  "source": "researchxxl/syncthing-lite",
   "enforcement": "active",
   "conditions": {
     "ref_name": {
