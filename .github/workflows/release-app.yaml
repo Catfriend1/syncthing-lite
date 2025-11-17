@@ -109,7 +109,7 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           tag: ${{ github.event.inputs.tag }}
-          artifacts: "app/build/outputs/apk/release/*.apk,app/build/outputs/apk/release/*.asc"
+          artifacts: "app/build/outputs/apk/release/*.apk"
           artifactErrorsFailBuild: true
           name: Syncthing-Lite v${{ env.VERSION }}
           bodyFile: "app/src/main/play/release-notes/en-US/default.txt"
