@@ -1,45 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-    <data>
-        <variable
-            name="filename"
-            type="String" />
-    </data>
-
-    <LinearLayout
-        android:orientation="vertical"
+    <TextView
+        android:id="@+id/filename_text"
+        android:padding="8dp"
+        android:textAppearance="?android:textAppearanceMedium"
+        tools:text="Filename.type"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content" />
 
-        <TextView
-            android:padding="8dp"
-            android:textAppearance="?android:textAppearanceMedium"
-            android:text="@{filename}"
-            tools:text="Filename.type"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+    <Button
+        android:drawableStart="@drawable/ic_save_black_24dp"
+        android:id="@+id/save_as_button"
+        android:padding="8dp"
+        android:gravity="start|center_vertical"
+        android:text="@string/dialog_file_save_as"
+        android:background="?selectableItemBackground"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
-        <Button
-            android:drawableStart="@drawable/ic_save_black_24dp"
-            android:id="@+id/save_as_button"
-            android:padding="8dp"
-            android:gravity="start|center_vertical"
-            android:text="@string/dialog_file_save_as"
-            android:background="?selectableItemBackground"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/delete_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?selectableItemBackground"
+        android:drawableStart="@drawable/ic_delete_gray_24dp"
+        android:gravity="start|center_vertical"
+        android:padding="8dp"
+        android:text="@string/dialog_file_delete" />
 
-        <Button
-            android:id="@+id/delete_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?selectableItemBackground"
-            android:drawableStart="@drawable/ic_delete_gray_24dp"
-            android:gravity="start|center_vertical"
-            android:padding="8dp"
-            android:text="@string/dialog_file_delete" />
-
-    </LinearLayout>
-</layout>
+</LinearLayout>

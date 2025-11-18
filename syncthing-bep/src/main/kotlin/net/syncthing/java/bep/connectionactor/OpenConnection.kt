@@ -23,22 +23,25 @@ import net.syncthing.java.core.utils.LoggerFactory
 import javax.net.ssl.SSLSocket
 
 object OpenConnection {
+    private const val ALPN_BEP = "bep/1.0"
+
     private val logger = LoggerFactory.getLogger(OpenConnection::class.java)
 
     fun openSocketConnection(
             address: DeviceAddress,
             configuration: Configuration
     ): SSLSocket {
-        val keystoreHandler = KeystoreHandler.Loader().loadKeystore(configuration)
+        val keystoreHandler = KeystoreHandler.Loader().loadKeystoreFromPem(configuration.getConfigFolder())
 
         return when (address.type) {
             DeviceAddress.AddressType.TCP -> {
                 logger.debug("Opening TCP SSL connection at address {}.", address)
-                keystoreHandler.createSocket(address.getSocketAddress())
+                keystoreHandler.createSocket(address.getSocketAddress(), ALPN_BEP)
             }
             DeviceAddress.AddressType.RELAY -> {
                 logger.debug("Opening relay connection at relay {}.", address)
-                keystoreHandler.wrapSocket(RelayClient(configuration).openRelayConnection(address))
+                val relayConnection = RelayClient(configuration).openRelayConnection(address)
+                keystoreHandler.wrapSocket(relayConnection.getSocket(), relayConnection.isServerSocket())
             }
             else -> {
                 val message = "Unsupported address type: ${address.type}."

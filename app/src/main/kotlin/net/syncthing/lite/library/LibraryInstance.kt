@@ -50,7 +50,17 @@ class LibraryInstance (
     private val tempRepository = TempDirectoryLocalRepository(File(context.filesDir, "temp_repository"))
 
     val isListeningPortTaken = checkIsListeningPortTaken()  // this must come first to work correctly
-    val configuration = Configuration(configFolder = context.filesDir)
+    val clientName = context.packageName
+            .removePrefix("com.github.catfriend1.")
+            .replace("syncthinglite", "stlite")
+    val clientVersion = "v" + with(context.packageManager) {
+        getPackageInfo(context.packageName, 0).versionName!!
+    }
+    val configuration = Configuration(
+            configFolder = context.filesDir,
+            clientName = clientName,
+            clientVersion = clientVersion
+    )
     val syncthingClient = SyncthingClient(
             configuration = configuration,
             repository = SqliteIndexRepository(

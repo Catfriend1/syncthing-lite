@@ -4,6 +4,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.DiffUtil
 import android.text.format.DateUtils
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.lite.R
@@ -36,16 +37,17 @@ class FolderContentsAdapter: RecyclerView.Adapter<FolderContentsViewHolder>() {
         val binding = holder.binding
         val fileInfo = data[position]
 
-        binding.fileName = fileInfo.fileName
+        binding.fileLabel.text = fileInfo.fileName
 
         if (fileInfo.isDirectory()) {
             binding.fileIcon.setImageResource(R.drawable.ic_folder_black_24dp)
-            binding.fileSize = null
+            binding.fileSize.visibility = View.GONE
         } else {
             binding.fileIcon.setImageResource(R.drawable.ic_image_black_24dp)
-            binding.fileSize = binding.root.context.getString(R.string.file_info,
+            binding.fileSize.text = binding.root.context.getString(R.string.file_info,
                     FileUtils.byteCountToDisplaySize(fileInfo.size!!),
                     DateUtils.getRelativeDateTimeString(binding.root.context, fileInfo.lastModified.time, DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0))
+            binding.fileSize.visibility = View.VISIBLE
         }
 
         binding.root.setOnClickListener {
@@ -56,7 +58,7 @@ class FolderContentsAdapter: RecyclerView.Adapter<FolderContentsViewHolder>() {
             listener?.onItemLongClicked(fileInfo) ?: false
         }
 
-        binding.executePendingBindings()
+        // Note: executePendingBindings() not needed for ViewBinding
     }
 
     override fun getItemCount() = data.size

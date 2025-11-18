@@ -27,7 +27,11 @@ import java.net.InetAddress
 import java.util.*
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-class Configuration(configFolder: File = DefaultConfigFolder) {
+class Configuration(
+    configFolder: File,
+    val clientName: String,
+    val clientVersion: String
+) {
     private val modifyLock = Mutex()
     private val saveLock = Mutex()
     private val configChannel = MutableStateFlow<Config?>(null)
@@ -49,13 +53,11 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
             if (localDeviceName.isEmpty() || localDeviceName == "localhost") {
                 localDeviceName = "syncthing-lite"
             }
-            val keystoreData = KeystoreHandler.Loader().generateKeystore()
+            val localDeviceId = KeystoreHandler.Loader().generateKeystore(configFolder).deviceId
             isSaved = false
             configChannel.value = Config(peers = setOf(), folders = setOf(),
                             localDeviceName = localDeviceName,
-                            localDeviceId = keystoreData.first.deviceId,
-                            keystoreData = Base64.toBase64String(keystoreData.second),
-                            keystoreAlgorithm = keystoreData.third,
+                            localDeviceId = localDeviceId,
                             customDiscoveryServers = emptySet(),
                             useDefaultDiscoveryServers = true
                     )
@@ -68,7 +70,6 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(Configuration::class.java)
-        private val DefaultConfigFolder = File(System.getProperty("user.home"), ".config/syncthing-java/")
         private const val ConfigFileName = "config.json"
         private const val DatabaseFolderName = "database"
     }
@@ -83,16 +84,6 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
             config.customDiscoveryServers + (if (config.useDefaultDiscoveryServers) DiscoveryServer.defaultDiscoveryServers else emptySet())
         }
 
-    val keystoreData: ByteArray
-        get() = Base64.decode(configChannel.value!!.keystoreData)
-
-    val keystoreAlgorithm: String
-        get() = configChannel.value!!.keystoreAlgorithm
-
-    val clientName = "syncthing-java"
-
-    val clientVersion = javaClass.`package`.implementationVersion ?: "0.0.0"
-
     val peerIds: Set<DeviceId>
         get() = configChannel.value!!.peers.map { it.deviceId }.toSet()
 
@@ -104,6 +95,8 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
 
     val peers: Set<DeviceInfo>
         get() = configChannel.value!!.peers
+
+    fun getConfigFolder(): File = configFile.parentFile
 
     suspend fun update(operation: suspend (Config) -> Config): Boolean {
         modifyLock.withLock {

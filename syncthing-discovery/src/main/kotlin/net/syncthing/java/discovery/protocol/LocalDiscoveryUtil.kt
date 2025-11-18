@@ -121,7 +121,7 @@ object LocalDiscoveryUtil {
                 // logger.trace("Interface: {}, Address: {}, Broadcast: {}.", networkInterface, interfaceAddress, broadcastAddress)
 
                 if (broadcastAddress != null) {
-                    logger.debug("Sending broadcast announcement on {}.", broadcastAddress)
+                    // logger.trace("Sending broadcast announcement on {}.", broadcastAddress)
 
                     try {
                         DatagramSocket().use { broadcastSocket ->
@@ -134,6 +134,7 @@ object LocalDiscoveryUtil {
                                     LISTENING_PORT))
                         }
                     } catch (ex: Exception) {
+                        logger.error("Sending broadcast announcement failed on {}.", broadcastAddress)
                         throw ExceptionDetailException(
                                 ex,
                                 ExceptionDetails(

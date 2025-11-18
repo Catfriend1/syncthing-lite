@@ -1,17 +1,13 @@
 package net.syncthing.lite.activities
 
-import androidx.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
-import androidx.databinding.DataBindingUtil
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
-import android.util.TypedValue
-import androidx.fragment.app.Fragment
-import androidx.core.content.ContextCompat
-import androidx.core.content.edit
 import android.text.Html
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +16,13 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.core.content.edit
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.button.MaterialButton
+import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -34,7 +36,6 @@ import net.syncthing.lite.databinding.FragmentIntroThreeBinding
 import net.syncthing.lite.databinding.FragmentIntroTwoBinding
 import net.syncthing.lite.fragments.SyncthingFragment
 import net.syncthing.lite.utils.Util
-import java.io.IOException
 
 /**
  * Shown when a user first starts the app. Shows some info and helps the user to add their first
@@ -43,9 +44,13 @@ import java.io.IOException
 class IntroActivity : SyncthingActivity() {
 
     companion object {
-        private const val ENABLE_TEST_DATA: Boolean = true
         private const val TEST_DEVICE_ID: String = "ELQBG5X-NNNR7JC-NB7P7HF-AAZRSWD-ODAETQG-6OBQZRJ-7V2E7J6-KNMXNQL"
+        private const val TEST_DISCOVERED_DEVICE_ID: String = "ZOK75WR-W3XWWUZ-NNLXV7V-DUYKVWA-SSPD7OH-3QYOZBY-SBH3N2Y-IAVJ4QH"
         private const val TAG = "IntroActivity"
+    }
+
+    private val ENABLE_TEST_DATA: Boolean by lazy {
+        isRunningOnEmulator()
     }
 
     private lateinit var binding: ActivityIntroBinding
@@ -58,7 +63,7 @@ class IntroActivity : SyncthingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        binding = DataBindingUtil.setContentView<ActivityIntroBinding>(this, R.layout.activity_intro)
+        binding = ActivityIntroBinding.inflate(layoutInflater).also { setContentView(it.root) }
         
         adapter = IntroFragmentAdapter(this)
         binding.viewPager.adapter = adapter
@@ -91,6 +96,7 @@ class IntroActivity : SyncthingActivity() {
     }
 
     private fun setupPageIndicators() {
+        binding.pageIndicators.background = null
         for (i in 0 until adapter.itemCount) {
             val indicator = ImageView(this)
             val size = 12.dpToPx()
@@ -187,7 +193,11 @@ class IntroActivity : SyncthingActivity() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val binding = FragmentIntroOneBinding.inflate(inflater, container, false)
 
-            libraryHandler.isListeningPortTaken.observe(viewLifecycleOwner, Observer { binding.listeningPortTaken = it })
+            libraryHandler.isListeningPortTaken.observe(viewLifecycleOwner, Observer { isPortTaken ->
+                val visibility = if (isPortTaken) View.VISIBLE else View.GONE
+                binding.listeningPortTakenTitle.visibility = visibility
+                binding.listeningPortTakenMessage.visibility = visibility
+            })
 
             return binding.root
         }
@@ -200,6 +210,9 @@ class IntroActivity : SyncthingActivity() {
 
         private lateinit var binding: FragmentIntroTwoBinding
         private var qrCodeLauncher: ActivityResultLauncher<Intent>? = null
+
+        private val ENABLE_TEST_DATA: Boolean
+            get() = (activity as? IntroActivity)?.ENABLE_TEST_DATA == true
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
@@ -217,7 +230,7 @@ class IntroActivity : SyncthingActivity() {
         }
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-            binding = DataBindingUtil.inflate(inflater, R.layout.fragment_intro_two, container, false)
+            binding = FragmentIntroTwoBinding.inflate(inflater, container, false)
             binding.enterDeviceId.scanQrCode.setOnClickListener {
                 qrCodeLauncher?.let { launcher ->
                     val intent = Intent(requireContext(), QRScannerActivity::class.java)
@@ -239,6 +252,11 @@ class IntroActivity : SyncthingActivity() {
             if (ENABLE_TEST_DATA) {
                 binding.enterDeviceId.deviceId.setText(TEST_DEVICE_ID)
                 binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                
+                val testDiscoveredDeviceId = DeviceId(deviceId = TEST_DISCOVERED_DEVICE_ID)
+                binding.root.post {
+                    onDeviceFound(testDiscoveredDeviceId)
+                }
             }
 
             return binding.root
@@ -313,28 +331,42 @@ class IntroActivity : SyncthingActivity() {
             libraryHandler.unregisterMessageFromUnknownDeviceListener(onDeviceFound)
         }
 
-        private val onDeviceFound: (DeviceId) -> Unit = {
-            deviceId ->
+        private fun formatDeviceIdForWrapping(id: String): String {
+            return id.replace("-", "-\u200B")
+        }
 
-                if (addedDeviceIds.add(deviceId)) {
-                    binding.foundDevices.addView(
-                            Button(context).apply {
-                                layoutParams = ViewGroup.LayoutParams(
-                                        ViewGroup.LayoutParams.MATCH_PARENT,
-                                        ViewGroup.LayoutParams.WRAP_CONTENT
-                                )
-                                text = deviceId.deviceId
+        private fun Int.dpToPx(context: Context): Int =
+            (this * context.resources.displayMetrics.density).toInt()
 
-                                setOnClickListener {
-                                    binding.enterDeviceId.deviceId.setText(deviceId.deviceId)
-                                    binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
-                                    (activity as? IntroActivity)?.enableNextButton(true)
+        private val onDeviceFound: (DeviceId) -> Unit = { deviceId ->
+            if (addedDeviceIds.add(deviceId)) {
+                val button = MaterialButton(requireContext()).apply {
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        topMargin = 16.dpToPx(context)
+                    }
+                    text = formatDeviceIdForWrapping(deviceId.deviceId)
+                    setTextColor(ContextCompat.getColor(context, android.R.color.white))
+                    backgroundTintList = ContextCompat.getColorStateList(context, R.color.primary_dark)
+                    cornerRadius = 16
+                    setPadding(32, 32, 32, 32)
+                    textSize = 16f
+                    typeface = Typeface.MONOSPACE
+                    isAllCaps = false
+                    elevation = 4f
 
-                                    binding.scroll.scrollTo(0, 0)
-                                }
-                            }
-                    )
+                    setOnClickListener {
+                        binding.enterDeviceId.deviceId.setText(deviceId.deviceId)
+                        binding.enterDeviceId.deviceIdHolder.isErrorEnabled = false
+                        (activity as? IntroActivity)?.enableNextButton(true)
+                        binding.scroll.scrollTo(0, 0)
+                    }
                 }
+
+                binding.foundDevices.addView(button)
+            }
         }
     }
 

@@ -32,12 +32,14 @@
     <string name="other_syncthing_instance_title">Another Syncthing instance is running</string>
     <string name="other_syncthing_instance_message">Local discovery will not work. Stop the other Syncthing instance to enable local discovery.</string>
     <string name="intro_page_one_title">Welcome to Syncthing-Lite</string>
-    <string name="intro_page_one_description">Syncthing replaces proprietary sync and cloud services with something open, trustworthy and decentralized. Your data is your data alone and you deserve to choose where it is stored, if it is shared with some third party and how it\'s transmitted over the Internet.</string>
+    <string name="intro_page_one_description">Syncthing is an open-source file synchronization application. To browse files of other devices, their owner needs to add your unique device ID to their device list first. Afterwards they need to share folders which should be browsable from this app.
+\n
+\nSafety warning: Please always ensure that you have backed up your data by other means and that this backup is up to date before using this app. The app is still in early development. We assume no liability for data corruption or loss, although we make every effort to deliver quality.</string>
     <string name="intro_page_two_title">Add a device</string>
     <string name="intro_page_three_title">Share your folders</string>
     <string name="intro_page_two_description">Enter a Syncthing device ID, or scan a device ID from a QR code</string>
-    <string name="intro_page_three_description">Now accept the device with ID %1$s, and share a folder with it. It may take a few minutes until the devices connect.</string>
-    <string name="intro_page_three_searching_device">Trying to find the other device. This may take a moment.</string>
+    <string name="intro_page_three_description">Device found. Now ask the device owner to accept our connection from %1$s and share a folder with us. We\'ll continue automatically after that happened. Please wait.</string>
+    <string name="intro_page_three_searching_device">Trying to find the other device. We\'ll continue automatically once the discovery is complete. Please wait.</string>
     <string name="settings">Settings</string>
     <string name="settings_app_version_title">App version</string>
     <string name="settings_local_device_name">Local device name</string>
@@ -79,7 +81,27 @@
     <string name="scan_qr_code">Scan QR code</string>
     <string name="device_id_placeholder">XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX</string>
     <string name="zxing_msg_default_status">Place a QR code inside the viewfinder rectangle to scan it.</string>
+
+    <!-- Generic texts used everywhere -->
     <string name="skip">Skip</string>
     <string name="next">Next</string>
     <string name="done">Done</string>
+
+    <!-- DevicesFragment -->
+    <string name="delete_device_menu_item">Delete</string>
+    <string name="edit_device_addresses_hint">Addresses</string>
+    <string name="edit_device_menu_item">Edit</string>
+    <string name="edit_device_dialog_title">Edit Device</string>
+    <string name="edit_device_dialog_summary">Enter addresses separated by commas, e.g.: dynamic, tcp4://192.168.1.10:22000, relay://192.168.1.11:22067</string>
+
+    <!-- Menu item linking privacy policy -->
+    <string name="privacy_title">Privacy Policy</string>
+    <string name="privacy_summary">Open Syncthing-Lite\'s privacy policy, which covers usage (if any) of personal data.</string>
+    <string name="privacy_policy_url" translatable="false">https://github.com/researchxxl/syncthing-lite/blob/main/privacy-policy.md</string>
+
+    <!-- Title of the preference showing the Open Source Licenses -->
+    <string name="open_source_licenses_title">Open Source Licenses</string>
+    
+    <!-- Summary of the preference showing the Open Source Licenses -->
+    <string name="open_source_licenses_summary">Show the open source licenses used</string>
 </resources>

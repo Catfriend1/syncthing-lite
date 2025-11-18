@@ -1,6 +1,11 @@
 # Syncthing-Lite for Android
 
-[![MPLv2 License](https://img.shields.io/badge/license-MPLv2-blue.svg?style=flat-square)](https://www.mozilla.org/MPL/2.0/)<a href="https://tooomm.github.io/github-release-stats/?username=Catfriend1&repository=syncthing-lite" alt="GitHub Stats"><img src="https://img.shields.io/github/downloads/Catfriend1/syncthing-lite/total.svg" /></a>[![Build App](https://github.com/Catfriend1/syncthing-lite/actions/workflows/build-app.yaml/badge.svg)](https://github.com/Catfriend1/syncthing-lite/actions/workflows/build-app.yaml)
+[![MPLv2 License](https://img.shields.io/badge/license-MPLv2-blue.svg?style=flat-square)](https://www.mozilla.org/MPL/2.0/)
+<a href="https://github.com/researchxxl/syncthing-lite/releases/latest" alt="GitHub release"><img src="https://img.shields.io/github/v/release/researchxxl/syncthing-lite" /></a>
+<a href="https://f-droid.org/packages/com.github.catfriend1.syncthinglite" alt="F-Droid release"><img src="https://img.shields.io/f-droid/v/com.github.catfriend1.syncthinglite.svg" /></a>
+<a href="https://tooomm.github.io/github-release-stats/?username=researchxxl&repository=syncthing-lite" alt="GitHub Stats"><img src="https://img.shields.io/github/downloads/researchxxl/syncthing-lite/total.svg" /></a>
+<a href="https://hosted.weblate.org/projects/syncthing/android/catfriend1/"><img src="https://hosted.weblate.org/widget/syncthing/android/catfriend1/lite-stringsxml/svg-badge.svg" alt="Translation status" /></a>
+[![Build App](https://github.com/researchxxl/syncthing-lite/actions/workflows/build-app.yaml/badge.svg)](https://github.com/researchxxl/syncthing-lite/actions/workflows/build-app.yaml)
 
 ⚡ Revival of the app which was abandoned years ago. Let's discuss it on [Syncthing-Forum](https://forum.syncthing.net/).
 
@@ -20,12 +25,13 @@ This constraint does not apply for connections directly established through the 
 
 The project is translated on [Weblate](https://hosted.weblate.org/projects/syncthing/android/catfriend1/lite-stringsxml/).
 
-## Aknowledgements
+## Acknowledgments
 
-This project was forked from [GitHub/syncthing-lite](https://github.com/syncthing/syncthing-lite).
+This project was forked from [syncthing/syncthing-lite](https://github.com/syncthing/syncthing-lite).
 
 Special thanks to the former maintainers:
 
+- [Catfriend1](https://github.com/Catfriend1)
 - [l-jonas](https://github.com/l-jonas)
 - [nutomic](https://github.com/nutomic)
 - [davide-imbriaco](https://github.com/davide-imbriaco)
@@ -34,5 +40,5 @@ Special thanks to the former maintainers:
 All code is licensed under the [MPLv2 License][3].
 
 [1]: https://syncthing.net/
-[2]: https://github.com/Catfriend1/syncthing-android
+[2]: https://github.com/researchxxl/syncthing-android
 [3]: LICENSE

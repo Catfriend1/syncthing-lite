@@ -80,5 +80,12 @@ class Connections(val generate: (DeviceId) -> ConnectionActorWrapper) {
         }
     }
 
+    fun disconnect(deviceId: DeviceId) {
+        synchronized(map) {
+            map[deviceId]?.shutdown()
+            map.remove(deviceId) // Remove from map so new connection actor will be created
+        }
+    }
+
     fun subscribeToConnectionStatusMap() = connectionStatus.asStateFlow()
 }

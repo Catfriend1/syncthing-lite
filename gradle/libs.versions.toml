@@ -1,43 +1,48 @@
 [versions]
-kotlin = "2.2.0"
+kotlin = "2.2.21"
 kotlinx-coroutines = "1.10.2"
-android-gradle-plugin = "8.11.1"
-protobuf-lite = "4.31.1"
+android-gradle-plugin = "8.13.1"
+protobuf-lite = "4.33.1"
 protobuf-plugin = "0.9.5"
-ksp = "2.2.0-2.0.2"
+ksp = "2.3.2"
 
 # Android SDK versions
+android-cmdline-tools = "11076708"
 compile-sdk = "36"
-min-sdk = "21"
-target-sdk = "33"
+min-sdk = "23"
+target-sdk = "36"
 
 # App version
-version-code = "1300000"
-version-name = "1.30.0.0"
+version-code = "2000001"
+version-name = "2.0.0.1"
 
 # AndroidX and Google libraries
-material = "1.12.0"
+activity = "1.11.0"
 appcompat = "1.7.1"
+compose-material3 = "1.4.0"
+compose-ui = "1.9.4"
 legacy-preference-v14 = "1.0.0"
 legacy-support-v4 = "1.0.0"
-lifecycle-runtime-ktx = "2.9.2"
+lifecycle-runtime-ktx = "2.9.4"
+material = "1.13.0"
 recyclerview = "1.4.0"
-room = "2.7.2"
+room = "2.8.3"
 appcompat-v7 = "28.0.0"
-core-ktx = "1.16.0"
+core-ktx = "1.17.0"
 collection-ktx = "1.5.0"
 preference-ktx = "1.2.1"
 
 # Third-party libraries
+aboutLibraries = "13.1.0"
 zxing-integration = "3.3.0"
 zxing-core = "3.3.0"
 zxing-android-embedded = "4.3.0"
 lz4 = "1.3.0"
-commons-codec = "1.18.0"
-commons-io = "2.20.0"
-gson = "2.13.1"
-bouncy-castle = "1.81"
-commons-cli = "1.9.0"
+commons-codec = "1.20.0"
+commons-io = "2.21.0"
+gson = "2.13.2"
+bouncy-castle = "1.82"
+commons-cli = "1.11.0"
 
 [libraries]
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
@@ -54,11 +59,14 @@ protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.
 protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf-lite" }
 
 # AndroidX and Google
-material = { module = "com.google.android.material:material", version.ref = "material" }
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
+compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose-ui" }
 legacy-preference-v14 = { module = "androidx.legacy:legacy-preference-v14", version.ref = "legacy-preference-v14" }
 legacy-support-v4 = { module = "androidx.legacy:legacy-support-v4", version.ref = "legacy-support-v4" }
 lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
 recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
@@ -68,6 +76,8 @@ collection-ktx = { module = "androidx.collection:collection-ktx", version.ref = 
 preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preference-ktx" }
 
 # Third-party
+aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
+aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 zxing-integration = { module = "com.google.zxing:android-integration", version.ref = "zxing-integration" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing-core" }
 zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxing-android-embedded" }
@@ -82,8 +92,11 @@ commons-cli = { module = "commons-cli:commons-cli", version.ref = "commons-cli" 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
 android-library = { id = "com.android.library", version.ref = "android-gradle-plugin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobuf-plugin" }
+
+# Third-party libraries
+aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutLibraries" }

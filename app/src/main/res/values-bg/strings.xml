@@ -31,7 +31,6 @@
     <string name="intro_page_two_title">Добавяне на устройство</string>
     <string name="intro_page_three_title">Споделете папки</string>
     <string name="intro_page_two_description">Въведете Syncthing идентификатор на устройство или го сканирайте от QR код</string>
-    <string name="intro_page_three_searching_device">Търсене за други устройства. Може да отнеме известно време.</string>
     <string name="settings">Настройки</string>
     <string name="settings_app_version_title">Версия на приложението</string>
     <string name="settings_local_device_name">Име на устройството</string>

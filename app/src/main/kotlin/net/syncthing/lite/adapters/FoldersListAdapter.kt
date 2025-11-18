@@ -42,17 +42,20 @@ class FoldersListAdapter: RecyclerView.Adapter<FolderListViewHolder>() {
 
         Log.d("FolderListAdapter", "$item")
 
-        binding.folderName = context.getString(R.string.folder_label_format, folderInfo.label, folderInfo.folderId)
+        binding.folderNameView.text = context.getString(R.string.folder_label_format, folderInfo.label, folderInfo.folderId)
 
-        binding.lastModification = context.getString(R.string.last_modified_time,
+        binding.folderLastmodInfo.text = context.getString(R.string.last_modified_time,
                 DateUtils.getRelativeDateTimeString(context, folderStats.lastUpdate.time, DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0))
 
-        binding.info = context.resources.getQuantityString(R.plurals.folder_content_info_files, folderStats.fileCount.toInt(), folderStats.sizeDescription, folderStats.fileCount, folderStats.dirCount)
+        binding.folderContentInfo.text = context.resources.getQuantityString(R.plurals.folder_content_info_files, folderStats.fileCount.toInt(), folderStats.sizeDescription, folderStats.fileCount, folderStats.dirCount)
 
-        binding.info2 = if (item.missingIndexUpdates == 0L)
+        val info2Text = if (item.missingIndexUpdates == 0L)
             null
         else
             context.resources.getQuantityString(R.plurals.pending_index_updates, item.missingIndexUpdates.toInt(), item.missingIndexUpdates)
+        
+        binding.folderInfo2.text = info2Text
+        binding.folderInfo2.visibility = if (info2Text.isNullOrEmpty()) android.view.View.GONE else android.view.View.VISIBLE
 
         binding.root.setOnClickListener {
             listener?.onFolderClicked(folderInfo, folderStats)

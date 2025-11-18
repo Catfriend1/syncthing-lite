@@ -18,7 +18,7 @@ import com.google.gson.stream.JsonReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.syncthing.java.core.beans.DeviceId
-import net.syncthing.java.core.security.KeystoreHandler
+import net.syncthing.java.core.security.DeviceCertificateVerifier
 import java.io.BufferedInputStream
 import java.io.IOException
 import java.io.InputStreamReader
@@ -52,7 +52,7 @@ object GlobalDiscoveryUtil {
                                 throw IOException("no certificate found")
                             }
 
-                            KeystoreHandler.assertSocketCertificateValid(session.peerCertificates.first(), serverDeviceId)
+                            DeviceCertificateVerifier.assertSocketCertificateValid(session.peerCertificates.first(), serverDeviceId)
                         }
 
                         true
@@ -66,15 +66,11 @@ object GlobalDiscoveryUtil {
                 }
                 sslSocketFactory = SSLContext.getInstance("SSL").apply {
                     init(null, arrayOf(object: X509TrustManager {
-                        override fun checkClientTrusted(p0: Array<out X509Certificate>?, p1: String?) {
-                            // check nothing
-                        }
-
-                        override fun checkServerTrusted(p0: Array<out X509Certificate>?, p1: String?) {
-                            // check nothing
-                        }
-
-                        override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+                        @Throws(CertificateException::class)
+                        override fun checkClientTrusted(xcs: Array<X509Certificate>, string: String) {}
+                        @Throws(CertificateException::class)
+                        override fun checkServerTrusted(xcs: Array<X509Certificate>, string: String) {}
+                        override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
                     }), SecureRandom())
                 }.socketFactory
             }

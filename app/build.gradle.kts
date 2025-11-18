@@ -1,7 +1,12 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
+    alias(libs.plugins.aboutLibraries)
     alias(libs.plugins.android.application)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -19,10 +24,19 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = System.getenv("SYNCTHING_RELEASE_STORE_FILE")?.let(::file)
-            storePassword = System.getenv("SIGNING_PASSWORD")
-            keyAlias = System.getenv("SYNCTHING_RELEASE_KEY_ALIAS")
-            keyPassword = System.getenv("SIGNING_PASSWORD")
+            val localProps = Properties()
+            val localFile = rootProject.file("local.properties")
+            if (localFile.exists()) {
+                localFile.inputStream().use { localProps.load(it) }
+            }
+            
+            fun propOrEnv(key: String): String? =
+                localProps.getProperty(key) ?: System.getenv(key)
+            
+            storeFile = propOrEnv("SYNCTHING_RELEASE_STORE_FILE")?.let(::file)
+            storePassword = propOrEnv("SIGNING_PASSWORD")
+            keyAlias = propOrEnv("SYNCTHING_RELEASE_KEY_ALIAS")
+            keyPassword = storePassword
         }
     }
 
@@ -65,7 +79,6 @@ android {
     }
 
     buildFeatures {
-        dataBinding = true
         viewBinding = true
     }
 
@@ -80,21 +93,31 @@ android {
             enableSplit = true
         }
     }
+
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
 }
 
 dependencies {
+    implementation(libs.aboutlibraries.compose.m3)
+    implementation(libs.aboutlibraries.core)
+    implementation(libs.activity.compose)
+    implementation(libs.appcompat)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.ui)
+    implementation(libs.collection.ktx)
+    implementation(libs.core.ktx)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.material)
-    implementation(libs.appcompat)
     implementation(libs.legacy.preference.v14)
     implementation(libs.legacy.support.v4)
     implementation(libs.lifecycle.runtime.ktx)
-    implementation(libs.recyclerview)
-    implementation(libs.core.ktx)
-    implementation(libs.collection.ktx)
+    implementation(libs.material)
     implementation(libs.preference.ktx)
-
+    implementation(libs.recyclerview)
     implementation(libs.zxing.android.embedded)
 
     implementation(project(":syncthing-client"))

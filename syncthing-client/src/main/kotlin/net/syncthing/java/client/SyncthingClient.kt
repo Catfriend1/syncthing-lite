@@ -64,7 +64,8 @@ class SyncthingClient(
                                     }
                                 },
                                 indexHandler = indexHandler,
-                                configuration = configuration
+                                configuration = configuration,
+                                deviceId = deviceId
                         ),
                         deviceId = deviceId,
                         exceptionReportHandler = exceptionReportHandler
@@ -101,8 +102,8 @@ class SyncthingClient(
         discoveryHandler.retryDiscovery()
     }
 
-    fun disconnectFromRemovedDevices() {
-        // TODO: implement this
+    fun disconnect(deviceId: DeviceId) {
+        connections.disconnect(deviceId)
     }
 
     fun getActiveConnectionsForFolder(folderId: String) = configuration.peerIds

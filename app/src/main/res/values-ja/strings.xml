@@ -29,11 +29,9 @@
     <string name="other_syncthing_instance_title">別の Syncthing インスタンスが実行中です</string>
     <string name="other_syncthing_instance_message">ローカルの探索は動作しません。他の Syncthing インスタンスを停止して、ローカルの探索を有効にしてください。</string>
     <string name="intro_page_one_title">Syncthing-Lite へようこそ</string>
-    <string name="intro_page_one_description">Syncthing は、プロプライエタリな同期およびクラウドサービスを、オープンで信頼性があり、分散化されたものに置き換えます。 あなたのデータはあなただけのものであり、それが第三者と共有され、インターネット経由で送信される場合、保存される場所を選択する必要があります。</string>
     <string name="intro_page_two_title">デバイスを追加</string>
     <string name="intro_page_three_title">フォルダーを共有</string>
     <string name="intro_page_two_description">Syncthing デバイス ID を入力、または QR コードからデバイス ID をスキャンしてください</string>
-    <string name="intro_page_three_description">ID %1$s のデバイスを承認して、フォルダーを共有しました。デバイスが接続されるまで数分かかることがあります。</string>
     <string name="settings">設定</string>
     <string name="settings_app_version_title">アプリバージョン</string>
     <string name="settings_local_device_name">ローカルのデバイス名</string>

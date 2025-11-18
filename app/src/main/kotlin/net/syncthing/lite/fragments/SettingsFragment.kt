@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R
+import net.syncthing.lite.activities.LicenseActivity
 import net.syncthing.lite.dialogs.ErrorReportDialog
 import net.syncthing.lite.error.ErrorStorage
 import net.syncthing.lite.library.DefaultLibraryManager
@@ -25,6 +26,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val forceStop       = findPreference<Preference>("force_stop")!!
         val lastCrash       = findPreference<Preference>("last_crash")!!
         val reportBug       = findPreference<Preference>("report_bug")!!
+        val showOssLicenses = findPreference<Preference>("open_source_licenses")!!
         val libraryManager  = DefaultLibraryManager.with(requireContext())
 
         MainScope().launch(Dispatchers.Main) {
@@ -60,7 +62,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         reportBug.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/Catfriend1/syncthing-lite/issues".toUri()))
+            startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/researchxxl/syncthing-lite/issues".toUri()))
+            true
+        }
+
+        showOssLicenses.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            val intent = Intent(context, LicenseActivity::class.java)
+            startActivity(intent)
             true
         }
     }

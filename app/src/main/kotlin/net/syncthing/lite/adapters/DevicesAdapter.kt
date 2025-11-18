@@ -38,11 +38,17 @@ class DevicesAdapter: RecyclerView.Adapter<DeviceViewHolder>() {
         val (deviceInfo, connectionInfo) = data[position]
 
         // Ensure device name is never empty - fallback to device ID if name is null/empty
-        binding.name = deviceInfo.name?.takeIf { it.isNotBlank() } 
+        val displayName = deviceInfo.name?.takeIf { it.isNotBlank() } 
             ?: deviceInfo.deviceId.deviceId.take(7)
-        binding.isConnected = connectionInfo.status == ConnectionStatus.Connected
+        binding.deviceName.text = displayName
+        
+        val isConnected = connectionInfo.status == ConnectionStatus.Connected
+        binding.deviceIcon.setImageResource(
+            if (isConnected) R.drawable.ic_laptop_green_24dp 
+            else R.drawable.ic_laptop_red_24dp
+        )
 
-        binding.status = when (connectionInfo.status) {
+        val statusText = when (connectionInfo.status) {
             ConnectionStatus.Connected -> context.getString(R.string.device_status_connected, connectionInfo.currentAddress?.address)
             ConnectionStatus.Connecting -> context.getString(R.string.device_status_connecting, connectionInfo.currentAddress?.address)
             ConnectionStatus.Disconnected -> if (connectionInfo.addresses.isEmpty())
@@ -50,10 +56,11 @@ class DevicesAdapter: RecyclerView.Adapter<DeviceViewHolder>() {
             else
                 context.resources.getQuantityString(R.plurals.device_status_known_addresses, connectionInfo.addresses.size, connectionInfo.addresses.size)
         }
+        binding.deviceStatus.text = statusText
 
         binding.root.setOnLongClickListener { listener?.onDeviceLongClicked(deviceInfo) ?: false }
 
-        binding.executePendingBindings()
+        // Note: executePendingBindings() not needed for ViewBinding
     }
 }
 

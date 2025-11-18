@@ -39,12 +39,16 @@ class FoldersFragment : SyncthingFragment() {
 
         val binding = FragmentFoldersBinding.inflate(layoutInflater, container, false)
         binding.list.adapter = adapter
-        libraryHandler.isListeningPortTaken.observe(viewLifecycleOwner, Observer { binding.listeningPortTaken = it })
+        libraryHandler.isListeningPortTaken.observe(viewLifecycleOwner, Observer { isPortTaken ->
+            binding.listeningPortTakenWarning.visibility = if (isPortTaken) View.VISIBLE else View.GONE
+        })
 
         launch {
             libraryHandler.subscribeToFolderStatusList().collect {
                 adapter.data = it
-                binding.isEmpty = it.isEmpty()
+                val isEmpty = it.isEmpty()
+                binding.list.visibility = if (isEmpty) View.GONE else View.VISIBLE
+                binding.empty.visibility = if (isEmpty) View.VISIBLE else View.GONE
             }
         }
 

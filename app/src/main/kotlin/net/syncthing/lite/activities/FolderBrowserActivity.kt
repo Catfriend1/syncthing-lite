@@ -2,10 +2,10 @@ package net.syncthing.lite.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
-import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import kotlinx.coroutines.*
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.consumeEach
@@ -82,7 +82,7 @@ class FolderBrowserActivity : SyncthingActivity() {
             }
         }
 
-        val binding: ActivityFolderBrowserBinding = DataBindingUtil.setContentView(this, R.layout.activity_folder_browser)
+        val binding: ActivityFolderBrowserBinding = ActivityFolderBrowserBinding.inflate(layoutInflater).also { setContentView(it.root) }
         val adapter = FolderContentsAdapter()
 
         binding.listView.adapter = adapter
@@ -139,10 +139,12 @@ class FolderBrowserActivity : SyncthingActivity() {
         launch {
             listing.collect { listing ->
                 if (listing == null) {
-                    binding.isLoading = true
+                    binding.progressBar.visibility = View.VISIBLE
+                    binding.listView.visibility = View.GONE
                 } else {
                     supportActionBar?.title = if (PathUtils.isRoot(listing.path)) folder else PathUtils.getFileName(listing.path)
-                    binding.isLoading = false
+                    binding.progressBar.visibility = View.GONE
+                    binding.listView.visibility = View.VISIBLE
                     adapter.data = if (listing is DirectoryContentListing)
                         listing.entries.sortedWith(IndexBrowser.sortAlphabeticallyDirectoriesFirst)
                     else emptyList()

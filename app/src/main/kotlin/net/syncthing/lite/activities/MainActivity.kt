@@ -6,14 +6,15 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
-import androidx.core.view.GravityCompat
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
-import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
+import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.get
 import androidx.core.view.size
+import androidx.fragment.app.Fragment
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R
 import net.syncthing.lite.databinding.ActivityMainBinding
@@ -42,7 +43,20 @@ class MainActivity : SyncthingActivity() {
             return
         }
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater).also { setContentView(it.root) }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.drawerLayout) { _, insets ->
+            val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            binding.navigation.setPadding(
+                binding.navigation.paddingLeft,
+                systemBarsInsets.top,
+                binding.navigation.paddingRight,
+                binding.navigation.paddingBottom
+            )
+
+            insets
+        }
 
         drawerToggle = ActionBarDrawerToggle(
             this, binding.drawerLayout, R.string.app_name, R.string.app_name
@@ -79,7 +93,6 @@ class MainActivity : SyncthingActivity() {
         // true, then it has handled the app icon touch event
         return if (drawerToggle?.onOptionsItemSelected(item) == true) {
             true
-        // Handle your other action bar items...
         } else {
             super.onOptionsItemSelected(item)
         }

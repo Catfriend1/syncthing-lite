@@ -1,46 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <data>
-        <variable
-            name="isLoading"
-            type="Boolean" />
-
-        <import type="android.view.View" />
-    </data>
-
-    <RelativeLayout
+    <androidx.recyclerview.widget.RecyclerView
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:id="@+id/list_view" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:visibility="@{safeUnbox(isLoading) ? View.GONE : View.VISIBLE}"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/list_view" />
+    <ProgressBar
+        android:visibility="gone"
+        android:layout_centerInParent="true"
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
-        <ProgressBar
-            android:visibility="@{safeUnbox(isLoading) ? View.VISIBLE : View.GONE}"
-            android:layout_centerInParent="true"
-            android:id="@+id/progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/main_list_view_upload_here_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:contentDescription="@string/upload_file"
+        app:elevation="6dp"
+        app:pressedTranslationZ="12dp"
+        android:src="@drawable/ic_file_upload_white_24dp"/>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/main_list_view_upload_here_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="24dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:contentDescription="@string/upload_file"
-            app:elevation="6dp"
-            app:pressedTranslationZ="12dp"
-            android:src="@drawable/ic_file_upload_white_24dp"/>
-
-    </RelativeLayout>
-
-</layout>
+</RelativeLayout>
